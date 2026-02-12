@@ -1,0 +1,37 @@
+<header class="app-header">
+    <div class="header-container">
+      
+      <!-- Logo -->
+      <a routerLink="/acceuil" class="logo">
+        <div class="logo-icon">
+          <i class="fa-solid fa-building-columns"></i>
+        </div>
+        <span class="logo-text">NEO BTE</span>
+      </a>
+  
+      <!-- Navigation -->
+      <nav class="nav-menu">
+        <a routerLink="/a-propos" routerLinkActive="active" class="nav-link">
+          À propos
+        </a>
+        <a routerLink="/contact" routerLinkActive="active" class="nav-link">
+          Contact
+        </a>
+      </nav>
+  
+      <!-- Actions -->
+      <div class="header-actions">
+        <a routerLink="/login" class="btn-admin">
+          <i class="fa-solid fa-user-shield"></i>
+          Admin
+        </a>
+      </div>
+  
+      <!-- Mobile Menu Button -->
+      <button class="mobile-menu-btn" (click)="toggleMenu()">
+        <i class="fa-solid fa-bars"></i>
+      </button>
+  
+    </div>
+  </header>
+  

@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.util.Date;
 
 @Entity
 @Getter
@@ -19,9 +20,10 @@ import java.io.Serializable;
 public class Client implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long idClient;
 
-
+    private String motDePasse;
+    private Date dateCreationCompte;
     private String nom;
     private String prenom;
     private String adresse;

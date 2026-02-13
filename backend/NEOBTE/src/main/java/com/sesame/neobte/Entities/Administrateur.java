@@ -11,6 +11,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.util.Date;
 
 @Entity
 @Getter
@@ -20,8 +21,9 @@ import java.io.Serializable;
 public class Administrateur implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long idAdministrateur;
 
-
+    private String motDePasse;
+    private Date dateCreationCompte;
 
 }

@@ -9,6 +9,4 @@ import org.springframework.web.bind.annotation.RestController;
 @AllArgsConstructor
 @RequestMapping("api/client")
 public class ClientController {
-
-    private final ClientService clientService;
 }

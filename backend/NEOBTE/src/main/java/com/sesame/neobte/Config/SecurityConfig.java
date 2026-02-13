@@ -17,8 +17,13 @@ public class SecurityConfig {
         http
                 .csrf(AbstractHttpConfigurer::disable) // disable csrf for Postman
                 .authorizeHttpRequests(auth -> auth
+
+                        // v1 permit all for quicker testing via postman
                         .requestMatchers("/api/client/createClient").permitAll()
                         .requestMatchers("/api/client/all").permitAll()
+                        .requestMatchers("/api/auth/**").permitAll()
+
+                        // protected
                         .anyRequest().authenticated()
                 );
 

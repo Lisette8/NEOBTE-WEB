@@ -2,6 +2,8 @@ package com.sesame.neobte.Services;
 
 import com.sesame.neobte.Entities.Client;
 import com.sesame.neobte.Repositories.IClientRepository;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -10,12 +12,12 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
+@AllArgsConstructor
 public class ClientServiceImpl implements ClientService {
 
     @Autowired
     private IClientRepository clientRepository;
     private PasswordEncoder passwordEncoder;
-
 
     //methods
     @Override

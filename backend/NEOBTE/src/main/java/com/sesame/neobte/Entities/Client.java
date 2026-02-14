@@ -29,6 +29,6 @@ public class Client implements Serializable {
     private String adresse;
     private Integer age;
     private String job;
-    private String genre;
+    private Genre genre;
     private Double solde;
 }

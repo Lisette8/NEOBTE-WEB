@@ -1,19 +1,46 @@
 package com.sesame.neobte.DTO;
 
+import com.sesame.neobte.Entities.Genre;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import jakarta.validation.constraints.*;
 
 @Getter
 @Setter
 @AllArgsConstructor
+//Avec controle de saisie
 public class RegisterRequest {
+
+    @NotBlank(message = "Email is required")
+    @Email(message = "Invalid email format")
     private String email;
+
+
+    @NotBlank(message= "Nom is required")
     private String nom;
+
+    @NotBlank(message= "Prenom is required")
     private String prenom;
+
+
     private String adresse;
+
+    @NotBlank(message= "Age is required")
+    @Min(18)
     private Integer age;
+
+
     private String job;
-    private String genre;
+
+
+    @Enumerated(EnumType.STRING)
+    private Genre genre;
+
+
+    @NotBlank(message = "Password is required")
+    @Size(min = 6, message = "Password must be at least 6 characters")
     private String motDePasse;
 }

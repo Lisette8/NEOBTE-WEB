@@ -9,7 +9,7 @@ import java.util.*;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("api/client")
+@RequestMapping("/api/client")
 public class ClientController {
 
     ClientService clientService;

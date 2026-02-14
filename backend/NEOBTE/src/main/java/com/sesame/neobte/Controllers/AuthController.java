@@ -1,5 +1,6 @@
 package com.sesame.neobte.Controllers;
 
+import com.sesame.neobte.DTO.AuthResponse;
 import com.sesame.neobte.DTO.LoginRequest;
 import com.sesame.neobte.DTO.RegisterRequest;
 import com.sesame.neobte.Entities.Client;
@@ -12,14 +13,14 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @AllArgsConstructor
-@RequestMapping("api/auth")
+@RequestMapping("/api/auth")
 public class AuthController {
 
     private AuthService authService;
 
 
     @PostMapping("/login")
-    public Client login(@RequestBody LoginRequest request) {
+    public AuthResponse login(@RequestBody LoginRequest request) {
         return authService.login(request);
     }
 

@@ -1,9 +1,11 @@
 package com.sesame.neobte.Services;
 
+import com.sesame.neobte.DTO.AuthResponse;
 import com.sesame.neobte.DTO.LoginRequest;
 import com.sesame.neobte.DTO.RegisterRequest;
 import com.sesame.neobte.Entities.Client;
 import com.sesame.neobte.Repositories.IClientRepository;
+import com.sesame.neobte.Security.JwtService;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -16,10 +18,11 @@ public class AuthServiceImpl implements AuthService {
 
     private IClientRepository clientRepository;
     private PasswordEncoder passwordEncoder;
-
+    private final JwtService jwtService;
 
     @Override
-    public Client login(LoginRequest request) {
+    public AuthResponse login(LoginRequest request) {
+
         Client client = clientRepository.findByEmail(request.getEmail());
 
         if (client == null) {
@@ -35,8 +38,10 @@ public class AuthServiceImpl implements AuthService {
             throw new RuntimeException("Wrong password");
         }
 
+        String token = jwtService.generateToken(client.getIdClient());
         System.out.println("User logged in");
-        return client;
+
+        return new AuthResponse(token);
 
     }
 

@@ -1,5 +1,6 @@
 package com.sesame.neobte.Entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,7 +23,9 @@ public class Client implements Serializable {
     @Column(unique = true)
     private String email;
 
+    @JsonIgnore //password is hashed and hidden. hash is only visible in the db
     private String motDePasse;
+
     private Date dateCreationCompte;
     private String nom;
     private String prenom;

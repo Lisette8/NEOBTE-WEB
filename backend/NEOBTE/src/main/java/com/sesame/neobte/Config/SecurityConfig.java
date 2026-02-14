@@ -34,6 +34,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
 
                         // v1 permit all for quicker testing via postman
+                        // v2 permit all auth(login and register), rest is protected (Client)
                         .requestMatchers("/api/auth/**").permitAll()
 
                         // protected

@@ -3,6 +3,7 @@ package com.sesame.neobte.Controllers;
 import com.sesame.neobte.Entities.Client;
 import com.sesame.neobte.Services.ClientService;
 import lombok.AllArgsConstructor;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -19,8 +20,27 @@ public class ClientController {
         return clientService.getAllClients();
     }
 
-    @PostMapping("/createClient")
-    public Client createClient(@RequestBody Client client) {
-        return clientService.createClient(client);
+
+    @GetMapping("/current")
+    public Client getMyProfile(Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+        return clientService.getClientById(userId);
     }
+
+
+    @PutMapping("/current")
+    public Client updateProfile(@RequestBody Client newClient,
+                                Authentication authentication) {
+
+        Long userId = (Long) authentication.getPrincipal();
+        return clientService.updateClient(userId, newClient);
+    }
+
+    @DeleteMapping("/current")
+    public void deleteMyAccount(Authentication authentication) {
+        Long userId = (Long) authentication.getPrincipal();
+        clientService.deleteClient(userId);
+    }
+
+
 }

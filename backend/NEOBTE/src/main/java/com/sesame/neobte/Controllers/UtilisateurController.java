@@ -17,14 +17,14 @@ public class UtilisateurController {
 
     @GetMapping("/all")
     public List<Utilisateur> getAllClients() {
-        return utilisateurService.getAllClients();
+        return utilisateurService.getAllUtilisateur();
     }
 
 
     @GetMapping("/current")
     public Utilisateur getMyProfile(Authentication authentication) {
         Long userId = (Long) authentication.getPrincipal();
-        return utilisateurService.getClientById(userId);
+        return utilisateurService.getUtilisateurById(userId);
     }
 
 
@@ -33,13 +33,13 @@ public class UtilisateurController {
                                      Authentication authentication) {
 
         Long userId = (Long) authentication.getPrincipal();
-        return utilisateurService.updateClient(userId, newUtilisateur);
+        return utilisateurService.updateUtilisateur(userId, newUtilisateur);
     }
 
     @DeleteMapping("/current")
     public void deleteMyAccount(Authentication authentication) {
         Long userId = (Long) authentication.getPrincipal();
-        utilisateurService.deleteClient(userId);
+        utilisateurService.deleteUtilisateur(userId);
     }
 
 

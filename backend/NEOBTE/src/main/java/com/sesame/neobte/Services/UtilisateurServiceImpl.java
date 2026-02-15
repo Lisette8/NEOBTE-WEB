@@ -14,30 +14,30 @@ import java.util.List;
 public class UtilisateurServiceImpl implements UtilisateurService {
 
     @Autowired
-    private IUtilisateurRepository clientRepository;
+    private IUtilisateurRepository utilisateurRepository;
     private PasswordEncoder passwordEncoder;
 
     //methods
     @Override
-    public Utilisateur createClient(Utilisateur utilisateur) {
+    public Utilisateur createUtilisateur(Utilisateur utilisateur) {
         utilisateur.setMotDePasse(passwordEncoder.encode(utilisateur.getMotDePasse()));
-        return clientRepository.save(utilisateur);
+        return utilisateurRepository.save(utilisateur);
     }
 
     @Override
-    public List<Utilisateur> getAllClients() {
-        return clientRepository.findAll();
+    public List<Utilisateur> getAllUtilisateur() {
+        return utilisateurRepository.findAll();
     }
 
     @Override
-    public Utilisateur getClientById(Long id) {
-        return clientRepository.findById(id)
+    public Utilisateur getUtilisateurById(Long id) {
+        return utilisateurRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("No client found with id " + id));
     }
 
     @Override
-    public Utilisateur updateClient(Long id, Utilisateur newUtilisateur) {
-        Utilisateur oldUtilisateur = getClientById(id);
+    public Utilisateur updateUtilisateur(Long id, Utilisateur newUtilisateur) {
+        Utilisateur oldUtilisateur = getUtilisateurById(id);
 
         oldUtilisateur.setNom(newUtilisateur.getNom());
         oldUtilisateur.setPrenom(newUtilisateur.getPrenom());
@@ -46,11 +46,11 @@ public class UtilisateurServiceImpl implements UtilisateurService {
         oldUtilisateur.setJob(newUtilisateur.getJob());
         oldUtilisateur.setGenre(newUtilisateur.getGenre());
 
-        return clientRepository.save(oldUtilisateur);
+        return utilisateurRepository.save(oldUtilisateur);
     }
 
     @Override
-    public void deleteClient(Long id) {
-        clientRepository.deleteById(id);
+    public void deleteUtilisateur(Long id) {
+        utilisateurRepository.deleteById(id);
     }
 }

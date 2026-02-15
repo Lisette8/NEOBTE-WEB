@@ -18,7 +18,7 @@ import java.util.Date;
 public class Utilisateur implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long idClient;
+    private Long idUtilisateur;
 
     @Column(unique = true)
     private String email;

@@ -6,9 +6,9 @@ import java.util.*;
 
 public interface UtilisateurService {
 
-    Utilisateur createClient(Utilisateur utilisateur);
-    List<Utilisateur> getAllClients();
-    Utilisateur getClientById(Long id);
-    Utilisateur updateClient(Long id, Utilisateur newUtilisateur);
-    void deleteClient(Long id);
+    Utilisateur createUtilisateur(Utilisateur utilisateur);
+    List<Utilisateur> getAllUtilisateur();
+    Utilisateur getUtilisateurById(Long id);
+    Utilisateur updateUtilisateur(Long id, Utilisateur newUtilisateur);
+    void deleteUtilisateur(Long id);
 }

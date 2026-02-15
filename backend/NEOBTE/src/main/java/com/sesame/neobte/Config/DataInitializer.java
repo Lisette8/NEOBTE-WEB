@@ -17,14 +17,14 @@ import java.util.Date;
 @AllArgsConstructor
 public class DataInitializer implements CommandLineRunner {
 
-    private IUtilisateurRepository clientRepository;
+    private IUtilisateurRepository utilisateurRepository;
     private PasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) throws Exception {
 
         // if admin already exists
-        Utilisateur existingAdmin = clientRepository.findByEmail("admin@site.com");
+        Utilisateur existingAdmin = utilisateurRepository.findByEmail("admin@site.com");
 
         if (existingAdmin == null) {
             Utilisateur admin = new Utilisateur();
@@ -41,7 +41,7 @@ public class DataInitializer implements CommandLineRunner {
             admin.setDateCreationCompte(new Date());
             admin.setRole(Role.valueOf("ADMIN"));
 
-            clientRepository.save(admin);
+            utilisateurRepository.save(admin);
 
             System.out.println("ADMIN CREATED SUCCESSFULLY");
         }

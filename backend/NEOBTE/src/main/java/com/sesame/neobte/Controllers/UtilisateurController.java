@@ -1,5 +1,6 @@
 package com.sesame.neobte.Controllers;
 
+import com.sesame.neobte.DTO.UtilisateurRequests.UpdateProfileRequest;
 import com.sesame.neobte.Entities.Utilisateur;
 import com.sesame.neobte.Services.UtilisateurService;
 import lombok.AllArgsConstructor;
@@ -15,10 +16,6 @@ public class UtilisateurController {
 
     UtilisateurService utilisateurService;
 
-    @GetMapping("/all")
-    public List<Utilisateur> getAllClients() {
-        return utilisateurService.getAllUtilisateur();
-    }
 
 
     @GetMapping("/current")
@@ -29,11 +26,11 @@ public class UtilisateurController {
 
 
     @PutMapping("/current")
-    public Utilisateur updateProfile(@RequestBody Utilisateur newUtilisateur,
+    public Utilisateur updateProfile(@RequestBody UpdateProfileRequest dto,
                                      Authentication authentication) {
 
         Long userId = (Long) authentication.getPrincipal();
-        return utilisateurService.updateUtilisateur(userId, newUtilisateur);
+        return utilisateurService.updateUtilisateur(userId, dto);
     }
 
     @DeleteMapping("/current")

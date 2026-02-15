@@ -1,8 +1,8 @@
 package com.sesame.neobte.Controllers;
 
-import com.sesame.neobte.DTO.AuthResponse;
-import com.sesame.neobte.DTO.LoginRequest;
-import com.sesame.neobte.DTO.RegisterRequest;
+import com.sesame.neobte.DTO.Responses.AuthResponse;
+import com.sesame.neobte.DTO.AuthRequests.LoginRequest;
+import com.sesame.neobte.DTO.AuthRequests.RegisterRequest;
 import com.sesame.neobte.Entities.Utilisateur;
 import com.sesame.neobte.Services.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -36,5 +36,7 @@ public class AuthController {
         authService.logout(request);
         return "Logged out successfully";
     }
+
+
 
 }

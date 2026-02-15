@@ -1,4 +1,4 @@
-package com.sesame.neobte.DTO;
+package com.sesame.neobte.DTO.Responses;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

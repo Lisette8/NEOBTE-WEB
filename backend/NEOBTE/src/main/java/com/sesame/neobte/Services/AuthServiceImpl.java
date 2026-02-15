@@ -1,8 +1,8 @@
 package com.sesame.neobte.Services;
 
-import com.sesame.neobte.DTO.AuthResponse;
-import com.sesame.neobte.DTO.LoginRequest;
-import com.sesame.neobte.DTO.RegisterRequest;
+import com.sesame.neobte.DTO.Responses.AuthResponse;
+import com.sesame.neobte.DTO.AuthRequests.LoginRequest;
+import com.sesame.neobte.DTO.AuthRequests.RegisterRequest;
 import com.sesame.neobte.Entities.Utilisateur;
 import com.sesame.neobte.Entities.Role;
 import com.sesame.neobte.Repositories.IUtilisateurRepository;

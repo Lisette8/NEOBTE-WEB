@@ -1,8 +1,6 @@
-package com.sesame.neobte.DTO;
+package com.sesame.neobte.DTO.AuthRequests;
 
 import com.sesame.neobte.Entities.Genre;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;

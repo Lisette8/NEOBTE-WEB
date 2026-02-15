@@ -1,5 +1,6 @@
 package com.sesame.neobte.Services;
 
+import com.sesame.neobte.DTO.UtilisateurRequests.UpdateProfileRequest;
 import com.sesame.neobte.Entities.Utilisateur;
 import com.sesame.neobte.Repositories.IUtilisateurRepository;
 import lombok.AllArgsConstructor;
@@ -7,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -24,10 +26,6 @@ public class UtilisateurServiceImpl implements UtilisateurService {
         return utilisateurRepository.save(utilisateur);
     }
 
-    @Override
-    public List<Utilisateur> getAllUtilisateur() {
-        return utilisateurRepository.findAll();
-    }
 
     @Override
     public Utilisateur getUtilisateurById(Long id) {
@@ -35,19 +33,22 @@ public class UtilisateurServiceImpl implements UtilisateurService {
                 .orElseThrow(() -> new RuntimeException("No client found with id " + id));
     }
 
+
     @Override
-    public Utilisateur updateUtilisateur(Long id, Utilisateur newUtilisateur) {
+    public Utilisateur updateUtilisateur(Long id, UpdateProfileRequest dto) {
         Utilisateur oldUtilisateur = getUtilisateurById(id);
 
-        oldUtilisateur.setNom(newUtilisateur.getNom());
-        oldUtilisateur.setPrenom(newUtilisateur.getPrenom());
-        oldUtilisateur.setAge(newUtilisateur.getAge());
-        oldUtilisateur.setAdresse(newUtilisateur.getAdresse());
-        oldUtilisateur.setJob(newUtilisateur.getJob());
-        oldUtilisateur.setGenre(newUtilisateur.getGenre());
+        oldUtilisateur.setNom(dto.getNom());
+        oldUtilisateur.setPrenom(dto.getPrenom());
+        oldUtilisateur.setAge(dto.getAge());
+        oldUtilisateur.setAdresse(dto.getAdresse());
+        oldUtilisateur.setJob(dto.getJob());
+        oldUtilisateur.setGenre(dto.getGenre());
 
+        System.out.println("Client updated");
         return utilisateurRepository.save(oldUtilisateur);
     }
+
 
     @Override
     public void deleteUtilisateur(Long id) {

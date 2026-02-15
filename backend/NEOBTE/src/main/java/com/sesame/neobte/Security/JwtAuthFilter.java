@@ -1,5 +1,7 @@
 package com.sesame.neobte.Security;
 
+import com.sesame.neobte.Security.Services.JwtService;
+import com.sesame.neobte.Security.Services.TokenBlacklistService;
 import jakarta.servlet.http.*;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -21,6 +23,7 @@ import java.io.IOException;
 @AllArgsConstructor
 public class JwtAuthFilter extends OncePerRequestFilter {
     private JwtService jwtService;
+    private TokenBlacklistService blacklistService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -38,6 +41,11 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
 
         String token = authHeader.substring(7);
+
+        if (blacklistService.isBlacklisted(token)) {
+            filterChain.doFilter(request, response);
+            return;
+        }
 
 
         try {
@@ -63,7 +71,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
             }
 
         } catch (Exception e) {
-            // token invalid → ignore and continue
+            System.out.println("Invalid JWT token: " + e.getMessage());
         }
 
         filterChain.doFilter(request, response);

@@ -5,6 +5,7 @@ import com.sesame.neobte.DTO.LoginRequest;
 import com.sesame.neobte.DTO.RegisterRequest;
 import com.sesame.neobte.Entities.Utilisateur;
 import com.sesame.neobte.Services.AuthService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,4 +30,11 @@ public class AuthController {
     public Utilisateur register(@Valid @RequestBody RegisterRequest request) {
         return authService.register(request);
     }
+
+    @PostMapping("/logout")
+    public String logout(HttpServletRequest request) {
+        authService.logout(request);
+        return "Logged out successfully";
+    }
+
 }

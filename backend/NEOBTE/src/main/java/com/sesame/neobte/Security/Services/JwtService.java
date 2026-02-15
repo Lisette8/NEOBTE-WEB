@@ -1,4 +1,4 @@
-package com.sesame.neobte.Security;
+package com.sesame.neobte.Security.Services;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.*;

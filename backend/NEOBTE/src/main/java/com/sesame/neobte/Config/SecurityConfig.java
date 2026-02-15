@@ -37,6 +37,10 @@ public class SecurityConfig {
                         // v2 permit all auth(login and register), rest is protected (Client)
                         .requestMatchers("/api/auth/**").permitAll()
 
+
+                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/client/**").hasRole("CLIENT")
+
                         // protected
                         .anyRequest().authenticated()
                 )

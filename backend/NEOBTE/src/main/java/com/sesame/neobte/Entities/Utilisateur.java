@@ -15,7 +15,7 @@ import java.util.Date;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Client implements Serializable {
+public class Utilisateur implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idClient;
@@ -26,6 +26,9 @@ public class Client implements Serializable {
     @JsonIgnore //password is hashed and hidden. hash is only visible in the db
     private String motDePasse;
 
+    @Enumerated(EnumType.STRING)
+    private Role role;
+
     private Date dateCreationCompte;
     private String nom;
     private String prenom;
@@ -34,4 +37,5 @@ public class Client implements Serializable {
     private String job;
     private Genre genre;
     private Double solde;
+
 }

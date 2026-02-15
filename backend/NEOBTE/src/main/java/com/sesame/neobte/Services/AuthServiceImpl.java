@@ -3,8 +3,9 @@ package com.sesame.neobte.Services;
 import com.sesame.neobte.DTO.AuthResponse;
 import com.sesame.neobte.DTO.LoginRequest;
 import com.sesame.neobte.DTO.RegisterRequest;
-import com.sesame.neobte.Entities.Client;
-import com.sesame.neobte.Repositories.IClientRepository;
+import com.sesame.neobte.Entities.Utilisateur;
+import com.sesame.neobte.Entities.Role;
+import com.sesame.neobte.Repositories.IUtilisateurRepository;
 import com.sesame.neobte.Security.JwtService;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -16,59 +17,64 @@ import java.util.*;
 @AllArgsConstructor
 public class AuthServiceImpl implements AuthService {
 
-    private IClientRepository clientRepository;
+    private IUtilisateurRepository clientRepository;
     private PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
 
     @Override
     public AuthResponse login(LoginRequest request) {
 
-        Client client = clientRepository.findByEmail(request.getEmail());
+        Utilisateur utilisateur = clientRepository.findByEmail(request.getEmail());
 
-        if (client == null) {
+        if (utilisateur == null) {
             throw new RuntimeException("No client with email " + request.getEmail());
         }
 
         boolean ifTrueMDP = passwordEncoder.matches(
                 request.getMotDePasse(),
-                client.getMotDePasse()
+                utilisateur.getMotDePasse()
         );
 
         if(!ifTrueMDP){
             throw new RuntimeException("Wrong password");
         }
 
-        String token = jwtService.generateToken(client.getIdClient());
-        System.out.println("User logged in");
+        String token = jwtService.generateToken(
+                utilisateur.getIdClient(),
+                utilisateur.getRole().toString()
+                );
 
+
+        System.out.println("User logged in");
         return new AuthResponse(token);
 
     }
 
 
     @Override
-    public Client register(RegisterRequest request) {
+    public Utilisateur register(RegisterRequest request) {
 
-        Client checkClientAlreadyExists = clientRepository.findByEmail(request.getEmail());
-        if (checkClientAlreadyExists != null) {
+        Utilisateur checkUtilisateurAlreadyExists = clientRepository.findByEmail(request.getEmail());
+        if (checkUtilisateurAlreadyExists != null) {
             throw new RuntimeException("Client with email " + request.getEmail() + " already exists");
         }
 
-        Client client = new Client();
+        Utilisateur utilisateur = new Utilisateur();
 
-        client.setEmail(request.getEmail());
-        client.setNom(request.getNom());
-        client.setPrenom(request.getPrenom());
-        client.setAdresse(request.getAdresse());
-        client.setAge(request.getAge());
-        client.setJob(request.getJob());
-        client.setGenre(request.getGenre());
-        client.setMotDePasse(passwordEncoder.encode(request.getMotDePasse()));
-        client.setDateCreationCompte(new Date());
-        client.setSolde(0.0);
+        utilisateur.setEmail(request.getEmail());
+        utilisateur.setNom(request.getNom());
+        utilisateur.setPrenom(request.getPrenom());
+        utilisateur.setAdresse(request.getAdresse());
+        utilisateur.setAge(request.getAge());
+        utilisateur.setJob(request.getJob());
+        utilisateur.setGenre(request.getGenre());
+        utilisateur.setMotDePasse(passwordEncoder.encode(request.getMotDePasse()));
+        utilisateur.setDateCreationCompte(new Date());
+        utilisateur.setSolde(0.0);
+        utilisateur.setRole(Role.CLIENT);
 
         System.out.println("User registered");
-        return clientRepository.save(client);
+        return clientRepository.save(utilisateur);
     }
 
 

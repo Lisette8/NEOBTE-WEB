@@ -28,15 +28,13 @@ public class RegisterRequest {
 
     private String adresse;
 
-    @NotBlank(message= "Age is required")
+    @NotNull(message = "Age is required")
     @Min(18)
     private Integer age;
 
-
+    @NotBlank(message= "Job is required")
     private String job;
 
-
-    @Enumerated(EnumType.STRING)
     private Genre genre;
 
 

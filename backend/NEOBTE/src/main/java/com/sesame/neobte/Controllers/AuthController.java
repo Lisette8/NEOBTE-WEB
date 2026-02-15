@@ -5,6 +5,7 @@ import com.sesame.neobte.DTO.LoginRequest;
 import com.sesame.neobte.DTO.RegisterRequest;
 import com.sesame.neobte.Entities.Utilisateur;
 import com.sesame.neobte.Services.AuthService;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -25,7 +26,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public Utilisateur register(@RequestBody RegisterRequest request) {
+    public Utilisateur register(@Valid @RequestBody RegisterRequest request) {
         return authService.register(request);
     }
 }

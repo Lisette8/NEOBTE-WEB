@@ -1,4 +1,4 @@
-package com.sesame.neobte.DTO.AuthRequests;
+package com.sesame.neobte.DTO.Requests.Auth;
 
 import com.sesame.neobte.Entities.Genre;
 import lombok.AllArgsConstructor;

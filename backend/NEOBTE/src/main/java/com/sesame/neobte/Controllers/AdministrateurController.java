@@ -1,8 +1,9 @@
 package com.sesame.neobte.Controllers;
 
 
-import com.sesame.neobte.DTO.AdminRequests.CreateUserRequest;
-import com.sesame.neobte.DTO.AdminRequests.UpdateUserRequest;
+import com.sesame.neobte.DTO.Requests.Admin.CreateUserRequest;
+import com.sesame.neobte.DTO.Requests.Admin.UpdateUserRequest;
+import com.sesame.neobte.DTO.Responses.Admin.AdminUserResponse;
 import com.sesame.neobte.Entities.Utilisateur;
 import com.sesame.neobte.Services.AdministrateurService;
 import lombok.AllArgsConstructor;
@@ -17,13 +18,15 @@ public class AdministrateurController {
 
     private final AdministrateurService administrateurService;
 
+
+
     @GetMapping("/all")
     public List<Utilisateur> getAllUsers() {
         return administrateurService.getAllUsers();
     }
 
     @GetMapping("/users/{id}")
-    public Utilisateur getUserById(@PathVariable Long id) {
+    public AdminUserResponse getUserById(@PathVariable Long id) {
         return administrateurService.getUserById(id);
     }
 

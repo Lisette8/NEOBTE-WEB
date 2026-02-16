@@ -1,4 +1,4 @@
-package com.sesame.neobte.DTO.AdminRequests;
+package com.sesame.neobte.DTO.Requests.Admin;
 
 import com.sesame.neobte.Entities.Genre;
 import com.sesame.neobte.Entities.Role;

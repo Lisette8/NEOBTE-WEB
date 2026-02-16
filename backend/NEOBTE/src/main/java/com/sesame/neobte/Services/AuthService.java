@@ -1,8 +1,8 @@
 package com.sesame.neobte.Services;
 
-import com.sesame.neobte.DTO.Responses.AuthResponse;
-import com.sesame.neobte.DTO.AuthRequests.LoginRequest;
-import com.sesame.neobte.DTO.AuthRequests.RegisterRequest;
+import com.sesame.neobte.DTO.Responses.Auth.AuthResponse;
+import com.sesame.neobte.DTO.Requests.Auth.LoginRequest;
+import com.sesame.neobte.DTO.Requests.Auth.RegisterRequest;
 import com.sesame.neobte.Entities.Utilisateur;
 import jakarta.servlet.http.HttpServletRequest;
 

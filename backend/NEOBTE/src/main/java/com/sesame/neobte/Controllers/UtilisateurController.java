@@ -1,13 +1,12 @@
 package com.sesame.neobte.Controllers;
 
-import com.sesame.neobte.DTO.UtilisateurRequests.UpdateProfileRequest;
+import com.sesame.neobte.DTO.Requests.Client.ChangePasswordRequest;
+import com.sesame.neobte.DTO.Requests.Client.UpdateProfileRequest;
 import com.sesame.neobte.Entities.Utilisateur;
 import com.sesame.neobte.Services.UtilisateurService;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.*;
 
 @RestController
 @AllArgsConstructor
@@ -32,6 +31,19 @@ public class UtilisateurController {
         Long userId = (Long) authentication.getPrincipal();
         return utilisateurService.updateUtilisateur(userId, dto);
     }
+
+    @PutMapping("/change-password")
+    public String changePassword(
+            @RequestBody ChangePasswordRequest request,
+            Authentication authentication) {
+
+        Long userId = (Long) authentication.getPrincipal();
+
+        utilisateurService.changePassword(userId, request);
+
+        return "Password updated successfully";
+    }
+
 
     @DeleteMapping("/current")
     public void deleteMyAccount(Authentication authentication) {

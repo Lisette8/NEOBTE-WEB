@@ -1,9 +1,11 @@
 package com.sesame.neobte.Services;
 
-import com.sesame.neobte.DTO.AdminRequests.CreateUserRequest;
-import com.sesame.neobte.DTO.AdminRequests.UpdateUserRequest;
+import com.sesame.neobte.DTO.Requests.Admin.CreateUserRequest;
+import com.sesame.neobte.DTO.Requests.Admin.UpdateUserRequest;
+import com.sesame.neobte.DTO.Responses.Admin.AdminUserResponse;
 import com.sesame.neobte.Entities.Role;
 import com.sesame.neobte.Entities.Utilisateur;
+import com.sesame.neobte.Mappers.UtilisateurMapper;
 import com.sesame.neobte.Repositories.IUtilisateurRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,11 +29,21 @@ public class AdministrateurServiceImpl implements AdministrateurService {
     }
 
 
-    @Override
-    public Utilisateur getUserById(Long id) {
+    //ENTITY
+    public Utilisateur getUserEntityById(Long id) {
         return utilisateurRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("User not found with id " + id));
     }
+
+    //DTO
+    @Override
+    public AdminUserResponse getUserById(Long id) {
+        Utilisateur user = utilisateurRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found with id " + id));
+
+        return UtilisateurMapper.toAdminResponse(user);
+    }
+
 
 
     @Override
@@ -63,7 +75,7 @@ public class AdministrateurServiceImpl implements AdministrateurService {
 
     @Override
     public Utilisateur updateUser(Long id, UpdateUserRequest dto) {
-        Utilisateur oldUser = getUserById(id);
+        Utilisateur oldUser = getUserEntityById(id);
 
         if (dto.getNom() != null)
             oldUser.setNom(dto.getNom());
@@ -101,4 +113,9 @@ public class AdministrateurServiceImpl implements AdministrateurService {
     public void deleteUser(Long id) {
         utilisateurRepository.deleteById(id);
     }
+
+
+
+
+
 }

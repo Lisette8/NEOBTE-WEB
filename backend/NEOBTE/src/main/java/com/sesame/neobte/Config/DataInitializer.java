@@ -39,7 +39,7 @@ public class DataInitializer implements CommandLineRunner {
             admin.setGenre(null);
             admin.setSolde(0.0);
             admin.setDateCreationCompte(new Date());
-            admin.setRole(Role.valueOf("ADMIN"));
+            admin.setRole(Role.ADMIN);
 
             utilisateurRepository.save(admin);
 

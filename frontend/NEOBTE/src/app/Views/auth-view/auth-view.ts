@@ -34,7 +34,7 @@ export class AuthView {
 
     this.authService.login(this.email, this.motDePasse).subscribe({
       next: () => {
-        this.message = "Login successful";
+        this.message = "Login successfully";
       },
       error: () => {
         this.error = "Invalid credentials";

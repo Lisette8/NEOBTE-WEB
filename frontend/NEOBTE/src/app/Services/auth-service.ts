@@ -1,6 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, tap } from 'rxjs';
+import { RegisterRequest } from '../Entities/Interfaces/register-request';
+import { AuthResponse } from '../Entities/Interfaces/auth-response';
+import { LoginRequest } from '../Entities/Interfaces/login-request';
 
 @Injectable({
   providedIn: 'root',
@@ -11,20 +14,17 @@ export class AuthService {
   constructor(private http: HttpClient) {}
 
   // 🔐 LOGIN
-  login(email: string, motDePasse: string): Observable<any> {
-    return this.http.post(`${this.API_URL}/login`, {
-      email,
-      motDePasse
-    }).pipe(
-      tap((res: any) => {
-        // save token in localStorage
+  login(data: LoginRequest) {
+  return this.http.post<AuthResponse>(`${this.API_URL}/login`, data)
+    .pipe(
+      tap(res => {
         localStorage.setItem('token', res.token);
       })
     );
-  }
+}
 
   // 🆕 REGISTER
-  register(data: any): Observable<any> {
+  register(data: RegisterRequest) {
     return this.http.post(`${this.API_URL}/register`, data);
   }
 

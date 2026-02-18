@@ -15,6 +15,12 @@
     <input type="text" [(ngModel)]="prenom" placeholder="Prenom">
     <input type="number" [(ngModel)]="age" placeholder="Age">
     <input type="text" [(ngModel)]="job" placeholder="Job">
+    <select [(ngModel)]="genre">
+      <option value="" disabled selected>Genre</option>
+      <option value="HOMME">HOMME</option>
+      <option value="FEMME">FEMME</option>
+    </select>
+    <input type="text" [(ngModel)]="adresse" placeholder="Adresse">
   </div>
 
   <!-- BUTTON -->

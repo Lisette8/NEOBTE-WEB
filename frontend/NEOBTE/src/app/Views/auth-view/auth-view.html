@@ -1,1 +1,33 @@
-<p>auth-view works!</p>
+<div class="auth-container">
+
+  <h2 *ngIf="isLoginMode">Login</h2>
+  <h2 *ngIf="!isLoginMode">Register</h2>
+
+  <!-- EMAIL -->
+  <input type="email" [(ngModel)]="email" placeholder="Email">
+
+  <!-- PASSWORD -->
+  <input type="password" [(ngModel)]="motDePasse" placeholder="Password">
+
+  <!-- REGISTER ONLY -->
+  <div *ngIf="!isLoginMode">
+    <input type="text" [(ngModel)]="nom" placeholder="Nom">
+    <input type="text" [(ngModel)]="prenom" placeholder="Prenom">
+    <input type="number" [(ngModel)]="age" placeholder="Age">
+    <input type="text" [(ngModel)]="job" placeholder="Job">
+  </div>
+
+  <!-- BUTTON -->
+  <button *ngIf="isLoginMode" (click)="onLogin()">Login</button>
+  <button *ngIf="!isLoginMode" (click)="onRegister()">Register</button>
+
+  <!-- SWITCH MODE -->
+  <p (click)="isLoginMode = !isLoginMode" class="switch">
+    {{ isLoginMode ? 'Create account' : 'Already have an account ? Login' }}
+  </p>
+
+  <!-- MESSAGES -->
+  <p class="success" *ngIf="message">{{ message }}</p>
+  <p class="error" *ngIf="error">{{ error }}</p>
+
+</div>

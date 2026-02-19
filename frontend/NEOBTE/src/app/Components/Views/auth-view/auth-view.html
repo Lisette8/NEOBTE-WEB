@@ -1,34 +1,29 @@
-<div class="auth-container">
+<div class="auth-container" [formGroup]="authForm">
 
   <h2 *ngIf="isLoginMode">Login</h2>
   <h2 *ngIf="!isLoginMode">Register</h2>
 
-  <!-- EMAIL -->
-  <input type="email" [(ngModel)]="email" placeholder="Email">
+  <input type="email" formControlName="email" placeholder="Email">
 
-  <!-- PASSWORD -->
-  <input type="password" [(ngModel)]="motDePasse" placeholder="Password">
+  <input type="password" formControlName="motDePasse" placeholder="Password">
 
-  <!-- REGISTER ONLY -->
   <div *ngIf="!isLoginMode">
-    <input type="text" [(ngModel)]="nom" placeholder="Nom">
-    <input type="text" [(ngModel)]="prenom" placeholder="Prenom">
-    <input type="number" [(ngModel)]="age" placeholder="Age">
-    <input type="text" [(ngModel)]="job" placeholder="Job">
-    <select [(ngModel)]="genre">
-      <option value="" disabled selected>Genre</option>
+    <input type="text" formControlName="nom" placeholder="Nom">
+    <input type="text" formControlName="prenom" placeholder="Prenom">
+    <input type="number" formControlName="age" placeholder="Age">
+    <input type="text" formControlName="job" placeholder="Job">
+    <select formControlName="genre">
+      <option value="">Genre</option>
       <option value="HOMME">HOMME</option>
       <option value="FEMME">FEMME</option>
     </select>
-    <input type="text" [(ngModel)]="adresse" placeholder="Adresse">
+    <input type="text" formControlName="adresse" placeholder="Adresse">
   </div>
 
-  <!-- BUTTON -->
   <button *ngIf="isLoginMode" (click)="onLogin()">Login</button>
   <button *ngIf="!isLoginMode" (click)="onRegister()">Register</button>
 
-  <!-- SWITCH MODE -->
-  <p (click)="isLoginMode = !isLoginMode" class="switch">
+  <p (click)="toggleMode()" class="switch">
     {{ isLoginMode ? 'Create account' : 'Already have an account ? Login' }}
   </p>
 

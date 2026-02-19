@@ -6,11 +6,14 @@ import { Header } from './Components/header/header';
 import { AdminDashboard } from './Components/Views/admin-dashboard/admin-dashboard';
 import { UserManagement } from './Components/Views/user-management/user-management';
 import { LandingView } from './Components/Views/landing-view/landing-view';
+import { adminGuard } from './Security/Guards/AdminGuard';
+import { authGuard } from './Security/Guards/AuthGuard';
 
 export const routes: Routes = [
     {
-        path: '',
+        path: 'home-view',
         component: HomeView,
+        canActivate: [authGuard],
     },
     {
         path: 'auth-view',
@@ -27,6 +30,7 @@ export const routes: Routes = [
     {
         path: 'admin-dashboard',
         component: AdminDashboard,
+        canActivate: [authGuard, adminGuard],
     },
     {
         path: 'user-management',
@@ -36,5 +40,15 @@ export const routes: Routes = [
         path: 'landingView',
         component: LandingView,
     },
+    {
+        path: '',
+        redirectTo: '/auth-view',
+        pathMatch: 'full',
+    },
+    {
+        path: '**',
+        redirectTo: '/auth-view',
+    },
+
 
 ];

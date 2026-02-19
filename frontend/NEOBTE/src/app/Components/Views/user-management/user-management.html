@@ -1,0 +1,36 @@
+<div class="users">
+
+  <h2>Users</h2>
+
+  <p *ngIf="loading">Loading...</p>
+  <p *ngIf="error">{{ error }}</p>
+
+  <table *ngIf="users.length > 0">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Email</th>
+        <th>Nom</th>
+        <th>Prenom</th>
+        <th>Role</th>
+        <th>Solde</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr *ngFor="let user of users">
+        <td>{{ user.idUtilisateur }}</td>
+        <td>{{ user.email }}</td>
+        <td>{{ user.nom }}</td>
+        <td>{{ user.prenom }}</td>
+        <td>{{ user.role }}</td>
+        <td>{{ user.solde }}</td>
+        <td>
+          <button (click)="deleteUser(user.idUtilisateur!)">Delete</button>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+</div>

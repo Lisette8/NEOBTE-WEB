@@ -4,6 +4,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { AuthService } from '../../../Services/auth-service';
 import { LoginRequest } from '../../../Entities/Interfaces/login-request';
 import { RegisterRequest } from '../../../Entities/Interfaces/register-request';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-auth-view',
@@ -18,7 +19,12 @@ export class AuthView {
   message = '';
   error = '';
 
-  constructor(private authService: AuthService, private fb: FormBuilder) {
+
+  constructor(
+    private authService: AuthService,
+    private fb: FormBuilder,
+    private router: Router   
+  ) {
     this.authForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       motDePasse: ['', Validators.required],
@@ -81,7 +87,16 @@ export class AuthView {
 
     this.authService.login(data).subscribe({
       next: () => {
-        this.message = "Login successfully";
+
+        const role = this.authService.getUserRole();
+
+        //redirect based on role
+        if (role === 'ADMIN') {
+          this.router.navigate(['/admin-dashboard']);
+        } else {
+          this.router.navigate(['/home-view']);
+        }
+
       },
       error: () => {
         this.error = "Invalid credentials";

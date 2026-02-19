@@ -11,17 +11,17 @@ import { LoginRequest } from '../Entities/Interfaces/login-request';
 export class AuthService {
   private API_URL = 'http://localhost:8080/api/auth';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   // 🔐 LOGIN
   login(data: LoginRequest) {
-  return this.http.post<AuthResponse>(`${this.API_URL}/login`, data)
-    .pipe(
-      tap(res => {
-        localStorage.setItem('token', res.token);
-      })
-    );
-}
+    return this.http.post<AuthResponse>(`${this.API_URL}/login`, data)
+      .pipe(
+        tap(res => {
+          localStorage.setItem('token', res.token);
+        })
+      );
+  }
 
   // 🆕 REGISTER
   register(data: RegisterRequest) {
@@ -36,6 +36,16 @@ export class AuthService {
   // 📦 GET TOKEN
   getToken(): string | null {
     return localStorage.getItem('token');
+  }
+
+
+  //roles
+  getUserRole(): string | null {
+    const token = this.getToken();
+    if (!token) return null;
+
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    return payload.role;
   }
 
   // 🔎 CHECK LOGIN

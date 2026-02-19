@@ -12,6 +12,10 @@
         <th>Email</th>
         <th>Nom</th>
         <th>Prenom</th>
+        <th>Age</th>
+        <th>Job</th>
+        <th>Adresse</th>
+        <th>Genre</th>
         <th>Role</th>
         <th>Solde</th>
         <th>Actions</th>
@@ -24,13 +28,39 @@
         <td>{{ user.email }}</td>
         <td>{{ user.nom }}</td>
         <td>{{ user.prenom }}</td>
+        <td>{{ user.age }}</td>
+        <td>{{ user.job }}</td>
+        <td>{{ user.adresse }}</td>
+        <td>{{ user.genre }}</td>
         <td>{{ user.role }}</td>
         <td>{{ user.solde }}</td>
         <td>
-          <button (click)="deleteUser(user.idUtilisateur!)">Delete</button>
+          <button (click)="editUser(user)">Edit</button>
+          <button (click)="deleteUser(user.idUtilisateur)">Delete</button>
         </td>
       </tr>
     </tbody>
   </table>
 
+</div>
+
+<button (click)="openCreate()">+ Add User</button>
+
+<div *ngIf="showForm" [formGroup]="userForm">
+  <input formControlName="email" placeholder="Email">
+  <input formControlName="nom" placeholder="Nom">
+  <input formControlName="prenom" placeholder="Prenom">
+  <input formControlName="age" type="number" placeholder="Age">
+  <input formControlName="job" placeholder="Job">
+  <input formControlName="adresse" placeholder="Adresse">
+
+  <select formControlName="genre">
+    <option value="">Genre</option>
+    <option value="HOMME">HOMME</option>
+    <option value="FEMME">FEMME</option>
+  </select>
+
+  <button (click)="saveUser()">
+    {{ isEditMode ? 'Update' : 'Create' }}
+  </button>
 </div>

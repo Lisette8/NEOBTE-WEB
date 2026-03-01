@@ -1,35 +1,137 @@
-.auth-container {
-  width: 320px;
-  margin: 100px auto;
+.auth-page {
+  min-height: 100vh;
   display: flex;
-  flex-direction: column;
-  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  padding: 2rem;
 }
 
-input {
-  padding: 10px;
+.auth-card {
+  background: var(--white);
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  width: 100%;
+  max-width: 450px;
+  overflow: hidden;
+}
+
+.auth-header {
+  padding: 2.5rem 2rem 1.5rem;
+  text-align: center;
+}
+
+.auth-logo {
+  height: 60px;
+  margin-bottom: 1.5rem;
+}
+
+.auth-header h1 {
+  font-size: 1.8rem;
+  color: var(--bte-blue);
+  margin-bottom: 0.5rem;
+  font-weight: 800;
+}
+
+.subtitle {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+}
+
+.auth-body {
+  padding: 0 2rem 2.5rem;
+}
+
+.form-group {
+  margin-bottom: 1.25rem;
+}
+
+.form-group label {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--text-dark);
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border: 1px solid var(--border-color);
   border-radius: 8px;
-  border: 1px solid #ccc;
+  font-size: 0.95rem;
+  transition: border-color 0.3s, box-shadow 0.3s;
 }
 
-button {
-  padding: 10px;
+.form-input:focus {
+  outline: none;
+  border-color: var(--bte-blue);
+  box-shadow: 0 0 0 3px rgba(0, 0, 160, 0.1);
+}
+
+.form-row {
+  display: flex;
+  gap: 1rem;
+}
+
+.form-row .form-group {
+  flex: 1;
+}
+
+.btn-auth {
+  width: 100%;
+  background: var(--bte-blue);
+  color: var(--white);
+  border: none;
+  padding: 0.85rem;
   border-radius: 8px;
-  background: black;
-  color: white;
+  font-size: 1rem;
+  font-weight: 700;
   cursor: pointer;
+  margin-top: 1rem;
+  transition: background 0.3s, transform 0.2s;
 }
 
-.switch {
+.btn-auth:hover {
+  background: var(--bte-light-blue);
+  transform: translateY(-2px);
+}
+
+.auth-footer {
+  text-align: center;
+  margin-top: 1.5rem;
+}
+
+.switch-mode {
+  font-size: 0.9rem;
+  color: var(--bte-blue);
   cursor: pointer;
-  color: blue;
-  font-size: 14px;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+.status-messages {
+  margin-top: 1rem;
+  text-align: center;
+  font-size: 0.9rem;
 }
 
 .success {
-  color: green;
+  color: #10b981;
 }
 
 .error {
-  color: red;
+  color: #ef4444;
+}
+
+@media (max-width: 480px) {
+  .auth-card {
+    box-shadow: none;
+    border-radius: 0;
+  }
+  
+  .auth-page {
+    padding: 0;
+    background: var(--white);
+  }
 }

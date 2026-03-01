@@ -1,0 +1,20 @@
+:root {
+  --bte-blue: #0000A0; /* Deep blue from BTE logo */
+  --bte-light-blue: #0056b3;
+  --bte-accent: #f8f9fa;
+  --text-dark: #1a1a1a;
+  --text-muted: #666666;
+  --border-color: #e0e0e0;
+  --white: #ffffff;
+}
+
+body {
+  margin: 0;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: #f4f7f6;
+  color: var(--text-dark);
+}
+
+* {
+  box-sizing: border-box;
+}

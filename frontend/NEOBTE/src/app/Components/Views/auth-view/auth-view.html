@@ -1,34 +1,74 @@
-<div class="auth-container" [formGroup]="authForm">
+<div class="auth-page">
+  <div class="auth-card" [formGroup]="authForm">
+    <div class="auth-header">
+      <img src="assets/bte-logo.png" alt="BTE Logo" class="auth-logo">
+      <h1>{{ isLoginMode ? 'Connexion' : 'Inscription' }}</h1>
+      <p class="subtitle">{{ isLoginMode ? 'Accédez à votre espace bancaire NEO BTE' : 'Rejoignez la banque moderne de demain' }}</p>
+    </div>
 
-  <h2 *ngIf="isLoginMode">Login</h2>
-  <h2 *ngIf="!isLoginMode">Register</h2>
+    <div class="auth-body">
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" formControlName="email" placeholder="votre@email.com" class="form-input">
+      </div>
 
-  <input type="email" formControlName="email" placeholder="Email">
+      <div class="form-group">
+        <label>Mot de passe</label>
+        <input type="password" formControlName="motDePasse" placeholder="••••••••" class="form-input">
+      </div>
 
-  <input type="password" formControlName="motDePasse" placeholder="Password">
+      <div *ngIf="!isLoginMode" class="register-fields">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nom</label>
+            <input type="text" formControlName="nom" placeholder="Nom" class="form-input">
+          </div>
+          <div class="form-group">
+            <label>Prénom</label>
+            <input type="text" formControlName="prenom" placeholder="Prénom" class="form-input">
+          </div>
+        </div>
 
-  <div *ngIf="!isLoginMode">
-    <input type="text" formControlName="nom" placeholder="Nom">
-    <input type="text" formControlName="prenom" placeholder="Prenom">
-    <input type="number" formControlName="age" placeholder="Age">
-    <input type="text" formControlName="job" placeholder="Job">
-    <select formControlName="genre">
-      <option value="">Genre</option>
-      <option value="HOMME">HOMME</option>
-      <option value="FEMME">FEMME</option>
-    </select>
-    <input type="text" formControlName="adresse" placeholder="Adresse">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Âge</label>
+            <input type="number" formControlName="age" placeholder="Ex: 25" class="form-input">
+          </div>
+          <div class="form-group">
+            <label>Genre</label>
+            <select formControlName="genre" class="form-input">
+              <option value="">Sélectionner</option>
+              <option value="HOMME">Homme</option>
+              <option value="FEMME">Femme</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Profession</label>
+          <input type="text" formControlName="job" placeholder="Votre métier" class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label>Adresse</label>
+          <input type="text" formControlName="adresse" placeholder="Adresse complète" class="form-input">
+        </div>
+      </div>
+
+      <button class="btn-auth" *ngIf="isLoginMode" (click)="onLogin()">Se connecter</button>
+      <button class="btn-auth" *ngIf="!isLoginMode" (click)="onRegister()">S'inscrire</button>
+
+      <div class="auth-footer">
+        <p (click)="toggleMode()" class="switch-mode">
+          {{ isLoginMode ? "Pas encore de compte ? Créer un compte" : "Déjà inscrit ? Se connecter" }}
+        </p>
+      </div>
+
+      <!-- MESSAGES -->
+      <div class="status-messages">
+        <p class="success" *ngIf="message">{{ message }}</p>
+        <p class="error" *ngIf="error">{{ error }}</p>
+      </div>
+    </div>
   </div>
-
-  <button *ngIf="isLoginMode" (click)="onLogin()">Login</button>
-  <button *ngIf="!isLoginMode" (click)="onRegister()">Register</button>
-
-  <p (click)="toggleMode()" class="switch">
-    {{ isLoginMode ? 'Create account' : 'Already have an account ? Login' }}
-  </p>
-
-  <!-- MESSAGES -->
-  <p class="success" *ngIf="message">{{ message }}</p>
-  <p class="error" *ngIf="error">{{ error }}</p>
-
 </div>

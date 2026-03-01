@@ -20,14 +20,6 @@ export const routes: Routes = [
         component: AuthView,
     },
     {
-        path: 'footer',
-        component: Footer,
-    },
-    {
-        path: 'header',
-        component: Header,
-    },
-    {
         path: 'admin-dashboard',
         component: AdminDashboard,
         canActivate: [authGuard, adminGuard],

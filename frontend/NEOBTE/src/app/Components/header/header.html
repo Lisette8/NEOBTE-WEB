@@ -1,34 +1,30 @@
-<header class="app-header">
-    <div class="header-container">
-      
-      <a routerLink="/home-view" class="logo">
-        <div class="logo-icon">
-          <i class="fa-solid fa-building-columns"></i>
-        </div>
-        <span class="logo-text">NEO BTE</span>
+<header class="main-header">
+  <div class="container">
+    <div class="logo-section">
+      <a routerLink="/" class="logo-link">
+        <img src="assets/bte-logo.png" alt="BTE Logo" class="logo-img">
+        <span class="logo-text">NEO <span class="bte-highlight">BTE</span></span>
       </a>
-  
-      <nav class="nav-menu">
-        <a routerLink="/landingView" routerLinkActive="active" class="nav-link">
-          À propos
-        </a>
-        <a routerLink="/home-view" routerLinkActive="active" class="nav-link">
-          Contact
-        </a>
-      </nav>
-  
-      <div class="header-actions">
-        <a routerLink="/auth-view" class="btn-admin">
-          <i class="fa-solid fa-user-shield"></i>
-          Admin
-        </a>
-      </div>
-  
-      <!-- Mobile Menu Button -->
-      <button class="mobile-menu-btn" (click)="toggleMenu()">
-        <i class="fa-solid fa-bars"></i>
-      </button>
-  
     </div>
-  </header>
-  
+
+    <nav class="main-nav" [class.open]="isMenuOpen">
+      <ul>
+        <li><a routerLink="/home-view" routerLinkActive="active">Accueil</a></li>
+        <li><a href="#">Services</a></li>
+        <li><a href="#">Contact</a></li>
+        <li class="auth-btn-mobile" *ngIf="!isLoggedIn()">
+          <a routerLink="/auth-view" class="btn-login">Connexion</a>
+        </li>
+      </ul>
+    </nav>
+
+    <div class="header-actions">
+      <a routerLink="/auth-view" class="btn-login" *ngIf="!isLoggedIn()">Connexion</a>
+      <button class="menu-toggle" (click)="toggleMenu()">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </div>
+  </div>
+</header>

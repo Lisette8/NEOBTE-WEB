@@ -1,0 +1,61 @@
+/* Base Layout */
+.admin-container {
+  font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  background-color: #f3f4f6; /* Light gray dashboard background */
+  min-height: 100vh;
+}
+
+/* Header */
+.admin-header {
+  background-color: #1f2937; /* Dark slate */
+  color: #ffffff;
+  padding: 20px 30px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.admin-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+}
+
+/* Navigation Menu */
+.menu {
+  background-color: #ffffff;
+  padding: 0 30px;
+  display: flex;
+  gap: 10px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.menu button {
+  background: transparent;
+  border: none;
+  padding: 16px 20px;
+  font-size: 1rem;
+  color: #6b7280;
+  cursor: pointer;
+  font-weight: 500;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.menu button:hover {
+  color: #111827;
+  background-color: #f9fafb;
+}
+
+.menu button.active, 
+.menu button:focus {
+  color: #3b82f6; /* Blue active state */
+  border-bottom-color: #3b82f6;
+}
+
+/* Content Area */
+.admin-content {
+  padding: 30px;
+  max-width: 1400px;
+  margin: 0 auto;
+}

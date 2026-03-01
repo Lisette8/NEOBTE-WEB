@@ -17,6 +17,8 @@ export class UserManagement implements OnInit {
   loading = false;
   error = '';
 
+  currentTab: 'ADMINS' | 'CLIENTS' = 'CLIENTS';
+
   userForm: FormGroup;
   isEditMode = false;
   selectedUserId: number | null = null;
@@ -53,20 +55,20 @@ export class UserManagement implements OnInit {
     });
   }
 
-  openCreate() {
-    this.showForm = true;
-    this.isEditMode = false;
-    this.selectedUserId = null;
-    this.userForm.reset({
-      email: '',
-      nom: '',
-      prenom: '',
-      age: null,
-      adresse: '',
-      job: '',
-      genre: ''
-    });
+  get filteredAdmins(): UserListDTO[] {
+    return this.users.filter(u => u.role === 'ADMIN');
   }
+
+  get filteredClients(): UserListDTO[] {
+    return this.users.filter(u => u.role === 'CLIENT' || u.role === 'USER'); // Adding USER just in case
+  }
+
+  switchTab(tab: 'ADMINS' | 'CLIENTS') {
+    this.currentTab = tab;
+    this.showForm = false; // Close form when switching tabs
+  }
+
+  
 
   editUser(user: UserListDTO) {
     this.showForm = true;
@@ -153,4 +155,6 @@ export class UserManagement implements OnInit {
       genre: ''
     });
   }
+
+
 }

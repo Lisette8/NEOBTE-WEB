@@ -13,7 +13,7 @@ export class AuthService {
 
   constructor(private http: HttpClient) { }
 
-  // 🔐 LOGIN
+
   login(data: LoginRequest) {
     return this.http.post<AuthResponse>(`${this.API_URL}/login`, data)
       .pipe(
@@ -23,23 +23,20 @@ export class AuthService {
       );
   }
 
-  // 🆕 REGISTER
+
   register(data: RegisterRequest) {
     return this.http.post(`${this.API_URL}/register`, data);
   }
 
-  // 🚪 LOGOUT
   logout(): void {
     localStorage.removeItem('token');
   }
 
-  // 📦 GET TOKEN
   getToken(): string | null {
     return localStorage.getItem('token');
   }
 
 
-  //roles
   getUserRole(): string | null {
     const token = this.getToken();
     if (!token) return null;
@@ -48,7 +45,6 @@ export class AuthService {
     return payload.role;
   }
 
-  // 🔎 CHECK LOGIN
   isLoggedIn(): boolean {
     return this.getToken() != null;
   }

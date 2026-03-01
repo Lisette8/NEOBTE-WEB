@@ -1,13 +1,17 @@
 <div class="admin-container">
-
-  <h1>Admin Panel</h1>
+  
+  <header class="admin-header">
+    <h1>Admin Panel</h1>
+  </header>
 
   <nav class="menu">
-    <button>Users</button>
-    <button>Transactions</button>
-    <button>Accounts</button>
+    <button class="active">Users</button>
+    <button>Actualite</button>
+    <button>Comptes</button>
   </nav>
 
-  <app-user-management></app-user-management>
+  <main class="admin-content">
+    <app-user-management></app-user-management>
+  </main>
 
 </div>

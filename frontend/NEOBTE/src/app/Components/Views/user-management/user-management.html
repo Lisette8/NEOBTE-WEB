@@ -1,66 +1,76 @@
-<div class="users">
 
-  <h2>Users</h2>
 
-  <p *ngIf="loading">Loading...</p>
-  <p *ngIf="error">{{ error }}</p>
-
-  <table *ngIf="users.length > 0">
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Email</th>
-        <th>Nom</th>
-        <th>Prenom</th>
-        <th>Age</th>
-        <th>Job</th>
-        <th>Adresse</th>
-        <th>Genre</th>
-        <th>Role</th>
-        <th>Solde</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-
-    <tbody>
-      <tr *ngFor="let user of users">
-        <td>{{ user.idUtilisateur }}</td>
-        <td>{{ user.email }}</td>
-        <td>{{ user.nom }}</td>
-        <td>{{ user.prenom }}</td>
-        <td>{{ user.age }}</td>
-        <td>{{ user.job }}</td>
-        <td>{{ user.adresse }}</td>
-        <td>{{ user.genre }}</td>
-        <td>{{ user.role }}</td>
-        <td>{{ user.solde }}</td>
-        <td>
-          <button (click)="editUser(user)">Edit</button>
-          <button (click)="deleteUser(user.idUtilisateur)">Delete</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-
+<div class="form-card" *ngIf="showForm" [formGroup]="userForm">
+  <div class="form-grid">
+    <input class="form-control" formControlName="email" placeholder="Email">
+    <input class="form-control" formControlName="nom" placeholder="Nom">
+    <input class="form-control" formControlName="prenom" placeholder="Prenom">
+    <input class="form-control" formControlName="age" type="number" placeholder="Age">
+    <input class="form-control" formControlName="job" placeholder="Job">
+    <input class="form-control" formControlName="adresse" placeholder="Adresse">
+    
+    <select class="form-control" formControlName="genre">
+      <option value="">Genre</option>
+      <option value="HOMME">HOMME</option>
+      <option value="FEMME">FEMME</option>
+    </select>
+  </div>
+  
+  <div class="form-actions">
+    <button class="btn btn-save" (click)="saveUser()">
+      {{ isEditMode ? 'Update User' : 'Create User' }}
+    </button>
+  </div>
 </div>
 
-<button (click)="openCreate()">+ Add User</button>
+<div class="users-card">
+  <div class="users-header">
+    <h2>Users Management</h2>
+    <div class="tabs-container">
+      <button class="tab-btn" [class.active]="currentTab === 'CLIENTS'" (click)="switchTab('CLIENTS')">Clients</button>
+      <button class="tab-btn" [class.active]="currentTab === 'ADMINS'" (click)="switchTab('ADMINS')">Admins</button>
+    </div>
+    
+  </div>
 
-<div *ngIf="showForm" [formGroup]="userForm">
-  <input formControlName="email" placeholder="Email">
-  <input formControlName="nom" placeholder="Nom">
-  <input formControlName="prenom" placeholder="Prenom">
-  <input formControlName="age" type="number" placeholder="Age">
-  <input formControlName="job" placeholder="Job">
-  <input formControlName="adresse" placeholder="Adresse">
+  <p class="status-msg loading" *ngIf="loading">Loading data...</p>
+  <p class="status-msg error" *ngIf="error">{{ error }}</p>
 
-  <select formControlName="genre">
-    <option value="">Genre</option>
-    <option value="HOMME">HOMME</option>
-    <option value="FEMME">FEMME</option>
-  </select>
-
-  <button (click)="saveUser()">
-    {{ isEditMode ? 'Update' : 'Create' }}
-  </button>
+  <div class="table-responsive" *ngIf="users.length > 0">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Email</th>
+          <th>Nom</th>
+          <th>Prenom</th>
+          <th>Age</th>
+          <th>Job</th>
+          <th>Adresse</th>
+          <th>Genre</th>
+          <th>Role</th>
+          <th>Solde</th>
+          <th class="text-center" *ngIf="currentTab === 'CLIENTS'">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let user of (currentTab === 'CLIENTS' ? filteredClients : filteredAdmins)">
+          <td><strong>#{{ user.idUtilisateur }}</strong></td>
+          <td>{{ user.email }}</td>
+          <td>{{ user.nom }}</td>
+          <td>{{ user.prenom }}</td>
+          <td>{{ user.age }}</td>
+          <td><span class="badge">{{ user.job }}</span></td>
+          <td>{{ user.adresse }}</td>
+          <td>{{ user.genre }}</td>
+          <td>{{ user.role }}</td>
+          <td class="font-mono">{{ user.solde }}</td>
+          <td class="action-cells" *ngIf="currentTab === 'CLIENTS'">
+            <button class="btn btn-edit" (click)="editUser(user)">Edit</button>
+            <button class="btn btn-delete" (click)="deleteUser(user.idUtilisateur)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 </div>

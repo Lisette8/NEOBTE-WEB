@@ -29,7 +29,7 @@ public class DataInitializer implements CommandLineRunner {
         if (existingAdmin == null) {
             Utilisateur admin = new Utilisateur();
 
-            admin.setEmail("admin@site.com");
+            admin.setEmail("admin@gmail.com");
             admin.setMotDePasse(passwordEncoder.encode("admin123"));
             admin.setNom("Admin");
             admin.setPrenom("Super");

@@ -1,5 +1,6 @@
 package com.sesame.neobte.Entities;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -8,7 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
-import java.util.Date;
+import java.util.*;
 
 @Entity
 @Getter
@@ -37,5 +38,9 @@ public class Utilisateur implements Serializable {
     private String job;
     private Genre genre;
     private Double solde;
+
+    @OneToMany(mappedBy = "utilisateur")
+    @JsonIgnore
+    private List<Compte> comptes = new ArrayList<>();
 
 }

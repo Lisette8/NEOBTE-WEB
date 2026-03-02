@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { TranslationService } from '../../Services/translation-service';
 
 @Component({
   selector: 'app-footer',
@@ -9,5 +10,5 @@ import { RouterLink } from '@angular/router';
   styleUrl: './footer.css',
 })
 export class Footer {
-
+  constructor(public transService: TranslationService) {}
 }

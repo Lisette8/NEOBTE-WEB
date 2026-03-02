@@ -8,6 +8,8 @@ import { UserManagement } from './Components/Views/user-management/user-manageme
 import { LandingView } from './Components/Views/landing-view/landing-view';
 import { adminGuard } from './Security/Guards/AdminGuard';
 import { authGuard } from './Security/Guards/AuthGuard';
+import { loginGuard } from './Security/Guards/LoginGuard';
+import { SupportView } from './Components/support-view/support-view';
 
 export const routes: Routes = [
     {
@@ -18,6 +20,7 @@ export const routes: Routes = [
     {
         path: 'auth-view',
         component: AuthView,
+        canActivate: [loginGuard],
     },
     {
         path: 'admin-dashboard',
@@ -27,20 +30,26 @@ export const routes: Routes = [
     {
         path: 'user-management',
         component: UserManagement,
+        canActivate: [authGuard, adminGuard],
     },
     {
         path: 'landingView',
         component: LandingView,
     },
     {
+        path: 'support-view',
+        component: SupportView,
+    },
+    {
         path: '',
-        redirectTo: '/auth-view',
+        redirectTo: '/landing-view',
         pathMatch: 'full',
     },
     {
         path: '**',
-        redirectTo: '/auth-view',
+        redirectTo: '/landing-view',
     },
+    
 
 
 ];

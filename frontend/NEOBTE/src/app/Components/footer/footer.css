@@ -1,12 +1,13 @@
 .main-footer {
-  background: #1a1a1a;
-  color: var(--white);
-  padding: 4rem 0 2rem;
-  margin-top: 4rem;
+  background: var(--bg-card);
+  color: var(--text-primary);
+  padding: 6rem 0 3rem;
+  margin-top: 6rem;
+  border-top: 1px solid var(--glass-border);
 }
 
 .container {
-  max-width: 1200px;
+  max-width: 1100px;
   margin: 0 auto;
   padding: 0 1.5rem;
 }
@@ -14,8 +15,8 @@
 .footer-grid {
   display: grid;
   grid-template-columns: 2fr 1fr 1fr 1.5fr;
-  gap: 3rem;
-  margin-bottom: 3rem;
+  gap: 4rem;
+  margin-bottom: 4rem;
 }
 
 .footer-logo {
@@ -26,32 +27,35 @@
 }
 
 .footer-logo-img {
-  height: 40px;
+  height: 32px;
   width: auto;
-  filter: brightness(0) invert(1); /* White logo */
 }
 
 .footer-logo-text {
-  font-size: 1.5rem;
+  font-size: 1.25rem;
   font-weight: 800;
-  letter-spacing: -1px;
+  letter-spacing: -0.03em;
+  color: var(--text-primary);
 }
 
 .bte-highlight {
-  color: var(--bte-light-blue);
+  color: var(--accent-blue);
 }
 
 .footer-desc {
-  color: #999;
+  color: var(--text-secondary);
   line-height: 1.6;
   font-size: 0.95rem;
+  font-weight: 500;
 }
 
 .footer-grid h3 {
-  font-size: 1.1rem;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
   margin-bottom: 1.5rem;
   font-weight: 700;
-  color: var(--white);
+  color: var(--text-primary);
 }
 
 .footer-grid ul {
@@ -65,39 +69,47 @@
 }
 
 .footer-grid ul li a {
-  color: #999;
+  color: var(--text-secondary);
   text-decoration: none;
-  transition: color 0.3s;
+  transition: all 0.2s ease;
   font-size: 0.9rem;
+  font-weight: 500;
 }
 
 .footer-grid ul li a:hover {
-  color: var(--white);
+  color: var(--text-primary);
 }
 
 .footer-contact p {
-  color: #999;
+  color: var(--text-secondary);
   margin-bottom: 0.75rem;
   font-size: 0.9rem;
+  font-weight: 500;
 }
 
 .footer-bottom {
-  padding-top: 2rem;
-  border-top: 1px solid #333;
+  padding-top: 2.5rem;
+  border-top: 1px solid var(--glass-border);
   text-align: center;
-  color: #666;
+  color: var(--text-secondary);
   font-size: 0.85rem;
+  font-weight: 500;
 }
 
 @media (max-width: 992px) {
   .footer-grid {
     grid-template-columns: 1fr 1fr;
-    gap: 2rem;
+    gap: 3rem;
   }
 }
 
 @media (max-width: 576px) {
   .footer-grid {
     grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  
+  .main-footer {
+    padding: 4rem 0 2rem;
   }
 }

@@ -7,23 +7,21 @@
           <span class="footer-logo-text">NEO <span class="bte-highlight">BTE</span></span>
         </div>
         <p class="footer-desc">
-          Votre partenaire de confiance pour une banque moderne en Tunisie.
-          Faisant partie du réseau de la Banque de Tunisie et des Émirats.
+          {{ transService.translate('footer.desc') }}
         </p>
       </div>
 
       <div class="footer-links">
-        <h3>Navigation</h3>
+        <h3>{{ transService.translate('footer.navigation') }}</h3>
         <ul>
-          <li><a routerLink="/home-view">Accueil</a></li>
-          <li><a href="#">Nos Services</a></li>
-          <li><a href="#">À Propos</a></li>
-          <li><a href="#">Contact</a></li>
+          <li><a routerLink="/home-view">{{ transService.translate('common.accueil') }}</a></li>
+          <li><a href="#">{{ transService.translate('common.produits') }}</a></li>
+          <li><a href="#">{{ transService.translate('common.support') }}</a></li>
         </ul>
       </div>
 
       <div class="footer-legal">
-        <h3>Légal</h3>
+        <h3>{{ transService.translate('footer.legal') }}</h3>
         <ul>
           <li><a href="#">Mentions Légales</a></li>
           <li><a href="#">Confidentialité</a></li>
@@ -32,7 +30,7 @@
       </div>
 
       <div class="footer-contact">
-        <h3>Contact</h3>
+        <h3>{{ transService.translate('footer.contact') }}</h3>
         <p>5a Rue Mohamed BADRA, 1002 Tunis</p>
         <p>Tél: +216 71 123 456</p>
         <p>Email: contact@bte.com.tn</p>
@@ -40,7 +38,7 @@
     </div>
     
     <div class="footer-bottom">
-      <p>&copy; 2026 NEO BTE. Tous droits réservés. Filiale de la Banque de Tunisie et des Émirats.</p>
+      <p>&copy; 2026 NEO BTE. {{ transService.translate('footer.rights') }}</p>
     </div>
   </div>
 </footer>

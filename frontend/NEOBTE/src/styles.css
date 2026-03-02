@@ -1,20 +1,52 @@
 :root {
-  --bte-blue: #0000A0; /* Deep blue from BTE logo */
-  --bte-light-blue: #0056b3;
-  --bte-accent: #f8f9fa;
-  --text-dark: #1a1a1a;
-  --text-muted: #666666;
-  --border-color: #e0e0e0;
+  /* Impulse/Apple Light Theme Colors */
+  --bte-blue: #0000A0;
+  --bg-main: #fbfbfd; /* Apple's off-white */
+  --bg-card: #ffffff;
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(0, 0, 0, 0.1);
+  --text-primary: #1d1d1f;
+  --text-secondary: #86868b;
+  --accent-blue: #0071e3;
   --white: #ffffff;
+  
+  /* Glassmorphism */
+  --blur: blur(20px);
+  --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 20px 40px -10px rgba(0, 0, 0, 0.1);
 }
 
 body {
   margin: 0;
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  background-color: #f4f7f6;
-  color: var(--text-dark);
+  padding: 0;
+  font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
 * {
   box-sizing: border-box;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  transition: opacity 0.2s ease;
+}
+
+a:hover {
+  opacity: 0.7;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
 }

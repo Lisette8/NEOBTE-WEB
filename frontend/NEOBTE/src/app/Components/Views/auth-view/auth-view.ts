@@ -1,10 +1,11 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AuthService } from '../../../Services/auth-service';
 import { LoginRequest } from '../../../Entities/Interfaces/login-request';
 import { RegisterRequest } from '../../../Entities/Interfaces/register-request';
 import { Router } from '@angular/router';
+import { TranslationService } from '../../../Services/translation-service';
 
 @Component({
   selector: 'app-auth-view',
@@ -12,7 +13,9 @@ import { Router } from '@angular/router';
   templateUrl: './auth-view.html',
   styleUrl: './auth-view.css',
 })
-export class AuthView {
+
+
+export class AuthView implements OnInit {
   isLoginMode: boolean = true;
   authForm: FormGroup;
 
@@ -23,7 +26,8 @@ export class AuthView {
   constructor(
     private authService: AuthService,
     private fb: FormBuilder,
-    private router: Router   
+    private router: Router,
+    public transService: TranslationService
   ) {
     this.authForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -37,6 +41,18 @@ export class AuthView {
     });
   }
 
+  ngOnInit(): void {
+    if (this.authService.isLoggedIn()) {
+      const role = this.authService.getUserRole();
+      if (role === 'ADMIN') {
+        this.router.navigate(['/admin-dashboard']);
+      }
+      else {
+        this.router.navigate(['/home-view']);
+      }
+    }
+  }
+
   private updateValidatorsForMode() {
     const nom = this.authForm.get('nom');
     const prenom = this.authForm.get('prenom');
@@ -48,7 +64,8 @@ export class AuthView {
       prenom?.clearValidators();
       genre?.clearValidators();
       adresse?.clearValidators();
-    } else {
+    } 
+    else {
       nom?.setValidators([Validators.required]);
       prenom?.setValidators([Validators.required]);
       genre?.setValidators([Validators.required]);

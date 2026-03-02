@@ -1,74 +1,93 @@
 <div class="auth-page">
-  <div class="auth-card" [formGroup]="authForm">
-    <div class="auth-header">
-      <img src="assets/bte-logo.png" alt="BTE Logo" class="auth-logo">
-      <h1>{{ isLoginMode ? 'Connexion' : 'Inscription' }}</h1>
-      <p class="subtitle">{{ isLoginMode ? 'Accédez à votre espace bancaire NEO BTE' : 'Rejoignez la banque moderne de demain' }}</p>
-    </div>
-
-    <div class="auth-body">
-      <div class="form-group">
-        <label>Email</label>
-        <input type="email" formControlName="email" placeholder="votre@email.com" class="form-input">
-      </div>
-
-      <div class="form-group">
-        <label>Mot de passe</label>
-        <input type="password" formControlName="motDePasse" placeholder="••••••••" class="form-input">
-      </div>
-
-      <div *ngIf="!isLoginMode" class="register-fields">
-        <div class="form-row">
-          <div class="form-group">
-            <label>Nom</label>
-            <input type="text" formControlName="nom" placeholder="Nom" class="form-input">
-          </div>
-          <div class="form-group">
-            <label>Prénom</label>
-            <input type="text" formControlName="prenom" placeholder="Prénom" class="form-input">
-          </div>
+  <div class="auth-container">
+    <div class="auth-card">
+      <div class="auth-header">
+        <div class="logo-circle">
+          <img src="assets/bte-logo.png" alt="BTE Logo" class="auth-logo">
         </div>
+        <h1>{{ isLoginMode ? transService.translate('auth.welcome_back') : transService.translate('auth.join_us') }}</h1>
+        <p class="subtitle">{{ isLoginMode ? transService.translate('auth.subtitle_login') : transService.translate('auth.subtitle_register') }}</p>
+      </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label>Âge</label>
-            <input type="number" formControlName="age" placeholder="Ex: 25" class="form-input">
-          </div>
-          <div class="form-group">
-            <label>Genre</label>
-            <select formControlName="genre" class="form-input">
-              <option value="">Sélectionner</option>
-              <option value="HOMME">Homme</option>
-              <option value="FEMME">Femme</option>
-            </select>
+      <div class="auth-body" [formGroup]="authForm">
+        <div class="form-group">
+          <label for="email">{{ transService.translate('common.email') }}</label>
+          <div class="input-wrapper">
+            <input id="email" type="email" formControlName="email" placeholder="nom@exemple.com">
           </div>
         </div>
 
         <div class="form-group">
-          <label>Profession</label>
-          <input type="text" formControlName="job" placeholder="Votre métier" class="form-input">
+          <label for="password">{{ transService.translate('common.password') }}</label>
+          <div class="input-wrapper">
+            <input id="password" type="password" formControlName="motDePasse" placeholder="••••••••">
+          </div>
         </div>
 
-        <div class="form-group">
-          <label>Adresse</label>
-          <input type="text" formControlName="adresse" placeholder="Adresse complète" class="form-input">
+        <div *ngIf="!isLoginMode" class="register-section">
+          <div class="form-row">
+            <div class="form-group">
+              <label for="nom">{{ transService.translate('common.nom') }}</label>
+              <input id="nom" type="text" formControlName="nom" [placeholder]="transService.translate('common.nom')">
+            </div>
+            <div class="form-group">
+              <label for="prenom">{{ transService.translate('common.prenom') }}</label>
+              <input id="prenom" type="text" formControlName="prenom" [placeholder]="transService.translate('common.prenom')">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label for="age">{{ transService.translate('common.age') }}</label>
+              <input id="age" type="number" formControlName="age" [placeholder]="transService.translate('common.age')">
+            </div>
+            <div class="form-group">
+              <label for="genre">{{ transService.translate('common.genre') }}</label>
+              <select id="genre" formControlName="genre">
+                <option value="">{{ transService.translate('common.select') }}</option>
+                <option value="HOMME">{{ transService.translate('common.homme') }}</option>
+                <option value="FEMME">{{ transService.translate('common.femme') }}</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="job">{{ transService.translate('common.profession') }}</label>
+            <input id="job" type="text" formControlName="job" [placeholder]="transService.translate('common.profession')">
+          </div>
+
+          <div class="form-group">
+            <label for="adresse">{{ transService.translate('common.adresse') }}</label>
+            <input id="adresse" type="text" formControlName="adresse" [placeholder]="transService.translate('common.adresse')">
+          </div>
         </div>
-      </div>
 
-      <button class="btn-auth" *ngIf="isLoginMode" (click)="onLogin()">Se connecter</button>
-      <button class="btn-auth" *ngIf="!isLoginMode" (click)="onRegister()">S'inscrire</button>
+        <button class="btn-primary" *ngIf="isLoginMode" (click)="onLogin()">
+          <span>{{ transService.translate('auth.login_btn') }}</span>
+          <div class="btn-glow"></div>
+        </button>
+        
+        <button class="btn-primary" *ngIf="!isLoginMode" (click)="onRegister()">
+          <span>{{ transService.translate('auth.register_btn') }}</span>
+          <div class="btn-glow"></div>
+        </button>
 
-      <div class="auth-footer">
-        <p (click)="toggleMode()" class="switch-mode">
-          {{ isLoginMode ? "Pas encore de compte ? Créer un compte" : "Déjà inscrit ? Se connecter" }}
-        </p>
-      </div>
+        <div class="auth-footer">
+          <button class="btn-link" (click)="toggleMode()">
+            {{ isLoginMode ? transService.translate('auth.switch_register') : transService.translate('auth.switch_login') }}
+          </button>
+        </div>
 
-      <!-- MESSAGES -->
-      <div class="status-messages">
-        <p class="success" *ngIf="message">{{ message }}</p>
-        <p class="error" *ngIf="error">{{ error }}</p>
+        <div class="messages" *ngIf="message || error">
+          <p class="msg success" *ngIf="message">{{ message }}</p>
+          <p class="msg error" *ngIf="error">{{ error }}</p>
+        </div>
       </div>
     </div>
+  </div>
+  
+  <div class="background-elements">
+    <div class="orb blue"></div>
+    <div class="orb dark"></div>
   </div>
 </div>

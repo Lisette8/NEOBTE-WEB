@@ -1,29 +1,39 @@
-<header class="main-header">
-  <div class="container">
-    <div class="logo-section">
+<header class="glass-header">
+  <div class="header-content">
+    <div class="logo-wrapper">
       <a routerLink="/" class="logo-link">
         <img src="assets/bte-logo.png" alt="BTE Logo" class="logo-img">
-        <span class="logo-text">NEO <span class="bte-highlight">BTE</span></span>
+        <span class="logo-text">NEO <span class="accent">BTE</span></span>
       </a>
     </div>
 
-    <nav class="main-nav" [class.open]="isMenuOpen">
+    <nav class="nav-links" [class.open]="isMenuOpen">
       <ul>
-        <li><a routerLink="/home-view" routerLinkActive="active">Accueil</a></li>
-        <li><a href="#">Services</a></li>
-        <li><a href="#">Contact</a></li>
-        <li class="auth-btn-mobile" *ngIf="!isLoggedIn()">
-          <a routerLink="/auth-view" class="btn-login">Connexion</a>
-        </li>
+        <li *ngIf="isLoggedIn()"><a routerLink="/home-view" routerLinkActive="active">{{ transService.translate('common.accueil') }}</a></li>
+        <li><a href="#">{{ transService.translate('common.produits') }}</a></li>
+        <li><a href="#">{{ transService.translate('common.support') }}</a></li>
       </ul>
     </nav>
 
     <div class="header-actions">
-      <a routerLink="/auth-view" class="btn-login" *ngIf="!isLoggedIn()">Connexion</a>
-      <button class="menu-toggle" (click)="toggleMenu()">
-        <span></span>
-        <span></span>
-        <span></span>
+      <div class="lang-switcher" (click)="toggleLang()">
+        <span class="current-lang">{{ transService.getLanguage() | uppercase }}</span>
+        <div class="lang-dropdown" *ngIf="isLangOpen">
+          <div (click)="setLang('fr')">FR</div>
+          <div (click)="setLang('en')">EN</div>
+          <div (click)="setLang('ar')">AR</div>
+        </div>
+      </div>
+
+      <div class="auth-group" *ngIf="!isLoggedIn()">
+        <a routerLink="/auth-view" class="btn-login">{{ transService.translate('common.connexion') }}</a>
+      </div>
+      
+      <button class="mobile-toggle" (click)="toggleMenu()">
+        <div class="hamburger" [class.active]="isMenuOpen">
+          <span></span>
+          <span></span>
+        </div>
       </button>
     </div>
   </div>

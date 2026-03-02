@@ -1,9 +1,7 @@
 package com.sesame.neobte.Entities;
 
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,6 +17,7 @@ import java.util.Date;
 @AllArgsConstructor
 public class Virement implements Serializable {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idVirement;
 
     @ManyToOne
@@ -29,4 +28,6 @@ public class Virement implements Serializable {
 
     private Double montant;
     private Date dateDeVirement;
+
+
 }

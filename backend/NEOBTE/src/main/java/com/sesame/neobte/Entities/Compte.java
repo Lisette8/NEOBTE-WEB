@@ -1,15 +1,14 @@
 package com.sesame.neobte.Entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Id;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.util.*;
 
 @Entity
 @Getter
@@ -25,5 +24,14 @@ public class Compte implements Serializable {
     @Enumerated(EnumType.STRING)
     private StatutCompte statutCompte;
 
+    @ManyToOne
+    private Utilisateur utilisateur;
 
+    @OneToMany(mappedBy = "compteDe")
+    @JsonIgnore
+    private List<Virement> virementsSortants = new ArrayList<>();
+
+    @OneToMany(mappedBy = "compteA")
+    @JsonIgnore
+    private List<Virement> virementsEntrants = new ArrayList<>();
 }

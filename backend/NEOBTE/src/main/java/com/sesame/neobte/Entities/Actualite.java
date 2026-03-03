@@ -1,7 +1,6 @@
 package com.sesame.neobte.Entities;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,11 +14,14 @@ import java.util.Date;
 @AllArgsConstructor
 public class Actualite {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idActualite;
 
-    private String genre;
-    private Date dateCreationActualite;
-    private Long createur;
+
     private String titre;
     private String description;
+    private Date dateCreationActualite;
+
+    @ManyToOne
+    private Utilisateur createur;
 }

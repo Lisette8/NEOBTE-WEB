@@ -1,5 +1,7 @@
 package com.sesame.neobte.Services;
 
+import com.sesame.neobte.DTO.Requests.Support.SupportCreateDTO;
+import com.sesame.neobte.DTO.Responses.Support.SupportResponseDTO;
 import com.sesame.neobte.Entities.Support;
 import com.sesame.neobte.Entities.SupportStatus;
 import com.sesame.neobte.Entities.Utilisateur;
@@ -8,6 +10,7 @@ import com.sesame.neobte.Repositories.IUtilisateurRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -34,19 +37,21 @@ public class SupportServiceImpl implements SupportService {
     //crud support
 
     @Override
-    public Support createTicket(Long userId, String sujet, String message) {
+    public SupportResponseDTO createTicket(Long userId, SupportCreateDTO dto) {
 
         Utilisateur user = utilisateurRepository.findById(userId)
                 .orElseThrow(() -> new RuntimeException("User not found"));
 
         Support support = new Support();
-        support.setSujet(sujet);
-        support.setMessage(message);
+        support.setSujet(dto.getSujet());
+        support.setMessage(dto.getMessage());
         support.setStatus(SupportStatus.OPEN);
-        support.setDateCreation(new Date());
         support.setUtilisateur(user);
+        support.setDateCreation(LocalDateTime.now());
 
-        return supportRepository.save(support);
+        supportRepository.save(support);
+
+        return mapToResponseDTO(support);
     }
 
 
@@ -66,5 +71,17 @@ public class SupportServiceImpl implements SupportService {
     @Override
     public void deleteTicket(Long id) {
         supportRepository.deleteById(id);
+    }
+
+
+    private SupportResponseDTO mapToResponseDTO(Support support) {
+        return new SupportResponseDTO(
+                support.getIdSupport(),
+                support.getSujet(),
+                support.getMessage(),
+                support.getReponseAdmin(),
+                support.getStatus().name(),
+                support.getDateCreation()
+        );
     }
 }

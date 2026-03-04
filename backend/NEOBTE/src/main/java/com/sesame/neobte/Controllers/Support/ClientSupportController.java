@@ -1,5 +1,7 @@
 package com.sesame.neobte.Controllers.Support;
 
+import com.sesame.neobte.DTO.Requests.Support.SupportCreateDTO;
+import com.sesame.neobte.DTO.Responses.Support.SupportResponseDTO;
 import com.sesame.neobte.Entities.Support;
 import com.sesame.neobte.Services.SupportService;
 import lombok.AllArgsConstructor;
@@ -16,14 +18,16 @@ public class ClientSupportController {
     private SupportService supportService;
 
     @PostMapping("/add")
-    public Support create(
-            @RequestParam String sujet,
-            @RequestParam String message,
+    public SupportResponseDTO create(
+            @RequestBody SupportCreateDTO dto,
             Authentication authentication
     ) {
+
         Long userId = (Long) authentication.getPrincipal();
-        return supportService.createTicket(userId, sujet, message);
+
+        return supportService.createTicket(userId, dto);
     }
+
 
     @GetMapping("/myTickets")
     public List<Support> myTickets(Authentication authentication) {

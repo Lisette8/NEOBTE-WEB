@@ -1,13 +1,16 @@
 package com.sesame.neobte.Services;
 
+import com.sesame.neobte.DTO.Responses.Actualite.ActualiteResponseDTO;
 import com.sesame.neobte.Entities.Actualite;
 import com.sesame.neobte.Entities.Utilisateur;
 import com.sesame.neobte.Repositories.IActualiteRepository;
 import com.sesame.neobte.Repositories.IUtilisateurRepository;
+import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
+@AllArgsConstructor
 @Service
 public class ActualiteServiceImpl implements ActualiteService {
 
@@ -17,13 +20,19 @@ public class ActualiteServiceImpl implements ActualiteService {
 
     //admin crud
     @Override
-    public List<Actualite> getAll() {
-        return actualiteRepository.findAll();
+    public List<ActualiteResponseDTO> getAll() {
+        List<Actualite> actualites = actualiteRepository.findAll();
+        List<ActualiteResponseDTO> response = new ArrayList<>();
+
+        for (Actualite actualite : actualites) {
+            response.add(mapToResponseDTO(actualite));
+        }
+        return response;
     }
 
 
     @Override
-    public Actualite createActualite(Long adminId, String titre, String description) {
+    public ActualiteResponseDTO createActualite(Long adminId, String titre, String description) {
 
         Utilisateur admin = utilisateurRepository.  findById(adminId)
                 .orElseThrow(() -> new RuntimeException("Admin not found"));
@@ -34,12 +43,14 @@ public class ActualiteServiceImpl implements ActualiteService {
         actualite.setDateCreationActualite(new Date());
         actualite.setCreateur(admin);
 
-        return actualiteRepository.save(actualite);
+        Actualite savedActualite = actualiteRepository.save(actualite);
+
+        return mapToResponseDTO(savedActualite);
     }
 
 
     @Override
-    public Actualite updateActualite(Long id, String titre, String description) {
+    public ActualiteResponseDTO  updateActualite(Long id, String titre, String description) {
 
         Actualite actualiteUpdated = actualiteRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Actualite not found"));
@@ -47,12 +58,28 @@ public class ActualiteServiceImpl implements ActualiteService {
         actualiteUpdated.setTitre(titre);
         actualiteUpdated.setDescription(description);
 
-        return actualiteRepository.save(actualiteUpdated);
+        Actualite savedActualite = actualiteRepository.save(actualiteUpdated);
+
+        return mapToResponseDTO(savedActualite);
     }
 
 
     @Override
     public void deleteActualite(Long id) {
         actualiteRepository.deleteById(id);
+    }
+
+
+
+    //Private functions
+    private ActualiteResponseDTO mapToResponseDTO(Actualite actualite) {
+
+        return new ActualiteResponseDTO(
+                actualite.getIdActualite(),
+                actualite.getTitre(),
+                actualite.getDescription(),
+                actualite.getDateCreationActualite(),
+                actualite.getCreateur().getIdUtilisateur()
+        );
     }
 }

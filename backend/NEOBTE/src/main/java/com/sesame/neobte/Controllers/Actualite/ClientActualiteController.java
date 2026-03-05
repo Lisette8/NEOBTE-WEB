@@ -1,5 +1,6 @@
 package com.sesame.neobte.Controllers.Actualite;
 
+import com.sesame.neobte.DTO.Responses.Actualite.ActualiteResponseDTO;
 import com.sesame.neobte.Entities.Actualite;
 import com.sesame.neobte.Services.ActualiteService;
 import lombok.AllArgsConstructor;
@@ -17,7 +18,7 @@ public class ClientActualiteController {
 
 
     @GetMapping("/all")
-    public List<Actualite> getAllActualites() {
+    public List<ActualiteResponseDTO> getAllActualites() {
         return actualiteService.getAll();
     }
 }

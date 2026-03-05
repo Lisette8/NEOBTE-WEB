@@ -1,1 +1,9 @@
-<p>home-view works!</p>
+<div class="actualites-container">
+  <h2>Actualités</h2>
+
+  <div class="card" *ngFor="let act of actualites">
+    <h3>{{ act.titre }}</h3>
+    <p>{{ act.description }}</p>
+    <small>{{ act.dateCreationActualite | date }}</small>
+  </div>
+</div>

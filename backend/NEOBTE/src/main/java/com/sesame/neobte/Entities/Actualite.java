@@ -1,5 +1,6 @@
 package com.sesame.neobte.Entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,5 +24,6 @@ public class Actualite {
     private Date dateCreationActualite;
 
     @ManyToOne
+    @JsonIgnore
     private Utilisateur createur;
 }

@@ -6,7 +6,7 @@ import com.sesame.neobte.Entities.Utilisateur;
 import lombok.AllArgsConstructor;
 
 
-
+//I created this mapper just to practice and have a clear look , the other mappers will be created and implemented directly in the services...
 public class UtilisateurMapper {
 
     //adminResponse
@@ -26,13 +26,4 @@ public class UtilisateurMapper {
     }
 
 
-    //clientResponse
-    public static ClientResponse toClientResponse(Utilisateur user) {
-        ClientResponse res = new ClientResponse();
-        res.setId(user.getIdUtilisateur());
-        res.setEmail(user.getEmail());
-        res.setNom(user.getNom());
-        res.setPrenom(user.getPrenom());
-        return res;
-    }
 }

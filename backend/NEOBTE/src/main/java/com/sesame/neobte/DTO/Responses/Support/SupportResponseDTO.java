@@ -3,6 +3,7 @@ package com.sesame.neobte.DTO.Responses.Support;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.util.Date;
 
 
 @NoArgsConstructor
@@ -16,4 +17,6 @@ public class SupportResponseDTO {
     private String reponseAdmin;
     private String status;
     private LocalDateTime dateCreation;
+
+
 }

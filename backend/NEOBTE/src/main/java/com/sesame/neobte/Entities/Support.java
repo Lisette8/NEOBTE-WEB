@@ -7,7 +7,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
-import java.util.*;
+import java.time.LocalDateTime;
+
 
 @Entity
 @Getter
@@ -26,7 +27,7 @@ public class Support implements Serializable {
     @Enumerated(EnumType.STRING)
     private SupportStatus status;
 
-    private Date dateCreation;
+    private LocalDateTime dateCreation;
 
 
     @ManyToOne

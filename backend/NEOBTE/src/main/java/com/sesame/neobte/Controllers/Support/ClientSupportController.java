@@ -30,7 +30,7 @@ public class ClientSupportController {
 
 
     @GetMapping("/myTickets")
-    public List<Support> myTickets(Authentication authentication) {
+    public List<SupportResponseDTO> myTickets(Authentication authentication) {
         Long userId = (Long) authentication.getPrincipal();
         return supportService.getMyTickets(userId);
     }

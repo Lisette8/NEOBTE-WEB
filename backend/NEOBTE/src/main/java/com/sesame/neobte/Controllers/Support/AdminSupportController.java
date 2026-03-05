@@ -1,12 +1,15 @@
 package com.sesame.neobte.Controllers.Support;
 
+import com.sesame.neobte.DTO.Responses.Support.SupportResponseDTO;
 import com.sesame.neobte.Entities.Support;
 import com.sesame.neobte.Services.SupportService;
+import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 
 import java.util.*;
 
+@AllArgsConstructor
 @RestController
 @RequestMapping("/api/admin/support")
 public class AdminSupportController {

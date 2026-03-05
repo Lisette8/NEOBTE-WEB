@@ -11,7 +11,7 @@ public interface SupportService {
 
     //client side methods
     SupportResponseDTO createTicket(Long userId, SupportCreateDTO dto);
-    List<Support> getMyTickets(Long userId);
+    List<SupportResponseDTO> getMyTickets(Long userId);
 
     //admin side methods
     List<Support> getAllTickets();

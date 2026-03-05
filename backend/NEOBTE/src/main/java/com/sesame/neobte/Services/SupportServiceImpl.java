@@ -21,10 +21,13 @@ public class SupportServiceImpl implements SupportService {
     private IUtilisateurRepository utilisateurRepository;
 
 
-
     @Override
-    public List<Support> getMyTickets(Long userId) {
-        return supportRepository.findByUtilisateurIdUtilisateur(userId);
+    public List<SupportResponseDTO> getMyTickets(Long userId) {
+        List<Support> tickets = supportRepository.findByUtilisateurIdUtilisateur(userId);
+
+        return tickets.stream()
+                .map(this::mapToResponseDTO)
+                .toList();
     }
 
 
@@ -62,7 +65,7 @@ public class SupportServiceImpl implements SupportService {
                 .orElseThrow(() -> new RuntimeException("Ticket not found"));
 
         support.setReponseAdmin(response);
-        support.setStatus(SupportStatus.valueOf(status));
+        support.setStatus(SupportStatus.valueOf(status.toUpperCase()));
 
         return supportRepository.save(support);
     }
@@ -74,6 +77,7 @@ public class SupportServiceImpl implements SupportService {
     }
 
 
+    //private functions
     private SupportResponseDTO mapToResponseDTO(Support support) {
         return new SupportResponseDTO(
                 support.getIdSupport(),

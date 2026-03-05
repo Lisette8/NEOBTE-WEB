@@ -1,5 +1,6 @@
 package com.sesame.neobte.Controllers.Actualite;
 
+import com.sesame.neobte.DTO.Responses.Actualite.ActualiteResponseDTO;
 import com.sesame.neobte.Entities.Actualite;
 import com.sesame.neobte.Services.ActualiteService;
 import lombok.AllArgsConstructor;
@@ -17,18 +18,19 @@ public class AdminActualiteController {
 
 
     @PostMapping("/add")
-    public Actualite create(
+    public ActualiteResponseDTO create(
             @RequestParam String titre,
             @RequestParam String description,
             Authentication authentication
     ) {
         Long adminId = (Long) authentication.getPrincipal();
+
         return actualiteService.createActualite(adminId, titre, description);
     }
 
 
     @PutMapping("/update/{id}")
-    public Actualite update(
+    public ActualiteResponseDTO update(
             @PathVariable Long id,
             @RequestParam String titre,
             @RequestParam String description

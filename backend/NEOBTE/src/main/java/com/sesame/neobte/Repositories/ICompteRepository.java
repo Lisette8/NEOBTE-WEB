@@ -1,9 +1,9 @@
 package com.sesame.neobte.Repositories;
 
-import com.sesame.neobte.Entities.Utilisateur;
+import com.sesame.neobte.Entities.Compte;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface ICompteRepository extends JpaRepository<Utilisateur, Long> {
+public interface ICompteRepository extends JpaRepository<Compte, Long> {
 }

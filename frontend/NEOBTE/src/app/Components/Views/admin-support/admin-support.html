@@ -1,0 +1,58 @@
+<h2 class="title">Support Tickets</h2>
+
+<div class="tickets-container">
+
+  <div class="ticket-card" *ngFor="let ticket of tickets">
+
+    <div class="ticket-header">
+
+      <div>
+        <h3>{{ticket.sujet}}</h3>
+        <p class="email">{{ticket.clientEmail}}</p>
+        <p class="date">{{ticket.dateCreation | date:'medium'}}</p>
+      </div>
+
+      <span 
+        class="status-badge"
+        [ngClass]="{
+          'open': ticket.status === 'OPEN',
+          'progress': ticket.status === 'IN_PROGRESS',
+          'resolved': ticket.status === 'RESOLVED',
+          'closed': ticket.status === 'CLOSED'
+        }"
+      >
+        {{ticket.status}}
+      </span>
+
+    </div>
+
+    <p class="message">{{ticket.message}}</p>
+
+    <textarea
+      placeholder="Write admin response..."
+      [(ngModel)]="responseText[ticket.idSupport]"
+      class="response-box">
+    </textarea>
+
+    <div class="ticket-actions">
+
+      <select [(ngModel)]="statusSelected[ticket.idSupport]">
+        <option value="OPEN">OPEN</option>
+        <option value="IN_PROGRESS">IN_PROGRESS</option>
+        <option value="RESOLVED">RESOLVED</option>
+        <option value="CLOSED">CLOSED</option>
+      </select>
+
+      <button class="update" (click)="updateTicket(ticket)">
+        Update
+      </button>
+
+      <button class="delete" (click)="deleteTicket(ticket.idSupport)">
+        Delete
+      </button>
+
+    </div>
+
+  </div>
+
+</div>

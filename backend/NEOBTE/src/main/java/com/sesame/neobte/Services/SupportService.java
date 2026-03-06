@@ -14,7 +14,7 @@ public interface SupportService {
     List<SupportResponseDTO> getMyTickets(Long userId);
 
     //admin side methods
-    List<Support> getAllTickets();
+    List<SupportResponseDTO> getAllTickets();
     Support updateStatus(Long id, String response, String status);
     void deleteTicket(Long id);
 }

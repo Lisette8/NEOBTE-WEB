@@ -5,13 +5,28 @@
   </header>
 
   <nav class="menu">
-    <button class="active">Users</button>
+    <button 
+      (click)="selectedTab='users'"
+      [class.active]="selectedTab==='users'">
+      Users
+    </button>
+
+    <button 
+      (click)="selectedTab='support'"
+      [class.active]="selectedTab==='support'">
+      Support
+    </button>
+
     <button>Actualite</button>
     <button>Comptes</button>
   </nav>
 
   <main class="admin-content">
-    <app-user-management></app-user-management>
+
+    <app-user-management *ngIf="selectedTab==='users'"></app-user-management>
+
+    <app-admin-support *ngIf="selectedTab==='support'"></app-admin-support>
+
   </main>
 
 </div>

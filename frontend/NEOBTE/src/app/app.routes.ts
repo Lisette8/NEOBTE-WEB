@@ -9,7 +9,9 @@ import { LandingView } from './Components/Views/landing-view/landing-view';
 import { adminGuard } from './Security/Guards/AdminGuard';
 import { authGuard } from './Security/Guards/AuthGuard';
 import { loginGuard } from './Security/Guards/LoginGuard';
-import { SupportView } from './Components/support-view/support-view';
+import { SupportView } from './Components/Views/support-view/support-view';
+import { VirementView } from './Components/Views/virement-view/virement-view';
+import { AdminSupport } from './Components/Views/admin-support/admin-support';
 
 export const routes: Routes = [
     {
@@ -33,7 +35,7 @@ export const routes: Routes = [
         canActivate: [authGuard, adminGuard],
     },
     {
-        path: 'landingView',
+        path: 'landing-view',
         component: LandingView,
     },
     {
@@ -41,13 +43,21 @@ export const routes: Routes = [
         component: SupportView,
     },
     {
+        path: 'virement-view',
+        component: VirementView,
+    },
+    {
+        path: 'admin-support',
+        component: AdminSupport,
+    },
+    {
         path: '',
-        redirectTo: '/landing-view',
+        redirectTo: 'landing-view',
         pathMatch: 'full',
     },
     {
         path: '**',
-        redirectTo: '/landing-view',
+        redirectTo: 'landing-view',
     },
     
 

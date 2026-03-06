@@ -32,8 +32,12 @@ public class SupportServiceImpl implements SupportService {
 
 
     @Override
-    public List<Support> getAllTickets() {
-        return supportRepository.findAll();
+    public List<SupportResponseDTO> getAllTickets() {
+        List<Support> tickets = supportRepository.findAll();
+
+        return tickets.stream()
+                .map(this::mapToResponseDTO)
+                .toList();
     }
 
 
@@ -85,7 +89,8 @@ public class SupportServiceImpl implements SupportService {
                 support.getMessage(),
                 support.getReponseAdmin(),
                 support.getStatus().name(),
-                support.getDateCreation()
+                support.getDateCreation(),
+                support.getUtilisateur().getEmail()
         );
     }
 }

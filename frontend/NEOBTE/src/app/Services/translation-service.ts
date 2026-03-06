@@ -47,6 +47,21 @@ export class TranslationService {
         legal: 'Légal',
         contact: 'Contact',
         rights: 'Tous droits réservés. Filiale de la Banque de Tunisie et des Émirats.'
+      },
+      virement: {
+        title: 'Virement Bancaire',
+        subtitle: 'Transférez des fonds en toute sécurité',
+        source: 'Compte Source',
+        destination: 'Compte Destination',
+        amount: 'Montant',
+        send: 'Envoyer le virement',
+        history: 'Historique des virements',
+        no_history: 'Aucun virement trouvé',
+        success: 'Virement effectué avec succès !',
+        error: 'Erreur lors du virement. Veuillez vérifier vos informations.',
+        load_history: "Charger l'historique",
+        date: 'Date',
+        to: 'Vers'
       }
     },
     en: {
@@ -85,6 +100,21 @@ export class TranslationService {
         legal: 'Legal',
         contact: 'Contact',
         rights: 'All rights reserved. Subsidiary of the Bank of Tunisia and Emirates.'
+      },
+      virement: {
+        title: 'Bank Transfer',
+        subtitle: 'Transfer funds securely',
+        source: 'Source Account',
+        destination: 'Destination Account',
+        amount: 'Amount',
+        send: 'Send Transfer',
+        history: 'Transfer History',
+        no_history: 'No transfers found',
+        success: 'Transfer completed successfully!',
+        error: 'Error during transfer. Please check your details.',
+        load_history: 'Load History',
+        date: 'Date',
+        to: 'To'
       }
     },
     ar: {
@@ -123,6 +153,21 @@ export class TranslationService {
         legal: 'قانوني',
         contact: 'اتصال',
         rights: 'جميع الحقوق محفوظة. فرع من بنك تونس والإمارات.'
+      },
+      virement: {
+        title: 'تحويل بنكي',
+        subtitle: 'حول أموالك بكل أمان',
+        source: 'الحساب المرسل',
+        destination: 'الحساب المستلم',
+        amount: 'المبلغ',
+        send: 'إرسال التحويل',
+        history: 'سجل التحويلات',
+        no_history: 'لا توجد تحويلات',
+        success: 'تم التحويل بنجاح!',
+        error: 'خطأ في التحويل. يرجى التثبت من المعطيات.',
+        load_history: 'تحميل السجل',
+        date: 'التاريخ',
+        to: 'إلى'
       }
     }
   };

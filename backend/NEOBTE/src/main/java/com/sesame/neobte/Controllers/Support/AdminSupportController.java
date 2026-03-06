@@ -18,7 +18,7 @@ public class AdminSupportController {
 
 
     @GetMapping("/all")
-    public List<Support> getAll() {
+    public List<SupportResponseDTO> getAllTickets() {
         return supportService.getAllTickets();
     }
 

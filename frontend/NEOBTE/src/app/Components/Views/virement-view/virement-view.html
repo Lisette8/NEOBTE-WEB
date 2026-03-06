@@ -1,0 +1,100 @@
+<div class="virement-page">
+  <div class="virement-container">
+    <div class="virement-card glass-card">
+      <div class="virement-header">
+        <h1>{{ transService.translate('virement.title') }}</h1>
+        <p class="subtitle">{{ transService.translate('virement.subtitle') }}</p>
+      </div>
+
+      <form [formGroup]="virementForm" (ngSubmit)="transfer()" class="virement-form">
+        <div class="form-group">
+          <label for="compteSourceId">{{ transService.translate('virement.source') }}</label>
+          <div class="input-wrapper">
+            <i class="fas fa-wallet input-icon"></i>
+            <input 
+              id="compteSourceId" 
+              type="number" 
+              formControlName="compteSourceId" 
+              placeholder="12345678"
+            >
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="compteDestinationId">{{ transService.translate('virement.destination') }}</label>
+          <div class="input-wrapper">
+            <i class="fas fa-paper-plane input-icon"></i>
+            <input 
+              id="compteDestinationId" 
+              type="number" 
+              formControlName="compteDestinationId" 
+              placeholder="87654321"
+            >
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label for="montant">{{ transService.translate('virement.amount') }}</label>
+          <div class="input-wrapper">
+            <i class="fas fa-coins input-icon"></i>
+            <input 
+              id="montant" 
+              type="number" 
+              formControlName="montant" 
+              placeholder="0.00"
+            >
+            <span class="currency-label">TND</span>
+          </div>
+        </div>
+
+        <button type="submit" class="btn-primary" [disabled]="loading">
+          <span *ngIf="!loading">{{ transService.translate('virement.send') }}</span>
+          <span *ngIf="loading" class="loader"></span>
+          <div class="btn-glow"></div>
+        </button>
+
+        <div class="messages" *ngIf="message || error">
+          <p class="msg success" *ngIf="message">{{ message }}</p>
+          <p class="msg error" *ngIf="error">{{ error }}</p>
+        </div>
+      </form>
+    </div>
+
+    <div class="history-card glass-card">
+      <div class="history-header">
+        <h2>{{ transService.translate('virement.history') }}</h2>
+        <button class="btn-secondary" (click)="loadHistory()" [disabled]="loading">
+          <i class="fas fa-sync-alt" [class.fa-spin]="loading"></i>
+          {{ transService.translate('virement.load_history') }}
+        </button>
+      </div>
+
+      <div class="history-content">
+        <div *ngIf="history.length === 0" class="no-history">
+          <i class="fas fa-history empty-icon"></i>
+          <p>{{ transService.translate('virement.no_history') }}</p>
+        </div>
+
+        <div class="history-list" *ngIf="history.length > 0">
+          <div class="history-item" *ngFor="let v of history">
+            <div class="history-icon">
+              <i class="fas fa-arrow-right"></i>
+            </div>
+            <div class="history-details">
+              <p class="history-target">{{ transService.translate('virement.to') }}: {{ v.compteDestinationId }}</p>
+              <p class="history-date">{{ v.dateDeVirement | date:'mediumDate' }}</p>
+            </div>
+            <div class="history-amount">
+              {{ v.montant | number:'1.2-2' }} TND
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="background-elements">
+    <div class="orb blue"></div>
+    <div class="orb dark"></div>
+  </div>
+</div>

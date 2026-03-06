@@ -17,6 +17,6 @@ public class SupportResponseDTO {
     private String reponseAdmin;
     private String status;
     private LocalDateTime dateCreation;
-
+    private String clientEmail;
 
 }

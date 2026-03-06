@@ -3,6 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Support } from '../../../Entities/Interfaces/support';
 import { SupportService } from '../../../Services/support-service';
+import { WebsocketService } from '../../../Services/websocket.service';
 
 @Component({
   selector: 'app-admin-support',
@@ -20,15 +21,32 @@ export class AdminSupport implements OnInit {
   responseText: { [key: number]: string } = {};
   statusSelected: { [key: number]: string } = {};
 
-  constructor(private supportService: SupportService) {}
+  constructor(
+    private supportService: SupportService,
+    private websocket: WebsocketService
+  ) { }
 
-  ngOnInit(): void {
+  ngOnInit() {
     this.loadTickets();
+
+    this.websocket.connect((ticket) => {
+      console.log('AdminSupport received new ticket via WebSocket:', ticket);
+      // Ensure the ticket isn't already in the list
+      const exists = this.tickets.some(t => t.idSupport === ticket.idSupport);
+      if (!exists) {
+        // Create a new array reference to trigger Angular change detection
+        this.tickets = [ticket, ...this.tickets];
+      }
+    });
+
   }
 
   loadTickets() {
     this.supportService.getAllTickets().subscribe(data => {
-      this.tickets = data;
+      // Sort by date descending (newest first)
+      this.tickets = data.sort((a, b) => 
+        new Date(b.dateCreation).getTime() - new Date(a.dateCreation).getTime()
+      );
     });
   }
 
@@ -44,10 +62,11 @@ export class AdminSupport implements OnInit {
       });
   }
 
+  
   deleteTicket(id: number) {
     this.supportService.deleteTicket(id).subscribe(() => {
       this.loadTickets();
     });
   }
-  
+
 }

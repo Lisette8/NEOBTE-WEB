@@ -1,4 +1,4 @@
-package com.sesame.neobte.Services.Utils;
+package com.sesame.neobte.Services.Other;
 
 import jakarta.mail.internet.MimeMessage;
 import lombok.AllArgsConstructor;
@@ -20,12 +20,13 @@ public class EmailService {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
 
-            String htmlContent = EmailTemplateLoader
-                    .loadSupportReplyTemplate(subject, adminReply);
-
             helper.setTo(to);
-            helper.setSubject("Response to your support ticket");
-            helper.setText(htmlContent, true); // true = HTML email
+            helper.setSubject("Support reply: " + subject);
+            helper.setFrom("neobte-reply@gmail.com");
+
+            String htmlContent = EmailTemplateLoader.loadSupportReplyTemplate(subject, adminReply);
+
+            helper.setText(htmlContent, true);
 
             mailSender.send(message);
 

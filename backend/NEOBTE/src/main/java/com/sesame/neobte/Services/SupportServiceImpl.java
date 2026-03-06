@@ -7,7 +7,9 @@ import com.sesame.neobte.Entities.SupportStatus;
 import com.sesame.neobte.Entities.Utilisateur;
 import com.sesame.neobte.Repositories.ISupportRepository;
 import com.sesame.neobte.Repositories.IUtilisateurRepository;
+import com.sesame.neobte.Services.Other.EmailService;
 import lombok.AllArgsConstructor;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -19,6 +21,8 @@ public class SupportServiceImpl implements SupportService {
 
     private ISupportRepository supportRepository;
     private IUtilisateurRepository utilisateurRepository;
+    private final SimpMessagingTemplate messagingTemplate;
+    private EmailService emailService;
 
 
     @Override
@@ -58,6 +62,9 @@ public class SupportServiceImpl implements SupportService {
 
         supportRepository.save(support);
 
+        //send notif
+        messagingTemplate.convertAndSend("/topic/support", "New support ticket from: " + user.getEmail());
+
         return mapToResponseDTO(support);
     }
 
@@ -71,7 +78,24 @@ public class SupportServiceImpl implements SupportService {
         support.setReponseAdmin(response);
         support.setStatus(SupportStatus.valueOf(status.toUpperCase()));
 
-        return supportRepository.save(support);
+        Support saved = supportRepository.save(support);
+
+        // send email to client
+        String clientEmail = support.getUtilisateur().getEmail();
+
+        String subject = "Response to your support ticket";
+
+        String message =
+                "Hello,\n\n" +
+                        "Our support team replied to your ticket:\n\n" +
+                        "Subject: " + support.getSujet() + "\n\n" +
+                        "Admin response:\n" +
+                        response +
+                        "\n\nBest regards,\nSupport Team";
+
+        emailService.sendSupportResponseEmail(clientEmail, subject, message);
+
+        return saved;
     }
 
 

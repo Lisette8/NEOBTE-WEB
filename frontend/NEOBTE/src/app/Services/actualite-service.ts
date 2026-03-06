@@ -13,26 +13,50 @@ export class ActualiteService {
   private apiAdmin = 'http://localhost:8080/api/admin/actualite';
   private apiClient = 'http://localhost:8080/api/client/actualite';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
 
   //client side methods
   getAll() {
-    return this.http.get<Actualite[]>(this.apiClient);
+    return this.http.get<Actualite[]>(`${this.apiClient}/all`);
+  }
+
+  getById(id: number) {
+    return this.http.get<Actualite>(`${this.apiClient}/${id}`);
   }
 
 
 
   //admin side methods
-create(data: ActualiteCreateDTO) {
-    return this.http.post<Actualite>(this.apiAdmin, data);
+  create(data: ActualiteCreateDTO) {
+
+    const token = localStorage.getItem('token');
+
+    return this.http.post<Actualite>(`${this.apiAdmin}/add`, data, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
   }
 
   update(id: number, data: ActualiteCreateDTO) {
-    return this.http.put<Actualite>(`${this.apiAdmin}/${id}`, data);
+    const token = localStorage.getItem('token');
+    
+    return this.http.put<Actualite>(`${this.apiAdmin}/update/${id}`, data, {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
   }
 
   delete(id: number) {
-    return this.http.delete(`${this.apiAdmin}/${id}`);
+
+    const token = localStorage.getItem('token');
+
+    return this.http.delete(`${this.apiAdmin}/delete/${id}` , {
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
   }
 }

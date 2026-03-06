@@ -22,13 +22,22 @@ public class ActualiteServiceImpl implements ActualiteService {
     //admin crud
     @Override
     public List<ActualiteResponseDTO> getAll() {
-        List<Actualite> actualites = actualiteRepository.findAll();
+        List<Actualite> actualites = actualiteRepository.findTop10ByOrderByDateCreationActualiteDesc();
         List<ActualiteResponseDTO> response = new ArrayList<>();
 
         for (Actualite actualite : actualites) {
             response.add(mapToResponseDTO(actualite));
         }
         return response;
+    }
+
+
+    @Override
+    public ActualiteResponseDTO getById(Long id) {
+        Actualite actualite = actualiteRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Actualite not found"));
+
+        return mapToResponseDTO(actualite);
     }
 
 

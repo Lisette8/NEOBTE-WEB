@@ -1,7 +1,7 @@
 package com.sesame.neobte.Controllers.Actualite;
 
+import com.sesame.neobte.DTO.Requests.Actualite.ActualiteCreateDTO;
 import com.sesame.neobte.DTO.Responses.Actualite.ActualiteResponseDTO;
-import com.sesame.neobte.Entities.Actualite;
 import com.sesame.neobte.Services.ActualiteService;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -19,23 +19,21 @@ public class AdminActualiteController {
 
     @PostMapping("/add")
     public ActualiteResponseDTO create(
-            @RequestParam String titre,
-            @RequestParam String description,
+            @RequestBody ActualiteCreateDTO dto,
             Authentication authentication
     ) {
         Long adminId = (Long) authentication.getPrincipal();
 
-        return actualiteService.createActualite(adminId, titre, description);
+        return actualiteService.createActualite(adminId, dto.getTitre(), dto.getDescription());
     }
 
 
     @PutMapping("/update/{id}")
     public ActualiteResponseDTO update(
             @PathVariable Long id,
-            @RequestParam String titre,
-            @RequestParam String description
+            @RequestBody ActualiteCreateDTO dto
     ) {
-        return actualiteService.updateActualite(id, titre, description);
+        return actualiteService.updateActualite(id, dto.getTitre(), dto.getDescription());
     }
 
 

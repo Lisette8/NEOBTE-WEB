@@ -17,7 +17,12 @@
       Support
     </button>
 
-    <button>Actualite</button>
+    <button 
+      (click)="selectedTab='news'"
+      [class.active]="selectedTab==='news'">
+      Actualités
+    </button>
+    
     <button>Comptes</button>
   </nav>
 
@@ -26,6 +31,8 @@
     <app-user-management *ngIf="selectedTab==='users'"></app-user-management>
 
     <app-admin-support *ngIf="selectedTab==='support'"></app-admin-support>
+
+    <app-actualite-management *ngIf="selectedTab==='news'"></app-actualite-management>
 
   </main>
 

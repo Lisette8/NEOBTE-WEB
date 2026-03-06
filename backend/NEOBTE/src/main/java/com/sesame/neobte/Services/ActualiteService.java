@@ -9,6 +9,7 @@ public interface ActualiteService {
 
     ActualiteResponseDTO createActualite(Long adminId, String titre, String description);
     List<ActualiteResponseDTO> getAll();
+    ActualiteResponseDTO getById(Long id);
     ActualiteResponseDTO updateActualite(Long id, String titre, String description);
     void deleteActualite(Long id);
 }

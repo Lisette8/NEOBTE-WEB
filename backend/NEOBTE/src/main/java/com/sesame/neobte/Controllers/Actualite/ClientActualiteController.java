@@ -21,4 +21,9 @@ public class ClientActualiteController {
     public List<ActualiteResponseDTO> getAllActualites() {
         return actualiteService.getAll();
     }
+
+    @GetMapping("/{id}")
+    public ActualiteResponseDTO getActualiteById(@PathVariable Long id) {
+        return actualiteService.getById(id);
+    }
 }

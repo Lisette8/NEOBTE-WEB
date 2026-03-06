@@ -12,6 +12,8 @@ import { loginGuard } from './Security/Guards/LoginGuard';
 import { SupportView } from './Components/Views/support-view/support-view';
 import { VirementView } from './Components/Views/virement-view/virement-view';
 import { AdminSupport } from './Components/Views/admin-support/admin-support';
+import { ActualiteView } from './Components/Views/actualite-view/actualite-view';
+import { ActualiteManagement } from './Components/Views/actualite-management/actualite-management';
 
 export const routes: Routes = [
     {
@@ -49,6 +51,15 @@ export const routes: Routes = [
     {
         path: 'admin-support',
         component: AdminSupport,
+    },
+    {
+        path: 'actualite-view',
+        component: ActualiteView,
+    },
+    {
+        path: 'actualite-management',
+        component: ActualiteManagement,
+        canActivate: [authGuard, adminGuard],
     },
     {
         path: '',

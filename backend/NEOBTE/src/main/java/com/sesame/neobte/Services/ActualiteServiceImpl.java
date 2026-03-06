@@ -6,7 +6,11 @@ import com.sesame.neobte.Entities.Utilisateur;
 import com.sesame.neobte.Repositories.IActualiteRepository;
 import com.sesame.neobte.Repositories.IUtilisateurRepository;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
 
 import java.time.LocalDateTime;
 import java.util.*;
@@ -18,17 +22,17 @@ public class ActualiteServiceImpl implements ActualiteService {
     private IActualiteRepository actualiteRepository;
     private IUtilisateurRepository utilisateurRepository;
 
-
+    
     //admin crud
     @Override
-    public List<ActualiteResponseDTO> getAll() {
-        List<Actualite> actualites = actualiteRepository.findTop10ByOrderByDateCreationActualiteDesc();
-        List<ActualiteResponseDTO> response = new ArrayList<>();
+    public Page<ActualiteResponseDTO> getAll(int page, int size) {
 
-        for (Actualite actualite : actualites) {
-            response.add(mapToResponseDTO(actualite));
-        }
-        return response;
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Actualite> actualites =
+                actualiteRepository.findAllByOrderByDateCreationActualiteDesc(pageable);
+
+        return actualites.map(this::mapToResponseDTO);
     }
 
 
@@ -57,6 +61,7 @@ public class ActualiteServiceImpl implements ActualiteService {
 
         return mapToResponseDTO(savedActualite);
     }
+
 
 
     @Override

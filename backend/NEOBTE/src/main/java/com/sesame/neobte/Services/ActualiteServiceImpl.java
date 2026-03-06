@@ -8,6 +8,7 @@ import com.sesame.neobte.Repositories.IUtilisateurRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.*;
 
 @AllArgsConstructor
@@ -40,7 +41,7 @@ public class ActualiteServiceImpl implements ActualiteService {
         Actualite actualite = new Actualite();
         actualite.setTitre(titre);
         actualite.setDescription(description);
-        actualite.setDateCreationActualite(new Date());
+        actualite.setDateCreationActualite(LocalDateTime.now());
         actualite.setCreateur(admin);
 
         Actualite savedActualite = actualiteRepository.save(actualite);

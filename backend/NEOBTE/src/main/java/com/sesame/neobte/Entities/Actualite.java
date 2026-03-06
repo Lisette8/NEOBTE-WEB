@@ -6,7 +6,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import java.util.Date;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -21,7 +22,7 @@ public class Actualite {
 
     private String titre;
     private String description;
-    private Date dateCreationActualite;
+    private LocalDateTime dateCreationActualite;
 
     @ManyToOne
     @JsonIgnore

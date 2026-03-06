@@ -5,7 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.Date;
+import java.time.LocalDateTime;
+
 
 @Setter
 @Getter
@@ -16,7 +17,7 @@ public class ActualiteResponseDTO {
     private Long idActualite;
     private String titre;
     private String description;
-    private Date dateCreationActualite;
+    private LocalDateTime dateCreationActualite;
     private Long createurId;
 
 }

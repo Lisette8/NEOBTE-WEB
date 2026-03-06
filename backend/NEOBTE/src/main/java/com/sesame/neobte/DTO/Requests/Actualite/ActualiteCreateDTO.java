@@ -13,6 +13,4 @@ public class ActualiteCreateDTO {
 
     private String titre;
     private String description;
-    private String imageUrl;
-
 }

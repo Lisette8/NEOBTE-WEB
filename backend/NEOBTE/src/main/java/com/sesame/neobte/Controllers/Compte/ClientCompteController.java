@@ -12,7 +12,7 @@ import java.util.List;
 
 @AllArgsConstructor
 @RestController
-@RequestMapping("/api/v1/client/compte")
+@RequestMapping("/api/v1/client/comptes")
 public class ClientCompteController {
 
     private final CompteService compteService;

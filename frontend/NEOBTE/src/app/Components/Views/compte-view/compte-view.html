@@ -1,0 +1,21 @@
+<div class="comptes-page">
+
+  <h1>My Accounts</h1>
+
+  <div class="accounts-container">
+
+    <div class="account-card" *ngFor="let compte of comptes">
+
+      <h3>Account #{{ compte.idCompte }}</h3>
+
+      <p><strong>Balance:</strong> {{ compte.solde }} TND</p>
+
+      <p><strong>Type:</strong> {{ compte.typeCompte }}</p>
+
+      <p><strong>Status:</strong> {{ compte.statutCompte }}</p>
+
+    </div>
+
+  </div>
+
+</div>

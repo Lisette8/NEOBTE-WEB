@@ -1,0 +1,12 @@
+.accounts-container{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
+  gap:20px;
+}
+
+.account-card{
+  padding:20px;
+  border-radius:10px;
+  background:#f4f4f4;
+  box-shadow:0 4px 10px rgba(0,0,0,0.1);
+}

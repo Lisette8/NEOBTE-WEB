@@ -1,0 +1,36 @@
+<h2>Account Management</h2>
+
+<table>
+
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Balance</th>
+      <th>Type</th>
+      <th>Status</th>
+      <th>User</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+
+  <tbody>
+
+    <tr *ngFor="let compte of comptes">
+
+      <td>{{ compte.idCompte }}</td>
+      <td>{{ compte.solde }} TND</td>
+      <td>{{ compte.typeCompte }}</td>
+      <td>{{ compte.statutCompte }}</td>
+      <td>{{ compte.utilisateurId }}</td>
+
+      <td>
+        <button (click)="deleteAccount(compte.idCompte)">
+          Delete
+        </button>
+      </td>
+
+    </tr>
+
+  </tbody>
+
+</table>

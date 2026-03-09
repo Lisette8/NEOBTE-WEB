@@ -1,0 +1,26 @@
+<div class="modal-overlay" *ngIf="options" (click)="cancel()">
+  <div class="modal-card glass-card" (click)="$event.stopPropagation()" [ngClass]="options.type || 'info'">
+    <div class="modal-header">
+      <div class="icon-circle">
+        <i class="fas" [ngClass]="{
+          'fa-exclamation-triangle': options.type === 'danger' || options.type === 'warning',
+          'fa-info-circle': options.type === 'info' || !options.type
+        }"></i>
+      </div>
+      <h3>{{ options.title }}</h3>
+    </div>
+    
+    <div class="modal-body">
+      <p>{{ options.message }}</p>
+    </div>
+    
+    <div class="modal-footer">
+      <button class="btn-cancel" (click)="cancel()">
+        {{ options.cancelText || 'Annuler' }}
+      </button>
+      <button class="btn-confirm" (click)="confirm()" [ngClass]="options.type || 'info'">
+        {{ options.confirmText || 'Confirmer' }}
+      </button>
+    </div>
+  </div>
+</div>

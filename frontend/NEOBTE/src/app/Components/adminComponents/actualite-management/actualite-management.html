@@ -1,0 +1,78 @@
+<h2>Manage Actualités</h2>
+
+<div class="create-news">
+
+  <input type="text" placeholder="Titre" [(ngModel)]="titre">
+
+  <textarea placeholder="Description" [(ngModel)]="description">
+  </textarea>
+
+  <button (click)="createActualite()">
+    Publish
+  </button>
+
+</div>
+
+<hr>
+
+<div class="news-list">
+
+  <div class="news-card" *ngFor="let act of actualites">
+
+    <div *ngIf="editingId !== act.idActualite">
+
+      <h3>{{act.titre}}</h3>
+
+      <p>{{act.description}}</p>
+
+      <p class="date">
+        {{act.dateCreationActualite | date:'medium'}}
+      </p>
+
+      <button (click)="startEdit(act)">
+        Edit
+      </button>
+
+      <button class="delete" (click)="deleteActualite(act.idActualite)">
+        Delete
+      </button>
+
+    </div>
+
+    <!-- edit -->
+    <div *ngIf="editingId === act.idActualite">
+
+      <input type="text" [(ngModel)]="editTitre">
+
+      <textarea [(ngModel)]="editDescription">
+    </textarea>
+
+      <button (click)="updateActualite(act.idActualite)">
+        Save
+      </button>
+
+      <button (click)="cancelEdit()">
+        Cancel
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+<div class="pagination">
+
+  <button (click)="previousPage()" [disabled]="page === 0">
+    Previous
+  </button>
+
+  <span>
+    Page {{ page + 1 }} / {{ totalPages }}
+  </span>
+
+  <button (click)="nextPage()" [disabled]="page === totalPages - 1">
+    Next
+  </button>
+
+</div>

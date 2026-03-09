@@ -65,7 +65,12 @@ export class VirementView implements OnInit {
     this.message = '';
     this.error = '';
 
-    this.virementService.transfer(this.virementForm.value).subscribe({
+    const request = {
+      ...this.virementForm.value,
+      idempotencyKey: crypto.randomUUID() //randomUUID generates random id for the transfer
+    }
+
+    this.virementService.transfer(request).subscribe({
       next: (res) => {
         this.loading = false;
         this.message = this.transService.translate('virement.success');

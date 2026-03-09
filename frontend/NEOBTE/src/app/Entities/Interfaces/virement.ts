@@ -4,5 +4,5 @@ export interface Virement {
   compteDestinationId: number;
   montant: number;
   dateDeVirement: string;
-
+  idempotencyKey?: string; //? is optional and ! is undifined 
 }

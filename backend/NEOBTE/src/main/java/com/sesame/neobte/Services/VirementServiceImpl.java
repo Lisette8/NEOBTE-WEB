@@ -47,10 +47,11 @@ public class VirementServiceImpl implements VirementService {
             throw new RuntimeException("Vous ne pouvez pas transferer de l'argent vers le meme compte");
         }
 
-        Compte compteSource = compteRepository.findById(dto.getCompteSourceId())
+        //one of the best practices when it comes to PESSIMISTIC_WRITE is to always lock the source account and then the destination account
+        Compte compteSource = compteRepository.findByIdForUpdate(dto.getCompteSourceId())
                 .orElseThrow(() -> new RuntimeException("Compte source introuvable"));
 
-        Compte compteDestination = compteRepository.findById(dto.getCompteDestinationId())
+        Compte compteDestination = compteRepository.findByIdForUpdate(dto.getCompteDestinationId())
                 .orElseThrow(() -> new RuntimeException("Compte destination introuvable"));
 
         if(compteSource.getStatutCompte() != StatutCompte.ACTIF){

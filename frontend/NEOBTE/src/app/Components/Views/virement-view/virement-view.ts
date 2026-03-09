@@ -3,6 +3,7 @@ import { VirementService } from '../../../Services/virement.service';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../../Services/translation-service';
+import { Virement } from '../../../Entities/Interfaces/virement';
 
 @Component({
   selector: 'app-virement-view',
@@ -16,7 +17,7 @@ import { TranslationService } from '../../../Services/translation-service';
 export class VirementView implements OnInit {
 
   virementForm: FormGroup;
-  history: any[] = [];
+  history: Virement[] = [];
   loading = false;
   message = '';
   error = '';

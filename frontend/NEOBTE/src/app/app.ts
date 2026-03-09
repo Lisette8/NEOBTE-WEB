@@ -5,11 +5,12 @@ import { Footer } from './Components/footer/footer';
 import { CommonModule, DOCUMENT } from '@angular/common';
 import { filter } from 'rxjs';
 import { TranslationService, Lang } from './Services/translation-service';
+import { ConfirmModal } from './Components/Shared/confirm-modal/confirm-modal';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, Header, Footer, CommonModule],
+  imports: [RouterOutlet, Header, Footer, CommonModule, ConfirmModal],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

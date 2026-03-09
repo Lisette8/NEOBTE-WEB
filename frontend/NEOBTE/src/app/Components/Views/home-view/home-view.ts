@@ -5,22 +5,27 @@ import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-home-view',
+  standalone: true,
   imports: [CommonModule],
   templateUrl: './home-view.html',
   styleUrl: './home-view.css',
 })
-export class HomeView implements OnInit{
-  
+export class HomeView implements OnInit {
+
   actualites: Actualite[] = [];
 
+  page = 0;
+  size = 5;
+
   constructor(private actualiteService: ActualiteService) {}
+
   ngOnInit(): void {
-    throw new Error('Method not implemented.');
+    this.loadActualites();
   }
 
-  nngOnInit(): void {
-    this.actualiteService.getAll().subscribe(data => {
-      this.actualites = data;
+  loadActualites() {
+    this.actualiteService.getAll(this.page, this.size).subscribe(data => {
+      this.actualites = data.content;
     });
   }
 }

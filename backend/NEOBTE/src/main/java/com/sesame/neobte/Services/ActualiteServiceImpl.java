@@ -97,4 +97,5 @@ public class ActualiteServiceImpl implements ActualiteService {
                 actualite.getCreateur().getIdUtilisateur()
         );
     }
+
 }

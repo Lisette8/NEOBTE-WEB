@@ -13,9 +13,9 @@ export class AdminService {
 
   private api = "http://localhost:8080/api/admin";
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
-
+  
 
   //endpoints
 

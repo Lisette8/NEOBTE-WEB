@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Actualite } from '../Entities/Interfaces/actualite';
 import { ActualiteCreateDTO } from '../Entities/DTO/actualite-create-dto';
+import { Page } from '../Entities/Interfaces/page';
 
 
 
@@ -17,8 +18,8 @@ export class ActualiteService {
 
 
   //client side methods
-  getAll() {
-    return this.http.get<Actualite[]>(`${this.apiClient}/all`);
+  getAll(page: number, size: number) {
+    return this.http.get<Page<Actualite>>(`${this.apiClient}/all?page=${page}&size=${size}`);
   }
 
   getById(id: number) {

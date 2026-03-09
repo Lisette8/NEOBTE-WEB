@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { Virement } from '../Entities/Interfaces/virement';
+import { VirementCreateDTO } from '../Entities/DTO/virement-create-dto';
 
 @Injectable({
   providedIn: 'root'
@@ -11,11 +13,12 @@ export class VirementService {
 
   constructor(private http: HttpClient) {}
 
-  transfer(data: any): Observable<any> {
-    return this.http.post(`${this.apiUrl}/transfer`, data);
+  transfer(data: VirementCreateDTO): Observable<Virement> {
+    return this.http.post<Virement>(`${this.apiUrl}/transfer`, data);
   }
 
-  getHistory(compteId: number): Observable<any> {
-    return this.http.get(`${this.apiUrl}/history/${compteId}`);
+  getHistory(compteId: number): Observable<Virement[]> {
+    return this.http.get<Virement[]>(`${this.apiUrl}/history/${compteId}`);
   }
+
 }

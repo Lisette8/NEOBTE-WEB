@@ -11,12 +11,7 @@
           <label for="compteSourceId">{{ transService.translate('virement.source') }}</label>
           <div class="input-wrapper">
             <i class="fas fa-wallet input-icon"></i>
-            <input 
-              id="compteSourceId" 
-              type="number" 
-              formControlName="compteSourceId" 
-              placeholder="12345678"
-            >
+            <input id="compteSourceId" type="number" formControlName="compteSourceId" placeholder="12345678">
           </div>
         </div>
 
@@ -24,12 +19,7 @@
           <label for="compteDestinationId">{{ transService.translate('virement.destination') }}</label>
           <div class="input-wrapper">
             <i class="fas fa-paper-plane input-icon"></i>
-            <input 
-              id="compteDestinationId" 
-              type="number" 
-              formControlName="compteDestinationId" 
-              placeholder="87654321"
-            >
+            <input id="compteDestinationId" type="number" formControlName="compteDestinationId" placeholder="87654321">
           </div>
         </div>
 
@@ -37,17 +27,12 @@
           <label for="montant">{{ transService.translate('virement.amount') }}</label>
           <div class="input-wrapper">
             <i class="fas fa-coins input-icon"></i>
-            <input 
-              id="montant" 
-              type="number" 
-              formControlName="montant" 
-              placeholder="0.00"
-            >
+            <input id="montant" type="number" min="1" formControlName="montant" placeholder="0.00">
             <span class="currency-label">TND</span>
           </div>
         </div>
 
-        <button type="submit" class="btn-primary" [disabled]="loading">
+        <button type="submit" class="btn-primary" [disabled]="loading || virementForm.invalid">
           <span *ngIf="!loading">{{ transService.translate('virement.send') }}</span>
           <span *ngIf="loading" class="loader"></span>
           <div class="btn-glow"></div>
@@ -78,17 +63,25 @@
         <div class="history-list" *ngIf="history.length > 0">
           <div class="history-item" *ngFor="let v of history">
             <div class="history-icon">
-              <i class="fas fa-arrow-right"></i>
+              <i class="fas fa-exchange-alt"></i>
             </div>
             <div class="history-details">
-              <p class="history-target">{{ transService.translate('virement.to') }}: {{ v.compteDestinationId }}</p>
-              <p class="history-date">{{ v.dateDeVirement | date:'mediumDate' }}</p>
+              <p class="history-target">
+                {{ transService.translate('virement.from') }}: {{ v.compteSourceId }}
+              </p>
+              <p class="history-target">
+                {{ transService.translate('virement.to') }}: {{ v.compteDestinationId }}
+              </p>
+              <p class="history-date">
+                {{ v.dateDeVirement | date:'medium' }}
+              </p>
             </div>
             <div class="history-amount">
-              {{ v.montant | number:'1.2-2' }} TND
+              {{ v.montant | currency:'TND':'symbol':'1.2-2' }}
             </div>
           </div>
         </div>
+
       </div>
     </div>
   </div>

@@ -17,7 +17,10 @@ import java.util.*;
 @AllArgsConstructor
 public class Compte implements Serializable {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idCompte;
+
+
     private Double solde;
     @Enumerated(EnumType.STRING)
     private TypeCompte typeCompte;

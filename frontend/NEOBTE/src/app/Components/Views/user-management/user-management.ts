@@ -5,6 +5,7 @@ import { AdminService } from '../../../Services/admin-service';
 import { UserListDTO } from '../../../Entities/DTO/Admin/user-list-dto';
 import { UserCreateDTO } from '../../../Entities/DTO/Admin/user-create-dto';
 import { UserUpdateDTO } from '../../../Entities/DTO/Admin/user-update-dto';
+import { ConfirmModalService } from '../../../Services/SharedServices/confirm-modal.service';
 
 @Component({
   selector: 'app-user-management',
@@ -24,7 +25,11 @@ export class UserManagement implements OnInit {
   selectedUserId: number | null = null;
   showForm = false;
 
-  constructor(private adminService: AdminService, private fb: FormBuilder) {
+  constructor(
+    private adminService: AdminService,
+    private fb: FormBuilder,
+    private modalService: ConfirmModalService
+  ) {
     this.userForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       nom: ['', Validators.required],
@@ -131,14 +136,22 @@ export class UserManagement implements OnInit {
     }
   }
 
-  deleteUser(id: number) {
-    if (!confirm('Delete this user?')) return;
-
-    this.adminService.deleteUser(id).subscribe({
-      next: () => {
-        this.loadUsers();
-      }
+  async deleteUser(id: number) {
+    const confirmed = await this.modalService.confirm({
+      title: 'Supprimer l\'utilisateur',
+      message: 'Êtes-vous sûr de vouloir supprimer cet utilisateur ?',
+      confirmText: 'Supprimer',
+      cancelText: 'Annuler',
+      type: 'danger'
     });
+
+    if (confirmed) {
+      this.adminService.deleteUser(id).subscribe({
+        next: () => {
+          this.loadUsers();
+        }
+      });
+    }
   }
 
   resetForm() {

@@ -64,6 +64,7 @@ export const routes: Routes = [
     {
         path: 'compte-view',
         component: CompteView,
+        canActivate: [authGuard],
     },
     {
         path: 'compte-management',

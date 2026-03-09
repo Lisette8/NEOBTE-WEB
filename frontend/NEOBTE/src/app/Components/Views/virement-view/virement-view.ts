@@ -4,6 +4,8 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { CommonModule } from '@angular/common';
 import { TranslationService } from '../../../Services/translation-service';
 import { Virement } from '../../../Entities/Interfaces/virement';
+import { Compte } from '../../../Entities/Interfaces/compte';
+import { CompteService } from '../../../Services/compte-service';
 
 @Component({
   selector: 'app-virement-view',
@@ -16,6 +18,7 @@ import { Virement } from '../../../Entities/Interfaces/virement';
 
 export class VirementView implements OnInit {
 
+  comptes: Compte[] = [];
   virementForm: FormGroup;
   history: Virement[] = [];
   loading = false;
@@ -24,6 +27,7 @@ export class VirementView implements OnInit {
 
   constructor(
     private virementService: VirementService,
+    private compteService: CompteService,
     private fb: FormBuilder,
     public transService: TranslationService
   ) {
@@ -35,6 +39,13 @@ export class VirementView implements OnInit {
   }
 
   ngOnInit() {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const userId = user.id;
+
+    this.compteService.getUserAccounts(userId)
+      .subscribe(data => {
+        this.comptes = data;
+      })
   }
 
 
@@ -42,6 +53,11 @@ export class VirementView implements OnInit {
   transfer() {
     if (this.virementForm.invalid) {
       this.virementForm.markAllAsTouched();
+      return;
+    }
+
+    if (this.virementForm.value.compteSourceId === this.virementForm.value.compteDestinationId) {
+      this.error = "You cannot transfer to the same account";
       return;
     }
 
@@ -64,7 +80,7 @@ export class VirementView implements OnInit {
     });
   }
 
-  
+
   loadHistory() {
     const sourceId = this.virementForm.get('compteSourceId')?.value;
     if (!sourceId) {

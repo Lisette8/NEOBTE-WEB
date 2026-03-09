@@ -20,6 +20,11 @@ public class Virement implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idVirement;
 
+
+    //idempotencyKey is basically used in a protection layer to prevent the redundant actions when pressing fast on a button for example....
+    @Column(unique = true)
+    private String idempotencyKey;
+
     @ManyToOne
     private Compte compteDe;
 

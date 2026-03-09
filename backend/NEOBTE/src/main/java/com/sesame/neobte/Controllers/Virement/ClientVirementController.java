@@ -3,6 +3,7 @@ package com.sesame.neobte.Controllers.Virement;
 import com.sesame.neobte.DTO.Requests.Virement.VirementCreateDTO;
 import com.sesame.neobte.DTO.Responses.Virement.VirementResponseDTO;
 import com.sesame.neobte.Services.VirementService;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,7 +18,7 @@ public class ClientVirementController {
 
     @PostMapping("/transfer")
     public VirementResponseDTO transfer(
-            @RequestBody VirementCreateDTO dto
+            @Valid @RequestBody VirementCreateDTO dto //I added valid to make sure it's validated, it's basically another layer of protection eq validation
     ) {
         return virementService.effectuerVirement(dto);
     }

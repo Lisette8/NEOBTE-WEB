@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { VirementService } from '../../../Services/virement.service';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { TranslationService } from '../../../Services/SharedServices/translation-service';
 import { Virement } from '../../../Entities/Interfaces/virement';
 import { Compte } from '../../../Entities/Interfaces/compte';
 import { CompteService } from '../../../Services/compte-service';
@@ -41,7 +40,6 @@ export class VirementView implements OnInit {
     private virementService: VirementService,
     private compteService: CompteService,
     private fb: FormBuilder,
-    public transService: TranslationService,
     private modalService: ConfirmModalService,
     private router: Router
   ) {
@@ -87,17 +85,17 @@ export class VirementView implements OnInit {
     }
 
     if (this.virementForm.value.compteSourceId === this.virementForm.value.compteDestinationId) {
-      this.error = "You cannot transfer to the same account";
+      this.error = "Vous ne pouvez pas effectuer un virement vers le même compte";
       return;
     }
 
     const { montant, compteSourceId, compteDestinationId } = this.virementForm.value;
 
     const confirmed = await this.modalService.confirm({
-      title: 'Confirm Transfer',
-      message: `You are about to transfer ${montant} TND from account #${compteSourceId} to account #${compteDestinationId}. This action cannot be undone.`,
-      confirmText: 'Send Transfer',
-      cancelText: 'Cancel',
+      title: 'Confirmer le virement',
+      message: `Vous êtes sur le point de transférer ${montant} TND du compte #${compteSourceId} vers le compte #${compteDestinationId}. Cette action est irréversible.`,
+      confirmText: 'Envoyer',
+      cancelText: 'Annuler',
       type: 'warning'
     });
 
@@ -115,7 +113,7 @@ export class VirementView implements OnInit {
     this.virementService.transfer(request).subscribe({
       next: (res) => {
         this.loading = false;
-        this.message = this.transService.translate('virement.success');
+        this.message = 'Virement effectué avec succès !';
         this.virementForm.reset();
         this.loadAccounts();
         this.loadHistory();
@@ -123,7 +121,7 @@ export class VirementView implements OnInit {
       },
       error: (err) => {
         this.loading = false;
-        this.error = this.transService.translate('virement.error');
+        this.error = 'Erreur lors du virement. Veuillez vérifier vos informations.';
         console.error(err);
       }
     });

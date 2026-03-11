@@ -2,7 +2,6 @@ import { Component } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../Services/auth-service';
-import { TranslationService, Lang } from '../../Services/SharedServices/translation-service';
 
 @Component({
   selector: 'app-header',
@@ -13,25 +12,14 @@ import { TranslationService, Lang } from '../../Services/SharedServices/translat
 })
 export class Header {
   isMenuOpen = false;
-  isLangOpen = false;
 
   constructor(
     private authService: AuthService,
-    private router: Router,
-    public transService: TranslationService
+    private router: Router
   ) {}
   
   toggleMenu() {
     this.isMenuOpen = !this.isMenuOpen;
-  }
-
-  toggleLang() {
-    this.isLangOpen = !this.isLangOpen;
-  }
-
-  setLang(lang: Lang) {
-    this.transService.setLanguage(lang);
-    this.isLangOpen = false;
   }
 
   isLoggedIn(): boolean {

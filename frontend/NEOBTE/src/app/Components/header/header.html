@@ -9,28 +9,19 @@
 
     <nav class="nav-links" [class.open]="isMenuOpen">
       <ul>
-        <li *ngIf="isLoggedIn()"><a routerLink="/home-view" routerLinkActive="active">{{ transService.translate('common.accueil') }}</a></li>
-        <li><a href="#">{{ transService.translate('common.produits') }}</a></li>
-        <li><a href="#">{{ transService.translate('common.support') }}</a></li>
+        <li *ngIf="isLoggedIn()"><a routerLink="/home-view" routerLinkActive="active">Accueil</a></li>
+        <li><a href="#">Produits</a></li>
+        <li><a href="#">Support</a></li>
       </ul>
     </nav>
 
     <div class="header-actions">
-      <div class="lang-switcher" (click)="toggleLang()">
-        <span class="current-lang">{{ transService.getLanguage() | uppercase }}</span>
-        <div class="lang-dropdown" *ngIf="isLangOpen">
-          <div (click)="setLang('fr')">FR</div>
-          <div (click)="setLang('en')">EN</div>
-          <div (click)="setLang('ar')">AR</div>
-        </div>
-      </div>
-
       <div class="auth-group" *ngIf="!isLoggedIn()">
-        <a routerLink="/auth-view" class="btn-login">{{ transService.translate('common.connexion') }}</a>
+        <a routerLink="/auth-view" class="btn-login">Connexion</a>
       </div>
 
       <div class="auth-group" *ngIf="isLoggedIn()">
-        <button class="btn-logout" (click)="logout()">{{ transService.translate('common.logout') }}</button>
+        <button class="btn-logout" (click)="logout()">Déconnexion</button>
       </div>
       
       <button class="mobile-toggle" (click)="toggleMenu()">

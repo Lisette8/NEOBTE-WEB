@@ -2,8 +2,8 @@
   <div class="virement-container">
     <div class="virement-card glass-card">
       <div class="virement-header">
-        <h1>{{ transService.translate('virement.title') }}</h1>
-        <p class="subtitle">{{ transService.translate('virement.subtitle') }}</p>
+        <h1>Virement Bancaire</h1>
+        <p class="subtitle">Transférez des fonds en toute sécurité</p>
       </div>
 
       <form [formGroup]="virementForm" (ngSubmit)="transfer()" class="virement-form">
@@ -11,7 +11,7 @@
         <!-- SOURCE ACCOUNT -->
         <div class="form-group">
           <label for="compteSourceId">
-            {{ transService.translate('virement.source') }}
+            Compte Source
           </label>
 
           <div class="input-wrapper">
@@ -20,13 +20,13 @@
             <select id="compteSourceId" formControlName="compteSourceId">
 
               <option value="" disabled selected>
-                Select your account
+                Sélectionnez votre compte
               </option>
 
               <option *ngFor="let compte of comptes"
                       [value]="compte.idCompte">
 
-                Account #{{ compte.idCompte }} — {{ compte.typeCompte }}
+                Compte #{{ compte.idCompte }} — {{ compte.typeCompte }}
 
               </option>
 
@@ -36,7 +36,7 @@
 
           <!-- Balance display -->
           <div class="balance-hint" *ngIf="selectedCompte">
-            <span class="balance-label">Available balance:</span>
+            <span class="balance-label">Solde disponible:</span>
             <span class="balance-value">{{ selectedCompte.solde | number:'1.2-2' }} TND</span>
           </div>
 
@@ -45,7 +45,7 @@
         <!-- DESTINATION ACCOUNT -->
         <div class="form-group">
           <label for="compteDestinationId">
-            {{ transService.translate('virement.destination') }}
+            Compte Destination
           </label>
 
           <div class="input-wrapper">
@@ -63,7 +63,7 @@
         <!-- AMOUNT -->
         <div class="form-group">
           <label for="montant">
-            {{ transService.translate('virement.amount') }}
+            Montant
           </label>
 
           <div class="input-wrapper">
@@ -85,7 +85,7 @@
         <button type="submit" class="btn-primary" [disabled]="loading || virementForm.invalid">
 
           <span *ngIf="!loading">
-            {{ transService.translate('virement.send') }}
+            Envoyer le virement
           </span>
 
           <span *ngIf="loading" class="loader"></span>
@@ -114,14 +114,14 @@
     <div class="history-card glass-card">
 
       <div class="history-header">
-        <h2>{{ transService.translate('virement.history') }}</h2>
+        <h2>Historique des virements</h2>
       </div>
 
       <div class="history-content">
 
         <div *ngIf="history.length === 0" class="no-history">
           <i class="fas fa-history empty-icon"></i>
-          <p>{{ transService.translate('virement.no_history') }}</p>
+          <p>Aucun virement trouvé</p>
         </div>
 
         <div class="history-list" *ngIf="history.length > 0">
@@ -136,9 +136,9 @@
 
               <p class="history-target">
                 <span class="direction-badge" [class.sent]="isSent(v)" [class.received]="!isSent(v)">
-                  {{ isSent(v) ? 'Sent' : 'Received' }}
+                  {{ isSent(v) ? 'Envoyé' : 'Reçu' }}
                 </span>
-                {{ isSent(v) ? ('To #' + v.compteDestinationId) : ('From #' + v.compteSourceId) }}
+                {{ isSent(v) ? ('Vers #' + v.compteDestinationId) : ('De #' + v.compteSourceId) }}
               </p>
 
               <p class="history-date">

@@ -5,7 +5,6 @@ import { AuthService } from '../../../Services/auth-service';
 import { LoginRequest } from '../../../Entities/Interfaces/login-request';
 import { RegisterRequest } from '../../../Entities/Interfaces/register-request';
 import { Router } from '@angular/router';
-import { TranslationService } from '../../../Services/SharedServices/translation-service';
 
 @Component({
   selector: 'app-auth-view',
@@ -26,8 +25,7 @@ export class AuthView implements OnInit {
   constructor(
     private authService: AuthService,
     private fb: FormBuilder,
-    private router: Router,
-    public transService: TranslationService
+    private router: Router
   ) {
     this.authForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],

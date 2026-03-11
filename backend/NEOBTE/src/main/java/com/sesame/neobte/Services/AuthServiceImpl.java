@@ -47,7 +47,7 @@ public class AuthServiceImpl implements AuthService {
         String token = jwtService.generateToken(
                 utilisateur.getIdUtilisateur(),
                 utilisateur.getRole().toString()
-                );
+        );
 
 
         System.out.println("User logged in");
@@ -89,7 +89,8 @@ public class AuthServiceImpl implements AuthService {
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
-            tokenBlacklistService.blacklistToken(token);
+
+            tokenBlacklistService.blacklistToken(token, jwtService.extractExpiration(token));
         }
     }
 }

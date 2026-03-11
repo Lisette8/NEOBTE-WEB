@@ -63,11 +63,16 @@ public class JwtService {
     }
 
 
+    public Date extractExpiration(String token) {
+        return extractClaim(token, Claims::getExpiration);
+    }
+
+
     //is token valid methods (Boolean)
     public boolean isTokenExpired(String token) {
-        Date expiration = extractClaim(token, Claims::getExpiration);
-        return expiration.before(new Date());
+        return extractExpiration(token).before(new Date());
     }
+
 
     public boolean isTokenValid(String token, Long userId) {
         final Long extractedUserId = extractUserId(token);

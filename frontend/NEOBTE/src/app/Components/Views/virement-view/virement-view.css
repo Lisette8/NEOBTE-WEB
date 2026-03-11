@@ -327,3 +327,61 @@
 
 .history-amount.sent     { color: #dc2626; }
 .history-amount.received { color: #16a34a; }
+
+/* Inline field errors */
+.field-error {
+  font-size: 0.75rem;
+  color: #dc2626;
+  font-weight: 500;
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.field-error::before {
+  content: '!';
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: #dc2626;
+  color: #fff;
+  font-size: 0.6rem;
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+/* History filter tabs */
+.history-tabs {
+  display: flex;
+  gap: 4px;
+  background: #f1f5f9;
+  padding: 4px;
+  border-radius: 10px;
+}
+
+.htab {
+  background: none;
+  border: none;
+  padding: 5px 14px;
+  border-radius: 7px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  font-family: inherit;
+}
+
+.htab:hover {
+  color: #0f172a;
+}
+
+.htab.active {
+  background: #ffffff;
+  color: #0000A0;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+}

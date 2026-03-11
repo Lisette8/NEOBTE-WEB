@@ -25,6 +25,7 @@ export class VirementView implements OnInit {
   loading = false;
   message = '';
   error = '';
+  historyFilter: 'all' | 'sent' | 'received' = 'all';
 
   get selectedCompte(): Compte | undefined {
     const id = this.virementForm.get('compteSourceId')?.value;
@@ -34,6 +35,23 @@ export class VirementView implements OnInit {
   isSent(v: Virement): boolean {
     const id = this.virementForm.get('compteSourceId')?.value;
     return v.compteSourceId == id;
+  }
+
+  fieldInvalid(field: string): boolean {
+    const ctrl = this.virementForm.get(field);
+    return !!(ctrl?.invalid && ctrl?.touched);
+  }
+
+  get amountExceedsBalance(): boolean {
+    const montant = this.virementForm.get('montant')?.value;
+    return !!(this.selectedCompte && montant > this.selectedCompte.solde);
+  }
+
+  // #10 - filtered history based on active tab
+  get filteredHistory(): Virement[] {
+    if (this.historyFilter === 'sent')     return this.history.filter(v => this.isSent(v));
+    if (this.historyFilter === 'received') return this.history.filter(v => !this.isSent(v));
+    return this.history;
   }
 
   constructor(
@@ -47,6 +65,11 @@ export class VirementView implements OnInit {
       compteSourceId: [null, [Validators.required]],
       compteDestinationId: [null, [Validators.required]],
       montant: [null, [Validators.required, Validators.min(1)]]
+    });
+
+    // Re-validate montant whenever source account changes (balance changes)
+    this.virementForm.get('compteSourceId')?.valueChanges.subscribe(() => {
+      this.virementForm.get('montant')?.updateValueAndValidity();
     });
   }
 
@@ -89,6 +112,11 @@ export class VirementView implements OnInit {
       return;
     }
 
+    if (this.amountExceedsBalance) {
+      this.error = "Solde insuffisant pour ce virement";
+      return;
+    }
+
     const { montant, compteSourceId, compteDestinationId } = this.virementForm.value;
 
     const confirmed = await this.modalService.confirm({
@@ -113,15 +141,16 @@ export class VirementView implements OnInit {
     this.virementService.transfer(request).subscribe({
       next: (res) => {
         this.loading = false;
-        this.message = 'Virement effectué avec succès !';
+        // #8 - preserve source account, only reset destination and amount
+        const sourceId = this.virementForm.get('compteSourceId')?.value;
         this.virementForm.reset();
+        this.virementForm.get('compteSourceId')?.setValue(sourceId);
         this.loadAccounts();
         this.loadHistory();
         console.log(res);
       },
       error: (err) => {
         this.loading = false;
-        this.error = 'Erreur lors du virement. Veuillez vérifier vos informations.';
         console.error(err);
       }
     });

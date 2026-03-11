@@ -5,6 +5,8 @@ import com.sesame.neobte.DTO.Requests.Auth.LoginRequest;
 import com.sesame.neobte.DTO.Requests.Auth.RegisterRequest;
 import com.sesame.neobte.Entities.Class.Utilisateur;
 import com.sesame.neobte.Entities.Enumeration.Role;
+import com.sesame.neobte.Exceptions.BadRequestException;
+import com.sesame.neobte.Exceptions.UnauthorizedException;
 import com.sesame.neobte.Repositories.IUtilisateurRepository;
 import com.sesame.neobte.Security.Services.JwtService;
 import com.sesame.neobte.Security.Services.TokenBlacklistService;
@@ -32,7 +34,7 @@ public class AuthServiceImpl implements AuthService {
         Utilisateur utilisateur = clientRepository.findByEmail(request.getEmail());
 
         if (utilisateur == null) {
-            throw new RuntimeException("No client with email " + request.getEmail());
+            throw new UnauthorizedException("Invalid email or password");
         }
 
         boolean ifTrueMDP = passwordEncoder.matches(
@@ -41,7 +43,7 @@ public class AuthServiceImpl implements AuthService {
         );
 
         if(!ifTrueMDP){
-            throw new RuntimeException("Wrong password");
+            throw new UnauthorizedException("Invalid email or password");
         }
 
         String token = jwtService.generateToken(
@@ -61,7 +63,7 @@ public class AuthServiceImpl implements AuthService {
 
         Utilisateur checkUtilisateurAlreadyExists = clientRepository.findByEmail(request.getEmail());
         if (checkUtilisateurAlreadyExists != null) {
-            throw new RuntimeException("Client with email " + request.getEmail() + " already exists");
+            throw new BadRequestException("Client with email " + request.getEmail() + " already exists");
         }
 
         Utilisateur utilisateur = new Utilisateur();

@@ -8,7 +8,6 @@ import java.util.*;
 
 public interface SupportService {
 
-
     //client side methods
     SupportResponseDTO createTicket(Long userId, SupportCreateDTO dto);
     List<SupportResponseDTO> getMyTickets(Long userId);

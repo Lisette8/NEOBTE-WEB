@@ -3,6 +3,7 @@ package com.sesame.neobte.Services;
 import com.sesame.neobte.DTO.Responses.Actualite.ActualiteResponseDTO;
 import com.sesame.neobte.Entities.Class.Actualite;
 import com.sesame.neobte.Entities.Class.Utilisateur;
+import com.sesame.neobte.Exceptions.ResourceNotFoundException;
 import com.sesame.neobte.Repositories.IActualiteRepository;
 import com.sesame.neobte.Repositories.IUtilisateurRepository;
 import lombok.AllArgsConstructor;
@@ -21,7 +22,7 @@ public class ActualiteServiceImpl implements ActualiteService {
     private IActualiteRepository actualiteRepository;
     private IUtilisateurRepository utilisateurRepository;
 
-    
+
     //admin crud
     @Override
     public Page<ActualiteResponseDTO> getAll(int page, int size) {
@@ -38,7 +39,7 @@ public class ActualiteServiceImpl implements ActualiteService {
     @Override
     public ActualiteResponseDTO getById(Long id) {
         Actualite actualite = actualiteRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Actualite not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Actualite not found"));
 
         return mapToResponseDTO(actualite);
     }
@@ -47,8 +48,8 @@ public class ActualiteServiceImpl implements ActualiteService {
     @Override
     public ActualiteResponseDTO createActualite(Long adminId, String titre, String description) {
 
-        Utilisateur admin = utilisateurRepository.  findById(adminId)
-                .orElseThrow(() -> new RuntimeException("Admin not found"));
+        Utilisateur admin = utilisateurRepository.findById(adminId)
+                .orElseThrow(() -> new ResourceNotFoundException("Admin not found"));
 
         Actualite actualite = new Actualite();
         actualite.setTitre(titre);
@@ -67,7 +68,7 @@ public class ActualiteServiceImpl implements ActualiteService {
     public ActualiteResponseDTO  updateActualite(Long id, String titre, String description) {
 
         Actualite actualiteUpdated = actualiteRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Actualite not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Actualite not found"));
 
         actualiteUpdated.setTitre(titre);
         actualiteUpdated.setDescription(description);

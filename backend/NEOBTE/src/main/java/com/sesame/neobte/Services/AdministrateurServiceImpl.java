@@ -5,6 +5,7 @@ import com.sesame.neobte.DTO.Requests.Admin.UpdateUserRequest;
 import com.sesame.neobte.DTO.Responses.Admin.AdminUserResponse;
 import com.sesame.neobte.Entities.Enumeration.Role;
 import com.sesame.neobte.Entities.Class.Utilisateur;
+import com.sesame.neobte.Exceptions.ResourceNotFoundException;
 import com.sesame.neobte.Mappers_Example.UtilisateurMapper;
 import com.sesame.neobte.Repositories.IUtilisateurRepository;
 import lombok.AllArgsConstructor;
@@ -32,14 +33,14 @@ public class AdministrateurServiceImpl implements AdministrateurService {
     //ENTITY
     public Utilisateur getUserEntityById(Long id) {
         return utilisateurRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id " + id));
     }
 
     //DTO
     @Override
     public AdminUserResponse getUserById(Long id) {
         Utilisateur user = utilisateurRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("User not found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id " + id));
 
         return UtilisateurMapper.toAdminResponse(user);
     }
@@ -106,9 +107,6 @@ public class AdministrateurServiceImpl implements AdministrateurService {
     public void deleteUser(Long id) {
         utilisateurRepository.deleteById(id);
     }
-
-
-
 
 
 }

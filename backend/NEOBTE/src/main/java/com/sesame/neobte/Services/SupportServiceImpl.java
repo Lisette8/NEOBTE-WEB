@@ -5,6 +5,7 @@ import com.sesame.neobte.DTO.Responses.Support.SupportResponseDTO;
 import com.sesame.neobte.Entities.Class.Support;
 import com.sesame.neobte.Entities.Enumeration.SupportStatus;
 import com.sesame.neobte.Entities.Class.Utilisateur;
+import com.sesame.neobte.Exceptions.ResourceNotFoundException;
 import com.sesame.neobte.Repositories.ISupportRepository;
 import com.sesame.neobte.Repositories.IUtilisateurRepository;
 import com.sesame.neobte.Services.Other.EmailService;
@@ -51,7 +52,7 @@ public class SupportServiceImpl implements SupportService {
     public SupportResponseDTO createTicket(Long userId, SupportCreateDTO dto) {
 
         Utilisateur user = utilisateurRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Support support = new Support();
         support.setSujet(dto.getSujet());
@@ -73,7 +74,7 @@ public class SupportServiceImpl implements SupportService {
     public Support updateStatus(Long id, String response, String status) {
 
         Support support = supportRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Ticket not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket not found"));
 
         support.setReponseAdmin(response);
         support.setStatus(SupportStatus.valueOf(status.toUpperCase()));

@@ -5,6 +5,7 @@ import com.sesame.neobte.DTO.Responses.Compte.CompteResponseDTO;
 import com.sesame.neobte.Entities.Class.Compte;
 import com.sesame.neobte.Entities.Enumeration.StatutCompte;
 import com.sesame.neobte.Entities.Class.Utilisateur;
+import com.sesame.neobte.Exceptions.ResourceNotFoundException;
 import com.sesame.neobte.Repositories.ICompteRepository;
 import com.sesame.neobte.Repositories.IUtilisateurRepository;
 import lombok.AllArgsConstructor;
@@ -24,7 +25,7 @@ public class CompteServiceImpl implements CompteService {
     public CompteResponseDTO createCompte(CompteCreateDTO dto) {
 
         Utilisateur user = utilisateurRepository.findById(dto.getUtilisateurId())
-                .orElseThrow(() -> new RuntimeException("user not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Compte compte = new Compte();
 
@@ -51,7 +52,7 @@ public class CompteServiceImpl implements CompteService {
     @Override
     public CompteResponseDTO getCompteById(Long id) {
         Compte compte = compteRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("compte not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Compte not found"));
 
         return mapToCompteDTO(compte);
     }

@@ -5,6 +5,8 @@ import com.sesame.neobte.DTO.Responses.Virement.VirementResponseDTO;
 import com.sesame.neobte.Entities.Class.Compte;
 import com.sesame.neobte.Entities.Enumeration.StatutCompte;
 import com.sesame.neobte.Entities.Class.Virement;
+import com.sesame.neobte.Exceptions.BadRequestException;
+import com.sesame.neobte.Exceptions.ResourceNotFoundException;
 import com.sesame.neobte.Repositories.ICompteRepository;
 import com.sesame.neobte.Repositories.IVirementRepository;
 import jakarta.transaction.Transactional;
@@ -29,7 +31,7 @@ public class VirementServiceImpl implements VirementService {
 
         //check if key is present
         if(dto.getIdempotencyKey() == null){
-            throw new RuntimeException("Idempotency key is required");
+            throw new BadRequestException("Idempotency key is required");
         }
 
         //check duplicate request
@@ -42,26 +44,26 @@ public class VirementServiceImpl implements VirementService {
 
         //validation
         if(dto.getMontant() <= 0){
-            throw new RuntimeException("Montant doit etre superieur a 0");
+            throw new BadRequestException("Montant doit etre superieur a 0");
         }
 
         if(dto.getCompteSourceId().equals(dto.getCompteDestinationId())){
-            throw new RuntimeException("Vous ne pouvez pas transferer de l'argent vers le meme compte");
+            throw new BadRequestException("Vous ne pouvez pas transferer de l'argent vers le meme compte");
         }
 
         //one of the best practices when it comes to PESSIMISTIC_WRITE is to always lock the source account and then the destination account
         Compte compteSource = compteRepository.findByIdForUpdate(dto.getCompteSourceId())
-                .orElseThrow(() -> new RuntimeException("Compte source introuvable"));
+                .orElseThrow(() -> new ResourceNotFoundException("Compte source introuvable"));
 
         Compte compteDestination = compteRepository.findByIdForUpdate(dto.getCompteDestinationId())
-                .orElseThrow(() -> new RuntimeException("Compte destination introuvable"));
+                .orElseThrow(() -> new ResourceNotFoundException("Compte destination introuvable"));
 
         if(compteSource.getStatutCompte() != StatutCompte.ACTIF){
-            throw new RuntimeException("Compte source non actif");
+            throw new BadRequestException("Compte source non actif");
         }
 
         if (compteSource.getSolde() < dto.getMontant()) {
-            throw new RuntimeException("Solde insuffisant");
+            throw new BadRequestException("Solde insuffisant");
         }
 
         // update balances and transfer section
@@ -114,7 +116,7 @@ public class VirementServiceImpl implements VirementService {
     @Override
     public VirementResponseDTO getVirementById(Long virementId) {
         Virement virement = virementRepository.findById(virementId)
-                .orElseThrow(() -> new RuntimeException("Virement introuvable"));
+                .orElseThrow(() -> new ResourceNotFoundException("Virement introuvable"));
 
         return mapToResponseDTO(virement);
     }

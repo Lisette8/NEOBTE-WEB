@@ -4,6 +4,8 @@ import com.sesame.neobte.DTO.Requests.Client.ChangePasswordRequest;
 import com.sesame.neobte.DTO.Requests.Client.UpdateProfileRequest;
 import com.sesame.neobte.DTO.Responses.Client.ClientResponse;
 import com.sesame.neobte.Entities.Class.Utilisateur;
+import com.sesame.neobte.Exceptions.BadRequestException;
+import com.sesame.neobte.Exceptions.ResourceNotFoundException;
 import com.sesame.neobte.Repositories.IUtilisateurRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,7 +31,7 @@ public class UtilisateurServiceImpl implements UtilisateurService {
     @Override
     public Utilisateur getUtilisateurById(Long id) {
         return utilisateurRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("No client found with id " + id));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id " + id));
     }
 
 
@@ -58,7 +60,7 @@ public class UtilisateurServiceImpl implements UtilisateurService {
         );
 
         if (!matches) {
-            throw new RuntimeException("Old password is incorrect");
+            throw new BadRequestException("Old password is incorrect");
         }
 
         String encodedPassword = passwordEncoder.encode(request.getNewPassword());

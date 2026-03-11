@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
-import { UserManagement } from '../user-management/user-management';
+import { UserManagement } from '../../Views/user-management/user-management';
 import { AdminSupport } from '../admin-support/admin-support';
 import { ActualiteManagement } from '../../adminComponents/actualite-management/actualite-management';
 

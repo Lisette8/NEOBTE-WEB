@@ -28,8 +28,12 @@ export class AuthService {
     return this.http.post(`${this.API_URL}/register`, data);
   }
 
-  logout(): void {
-    localStorage.removeItem('token');
+  logout(): Observable<any> {
+    return this.http.post(`${this.API_URL}/logout`, {}).pipe(
+      tap(() => {
+        localStorage.removeItem('token');
+      })
+    );
   }
 
   getToken(): string | null {

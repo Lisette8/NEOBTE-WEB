@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { RouterLink, RouterLinkActive } from '@angular/router';
+import { Router, RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../Services/auth-service';
 import { TranslationService, Lang } from '../../Services/SharedServices/translation-service';
@@ -17,6 +17,7 @@ export class Header {
 
   constructor(
     private authService: AuthService,
+    private router: Router,
     public transService: TranslationService
   ) {}
   
@@ -35,5 +36,18 @@ export class Header {
 
   isLoggedIn(): boolean {
     return this.authService.isLoggedIn();
+  }
+
+  logout() {
+    this.authService.logout().subscribe({
+      next: () => {
+        this.router.navigate(['/auth-view']);
+      },
+      error: () => {
+        // In case backend fails, the token will be removed...
+        localStorage.removeItem('token');
+        this.router.navigate(['/auth-view']);
+      }
+    });
   }
 }

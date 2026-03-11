@@ -43,18 +43,22 @@ export const routes: Routes = [
     {
         path: 'support-view',
         component: SupportView,
+        canActivate: [authGuard],
     },
     {
         path: 'virement-view',
         component: VirementView,
+        canActivate: [authGuard],
     },
     {
         path: 'admin-support',
         component: AdminSupport,
+        canActivate: [authGuard, adminGuard],
     },
     {
         path: 'actualite-view',
         component: ActualiteView,
+        canActivate: [authGuard],
     },
     {
         path: 'actualite-management',

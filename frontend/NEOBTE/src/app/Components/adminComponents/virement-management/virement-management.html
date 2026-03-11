@@ -1,0 +1,33 @@
+<div class="admin-virements">
+
+  <h2>All Transfers</h2>
+
+  <table>
+
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Source</th>
+        <th>Destination</th>
+        <th>Amount</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+
+    <tbody>
+
+      <tr *ngFor="let v of virements">
+
+        <td>{{ v.idVirement }}</td>
+        <td>{{ v.compteSourceId }}</td>
+        <td>{{ v.compteDestinationId }}</td>
+        <td>{{ v.montant }} TND</td>
+        <td>{{ v.dateDeVirement | date:'medium' }}</td>
+
+      </tr>
+
+    </tbody>
+
+  </table>
+
+</div>

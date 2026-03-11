@@ -28,6 +28,10 @@
       <div class="auth-group" *ngIf="!isLoggedIn()">
         <a routerLink="/auth-view" class="btn-login">{{ transService.translate('common.connexion') }}</a>
       </div>
+
+      <div class="auth-group" *ngIf="isLoggedIn()">
+        <button class="btn-logout" (click)="logout()">{{ transService.translate('common.logout') }}</button>
+      </div>
       
       <button class="mobile-toggle" (click)="toggleMenu()">
         <div class="hamburger" [class.active]="isMenuOpen">

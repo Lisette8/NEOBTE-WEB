@@ -37,13 +37,13 @@ public class SecurityConfig {
 
                         // v1 permit all for quicker testing via postman
                         // v2 permit all auth(login and register), rest is protected (Client)
-                        .requestMatchers("/api/auth/login").permitAll()
-                        .requestMatchers("/api/auth/register").permitAll()
+                        .requestMatchers("/api/v1/auth/login").permitAll()
+                        .requestMatchers("/api/v1/auth/register").permitAll()
 
-                        .requestMatchers("/api/auth/logout").hasAnyRole("ADMIN", "CLIENT")
+                        .requestMatchers("/api/v1/auth/logout").hasAnyRole("ADMIN", "CLIENT")
 
-                        .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/api/client/**").hasAnyRole("CLIENT","ADMIN")
+                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/api/v1/client/**").hasAnyRole("CLIENT","ADMIN")
 
                         // protected
                         .anyRequest().authenticated()

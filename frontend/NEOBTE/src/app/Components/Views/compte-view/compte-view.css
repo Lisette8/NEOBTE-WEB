@@ -1,12 +1,135 @@
-.accounts-container{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
-  gap:20px;
+.comptes-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 100px 6vw 60px;
 }
 
-.account-card{
-  padding:20px;
-  border-radius:10px;
-  background:#f4f4f4;
-  box-shadow:0 4px 10px rgba(0,0,0,0.1);
+.page-header {
+  margin-bottom: 32px;
+}
+
+.page-header h1 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.03em;
+  margin: 0 0 6px;
+}
+
+.page-sub {
+  font-size: 0.875rem;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.accounts-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+}
+
+.account-card {
+  background: #ffffff;
+  border: 1px solid #e8ecf5;
+  border-radius: 18px;
+  padding: 24px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  transition: all 0.2s ease;
+}
+
+.account-card:hover {
+  border-color: #c0d0ff;
+  box-shadow: 0 8px 24px rgba(0,0,160,0.08);
+  transform: translateY(-2px);
+}
+
+.ac-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ac-type-badge {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #0000A0;
+  background: #eff4ff;
+  padding: 4px 10px;
+  border-radius: 100px;
+}
+
+.ac-status {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 4px 10px;
+  border-radius: 100px;
+}
+
+.ac-status.active   { background: #f0fdf4; color: #16a34a; }
+.ac-status.blocked  { background: #fef2f2; color: #dc2626; }
+.ac-status.closed   { background: #f8fafc; color: #94a3b8; }
+
+.ac-id {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.ac-balance {
+  font-size: 2rem;
+  font-weight: 800;
+  color: #0f172a;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.ac-currency {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #94a3b8;
+  margin-left: 4px;
+}
+
+.btn-transfer {
+  margin-top: 4px;
+  background: #0000A0;
+  color: #ffffff;
+  border: none;
+  border-radius: 10px;
+  padding: 10px 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+  font-family: inherit;
+}
+
+.btn-transfer:hover:not(:disabled) {
+  background: #0000c0;
+  box-shadow: 0 4px 14px rgba(0,0,160,0.3);
+}
+
+.btn-transfer:disabled {
+  background: #e2e8f0;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 0;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 600px) {
+  .accounts-container { grid-template-columns: 1fr; }
 }

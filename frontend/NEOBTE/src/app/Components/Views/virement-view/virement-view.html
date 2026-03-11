@@ -26,13 +26,20 @@
               <option *ngFor="let compte of comptes"
                       [value]="compte.idCompte">
 
-                Account #{{ compte.idCompte }} - {{ compte.solde }} TND
+                Account #{{ compte.idCompte }} — {{ compte.typeCompte }}
 
               </option>
 
             </select>
 
           </div>
+
+          <!-- Balance display -->
+          <div class="balance-hint" *ngIf="selectedCompte">
+            <span class="balance-label">Available balance:</span>
+            <span class="balance-value">{{ selectedCompte.solde | number:'1.2-2' }} TND</span>
+          </div>
+
         </div>
 
         <!-- DESTINATION ACCOUNT -->
@@ -108,17 +115,6 @@
 
       <div class="history-header">
         <h2>{{ transService.translate('virement.history') }}</h2>
-
-        <button class="btn-secondary"
-                (click)="loadHistory()"
-                [disabled]="loading">
-
-          <i class="fas fa-sync-alt"
-             [class.fa-spin]="loading"></i>
-
-          {{ transService.translate('virement.load_history') }}
-
-        </button>
       </div>
 
       <div class="history-content">
@@ -132,30 +128,27 @@
 
           <div class="history-item" *ngFor="let v of history">
 
-            <div class="history-icon">
-              <i class="fas fa-exchange-alt"></i>
+            <div class="history-icon" [class.sent]="isSent(v)" [class.received]="!isSent(v)">
+              <i class="fas" [class.fa-arrow-up]="isSent(v)" [class.fa-arrow-down]="!isSent(v)"></i>
             </div>
 
             <div class="history-details">
 
               <p class="history-target">
-                {{ transService.translate('virement.from') }}:
-                {{ v.compteSourceId }}
-              </p>
-
-              <p class="history-target">
-                {{ transService.translate('virement.to') }}:
-                {{ v.compteDestinationId }}
+                <span class="direction-badge" [class.sent]="isSent(v)" [class.received]="!isSent(v)">
+                  {{ isSent(v) ? 'Sent' : 'Received' }}
+                </span>
+                {{ isSent(v) ? ('To #' + v.compteDestinationId) : ('From #' + v.compteSourceId) }}
               </p>
 
               <p class="history-date">
-                {{ v.dateDeVirement | date:'medium' }}
+                {{ v.dateDeVirement | date:'MMM d, y · HH:mm' }}
               </p>
 
             </div>
 
-            <div class="history-amount">
-              {{ v.montant | currency:'TND':'symbol':'1.2-2' }}
+            <div class="history-amount" [class.sent]="isSent(v)" [class.received]="!isSent(v)">
+              {{ isSent(v) ? '−' : '+' }}{{ v.montant | number:'1.2-2' }} TND
             </div>
 
           </div>

@@ -281,3 +281,49 @@
     padding: 1.5rem;
   }
 }
+
+/* Balance hint */
+.balance-hint {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 8px;
+  padding: 8px 12px;
+  background: rgba(0, 0, 160, 0.06);
+  border: 1px solid rgba(0, 0, 160, 0.12);
+  border-radius: 8px;
+}
+
+.balance-label {
+  font-size: 0.75rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.balance-value {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: #0000A0;
+  font-feature-settings: 'tnum';
+}
+
+/* History direction */
+.history-icon.sent    { background: #fef2f2; color: #dc2626; }
+.history-icon.received { background: #f0fdf4; color: #16a34a; }
+
+.direction-badge {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 7px;
+  border-radius: 20px;
+  margin-right: 6px;
+}
+
+.direction-badge.sent     { background: #fef2f2; color: #dc2626; }
+.direction-badge.received { background: #f0fdf4; color: #16a34a; }
+
+.history-amount.sent     { color: #dc2626; }
+.history-amount.received { color: #16a34a; }

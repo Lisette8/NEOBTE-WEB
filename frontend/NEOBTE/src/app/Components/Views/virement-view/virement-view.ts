@@ -6,6 +6,8 @@ import { TranslationService } from '../../../Services/SharedServices/translation
 import { Virement } from '../../../Entities/Interfaces/virement';
 import { Compte } from '../../../Entities/Interfaces/compte';
 import { CompteService } from '../../../Services/compte-service';
+import { ConfirmModalService } from '../../../Services/SharedServices/confirm-modal.service';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-virement-view',
@@ -25,11 +27,23 @@ export class VirementView implements OnInit {
   message = '';
   error = '';
 
+  get selectedCompte(): Compte | undefined {
+    const id = this.virementForm.get('compteSourceId')?.value;
+    return this.comptes.find(c => c.idCompte == id);
+  }
+
+  isSent(v: Virement): boolean {
+    const id = this.virementForm.get('compteSourceId')?.value;
+    return v.compteSourceId == id;
+  }
+
   constructor(
     private virementService: VirementService,
     private compteService: CompteService,
     private fb: FormBuilder,
-    public transService: TranslationService
+    public transService: TranslationService,
+    private modalService: ConfirmModalService,
+    private router: Router
   ) {
     this.virementForm = this.fb.group({
       compteSourceId: [null, [Validators.required]],
@@ -45,14 +59,28 @@ export class VirementView implements OnInit {
     this.compteService.getUserAccounts(userId)
       .subscribe(data => {
         this.comptes = data;
-      })
+        // Pre-fill source account if navigated from compte-view
+        const preselected = history.state?.['compteId'];
+        if (preselected) {
+          this.virementForm.get('compteSourceId')?.setValue(preselected);
+        }
+      });
 
     this.loadAccounts();
+
+    // Auto-load history whenever source account changes
+    this.virementForm.get('compteSourceId')?.valueChanges.subscribe(value => {
+      if (value) {
+        this.loadHistory();
+      } else {
+        this.history = [];
+      }
+    });
   }
 
 
 
-  transfer() {
+  async transfer() {
     if (this.virementForm.invalid) {
       this.virementForm.markAllAsTouched();
       return;
@@ -62,6 +90,18 @@ export class VirementView implements OnInit {
       this.error = "You cannot transfer to the same account";
       return;
     }
+
+    const { montant, compteSourceId, compteDestinationId } = this.virementForm.value;
+
+    const confirmed = await this.modalService.confirm({
+      title: 'Confirm Transfer',
+      message: `You are about to transfer ${montant} TND from account #${compteSourceId} to account #${compteDestinationId}. This action cannot be undone.`,
+      confirmText: 'Send Transfer',
+      cancelText: 'Cancel',
+      type: 'warning'
+    });
+
+    if (!confirmed) return;
 
     this.loading = true;
     this.message = '';
@@ -78,6 +118,7 @@ export class VirementView implements OnInit {
         this.message = this.transService.translate('virement.success');
         this.virementForm.reset();
         this.loadAccounts();
+        this.loadHistory();
         console.log(res);
       },
       error: (err) => {
@@ -92,10 +133,7 @@ export class VirementView implements OnInit {
   //loaders , i created these methods to make sure everything loads and refreshes automatically 
   loadHistory() {
     const sourceId = this.virementForm.get('compteSourceId')?.value;
-    if (!sourceId) {
-      this.error = "Veuillez saisir un compte source pour voir l'historique";
-      return;
-    }
+    if (!sourceId) return;
 
     this.loading = true;
     this.virementService.getHistory(sourceId).subscribe({

@@ -2,11 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { ActualiteService } from '../../../Services/actualite-service';
 import { Actualite } from '../../../Entities/Interfaces/actualite';
 import { CommonModule } from '@angular/common';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-home-view',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RouterLink],
   templateUrl: './home-view.html',
   styleUrl: './home-view.css',
 })

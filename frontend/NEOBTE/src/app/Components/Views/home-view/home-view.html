@@ -1,9 +1,85 @@
-<div class="actualites-container">
-  <h2>Actualités</h2>
+<div class="home-shell">
 
-  <div class="card" *ngFor="let act of actualites">
-    <h3>{{ act.titre }}</h3>
-    <p>{{ act.description }}</p>
-    <small>{{ act.dateCreationActualite | date }}</small>
+  <!-- ─── WELCOME BANNER ─── -->
+  <section class="welcome-banner">
+    <div class="wb-bg">
+      <div class="wb-orb"></div>
+    </div>
+    <div class="wb-content">
+      <div>
+        <p class="wb-greeting">Bonjour 👋</p>
+        <h1 class="wb-title">Votre espace NEO BTE</h1>
+        <p class="wb-sub">Retrouvez vos comptes, virements et actualités en un coup d'œil.</p>
+      </div>
+      <div class="wb-actions">
+        <a routerLink="/virement-view" class="btn-wb">Nouveau virement</a>
+        <a routerLink="/support-view" class="btn-wb-ghost">Contacter le support</a>
+      </div>
+    </div>
+  </section>
+
+  <div class="home-grid">
+
+    <!-- ─── QUICK LINKS ─── -->
+    <section class="quick-links">
+      <a routerLink="/compte-view" class="ql-card">
+        <div class="ql-icon">🏦</div>
+        <span>Mes Comptes</span>
+      </a>
+      <a routerLink="/virement-view" class="ql-card">
+        <div class="ql-icon">↔️</div>
+        <span>Virements</span>
+      </a>
+      <a routerLink="/support-view" class="ql-card">
+        <div class="ql-icon">💬</div>
+        <span>Support</span>
+      </a>
+      <a routerLink="/actualite-view" class="ql-card">
+        <div class="ql-icon">📰</div>
+        <span>Actualités</span>
+      </a>
+    </section>
+
+    <!-- ─── ACTUALITES ─── -->
+    <section class="news-section">
+      <div class="section-hd">
+        <h2>Actualités BTE</h2>
+        <a routerLink="/actualite-view" class="see-all">Voir tout →</a>
+      </div>
+
+      <div class="news-list">
+        <div class="news-item" *ngFor="let act of actualites">
+          <div class="ni-dot"></div>
+          <div class="ni-body">
+            <div class="ni-title">{{ act.titre }}</div>
+            <div class="ni-desc">{{ act.description }}</div>
+            <div class="ni-date">{{ act.dateCreationActualite | date: 'dd MMM yyyy' }}</div>
+          </div>
+        </div>
+
+        <div class="empty-news" *ngIf="actualites.length === 0">
+          <p>Aucune actualité disponible pour le moment.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ─── INFO CARDS ─── -->
+    <section class="info-cards">
+      <div class="info-card ic-blue">
+        <div class="ic-icon">🔒</div>
+        <div>
+          <div class="ic-title">Sécurité activée</div>
+          <div class="ic-sub">Votre compte est protégé par chiffrement 256-bit</div>
+        </div>
+      </div>
+      <div class="info-card ic-green">
+        <div class="ic-icon">📞</div>
+        <div>
+          <div class="ic-title">Support 24/7</div>
+          <div class="ic-sub">+216 71 112 000 · contact&#64;bte.com.tn</div>
+        </div>
+      </div>
+    </section>
+
   </div>
 </div>

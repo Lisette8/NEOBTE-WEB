@@ -1,8 +1,10 @@
 import { Component } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-landing-view',
-  imports: [],
+  standalone: true,
+  imports: [RouterLink],
   templateUrl: './landing-view.html',
   styleUrl: './landing-view.css',
 })

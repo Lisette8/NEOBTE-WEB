@@ -1,21 +1,42 @@
 <div class="comptes-page">
 
-  <h1>My Accounts</h1>
+  <div class="page-header">
+    <h1>My Accounts</h1>
+    <p class="page-sub">{{ comptes.length }} account{{ comptes.length !== 1 ? 's' : '' }} linked to your profile</p>
+  </div>
 
   <div class="accounts-container">
 
     <div class="account-card" *ngFor="let compte of comptes">
 
-      <h3>Account #{{ compte.idCompte }}</h3>
+      <div class="ac-top">
+        <div class="ac-type-badge">{{ compte.typeCompte }}</div>
+        <span class="ac-status" [class.active]="compte.statutCompte === 'ACTIVE'"
+                                [class.blocked]="compte.statutCompte === 'BLOCKED'"
+                                [class.closed]="compte.statutCompte === 'CLOSED'">
+          {{ compte.statutCompte }}
+        </span>
+      </div>
 
-      <p><strong>Balance:</strong> {{ compte.solde }} TND</p>
+      <div class="ac-id">Account #{{ compte.idCompte }}</div>
 
-      <p><strong>Type:</strong> {{ compte.typeCompte }}</p>
+      <div class="ac-balance">
+        {{ compte.solde | number:'1.2-2' }}
+        <span class="ac-currency">TND</span>
+      </div>
 
-      <p><strong>Status:</strong> {{ compte.statutCompte }}</p>
+      <button class="btn-transfer"
+              (click)="goToTransfer(compte.idCompte)"
+              [disabled]="compte.statutCompte !== 'ACTIVE'">
+        ↔ New Transfer
+      </button>
 
     </div>
 
+  </div>
+
+  <div class="empty-state" *ngIf="comptes.length === 0">
+    <p>No accounts found for your profile.</p>
   </div>
 
 </div>

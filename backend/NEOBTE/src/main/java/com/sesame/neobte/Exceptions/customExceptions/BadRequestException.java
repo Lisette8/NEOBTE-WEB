@@ -1,4 +1,4 @@
-package com.sesame.neobte.Exceptions;
+package com.sesame.neobte.Exceptions.customExceptions;
 
 public class BadRequestException extends RuntimeException {
     public BadRequestException(String message) {

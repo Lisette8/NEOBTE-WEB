@@ -5,7 +5,7 @@ import com.sesame.neobte.DTO.Requests.Admin.UpdateUserRequest;
 import com.sesame.neobte.DTO.Responses.Admin.AdminUserResponse;
 import com.sesame.neobte.Entities.Enumeration.Role;
 import com.sesame.neobte.Entities.Class.Utilisateur;
-import com.sesame.neobte.Exceptions.ResourceNotFoundException;
+import com.sesame.neobte.Exceptions.customExceptions.ResourceNotFoundException;
 import com.sesame.neobte.Mappers_Example.UtilisateurMapper;
 import com.sesame.neobte.Repositories.IUtilisateurRepository;
 import lombok.AllArgsConstructor;

@@ -5,7 +5,7 @@ import com.sesame.neobte.DTO.Responses.Support.SupportResponseDTO;
 import com.sesame.neobte.Entities.Class.Support;
 import com.sesame.neobte.Entities.Enumeration.SupportStatus;
 import com.sesame.neobte.Entities.Class.Utilisateur;
-import com.sesame.neobte.Exceptions.ResourceNotFoundException;
+import com.sesame.neobte.Exceptions.customExceptions.ResourceNotFoundException;
 import com.sesame.neobte.Repositories.ISupportRepository;
 import com.sesame.neobte.Repositories.IUtilisateurRepository;
 import com.sesame.neobte.Services.Other.EmailService;

@@ -1,36 +1,46 @@
-<h2>Account Management</h2>
+<div class="panel">
+  <div class="panel-header">
+    <div>
+      <h3>Accounts</h3>
+      <p class="panel-subtitle">View and manage all client bank accounts</p>
+    </div>
+  </div>
 
-<table>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Account ID</th>
+          <th>Balance</th>
+          <th>Type</th>
+          <th>Status</th>
+          <th>Owner ID</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let compte of comptes">
+          <td><span class="mono">#{{ compte.idCompte }}</span></td>
+          <td class="amount">{{ compte.solde | number:'1.2-2' }} TND</td>
+          <td><span class="badge badge-blue">{{ compte.typeCompte }}</span></td>
+          <td>
+            <span class="badge"
+              [class.badge-green]="compte.statutCompte === 'ACTIVE'"
+              [class.badge-red]="compte.statutCompte === 'BLOCKED'"
+              [class.badge-gray]="compte.statutCompte === 'CLOSED'">
+              {{ compte.statutCompte }}
+            </span>
+          </td>
+          <td class="muted">#{{ compte.utilisateurId }}</td>
+          <td>
+            <button class="btn-icon btn-delete" (click)="deleteAccount(compte.idCompte)" title="Delete">🗑</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Balance</th>
-      <th>Type</th>
-      <th>Status</th>
-      <th>User</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-
-  <tbody>
-
-    <tr *ngFor="let compte of comptes">
-
-      <td>{{ compte.idCompte }}</td>
-      <td>{{ compte.solde }} TND</td>
-      <td>{{ compte.typeCompte }}</td>
-      <td>{{ compte.statutCompte }}</td>
-      <td>{{ compte.utilisateurId }}</td>
-
-      <td>
-        <button (click)="deleteAccount(compte.idCompte)">
-          Delete
-        </button>
-      </td>
-
-    </tr>
-
-  </tbody>
-
-</table>
+  <div class="empty-state" *ngIf="comptes.length === 0">
+    <p>No accounts found.</p>
+  </div>
+</div>

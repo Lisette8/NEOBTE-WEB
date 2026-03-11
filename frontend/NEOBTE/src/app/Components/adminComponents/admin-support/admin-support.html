@@ -1,58 +1,61 @@
-<h2 class="title">Support Tickets</h2>
-
-<div class="tickets-container">
-
-  <div class="ticket-card" *ngFor="let ticket of tickets">
-
-    <div class="ticket-header">
-
-      <div>
-        <h3>{{ticket.sujet}}</h3>
-        <p class="email">{{ticket.clientEmail}}</p>
-        <p class="date">{{ticket.dateCreation | date:'medium'}}</p>
-      </div>
-
-      <span 
-        class="status-badge"
-        [ngClass]="{
-          'open': ticket.status === 'OPEN',
-          'progress': ticket.status === 'IN_PROGRESS',
-          'resolved': ticket.status === 'RESOLVED',
-          'closed': ticket.status === 'CLOSED'
-        }"
-      >
-        {{ticket.status}}
-      </span>
-
+<div class="panel">
+  <div class="panel-header">
+    <div>
+      <h3>Support Tickets</h3>
+      <p class="panel-subtitle">Review and respond to client inquiries</p>
     </div>
-
-    <p class="message">{{ticket.message}}</p>
-
-    <textarea
-      placeholder="Write admin response..."
-      [(ngModel)]="responseText[ticket.idSupport]"
-      class="response-box">
-    </textarea>
-
-    <div class="ticket-actions">
-
-      <select [(ngModel)]="statusSelected[ticket.idSupport]">
-        <option value="OPEN">OPEN</option>
-        <option value="IN_PROGRESS">IN_PROGRESS</option>
-        <option value="RESOLVED">RESOLVED</option>
-        <option value="CLOSED">CLOSED</option>
-      </select>
-
-      <button class="update" (click)="updateTicket(ticket)">
-        Update
-      </button>
-
-      <button class="delete" (click)="deleteTicket(ticket.idSupport)">
-        Delete
-      </button>
-
-    </div>
-
+    <span class="count-badge">{{ tickets.length }} tickets</span>
   </div>
 
+  <div class="tickets-list">
+    <div class="ticket-card" *ngFor="let ticket of tickets">
+
+      <div class="ticket-top">
+        <div class="ticket-meta">
+          <div class="ticket-subject">{{ ticket.sujet }}</div>
+          <div class="ticket-info">
+            <span class="ticket-email">{{ ticket.clientEmail }}</span>
+            <span class="sep">·</span>
+            <span class="ticket-date">{{ ticket.dateCreation | date:'MMM d, y · HH:mm' }}</span>
+          </div>
+        </div>
+        <span class="status-pill"
+          [class.pill-open]="ticket.status === 'OPEN'"
+          [class.pill-progress]="ticket.status === 'IN_PROGRESS'"
+          [class.pill-resolved]="ticket.status === 'RESOLVED'"
+          [class.pill-closed]="ticket.status === 'CLOSED'">
+          {{ ticket.status }}
+        </span>
+      </div>
+
+      <p class="ticket-message">{{ ticket.message }}</p>
+
+      <div class="ticket-reply">
+        <label class="reply-label">Admin Response</label>
+        <textarea
+          class="reply-textarea"
+          placeholder="Write your response to this ticket..."
+          [(ngModel)]="responseText[ticket.idSupport]">
+        </textarea>
+      </div>
+
+      <div class="ticket-actions">
+        <select class="status-select" [(ngModel)]="statusSelected[ticket.idSupport]">
+          <option value="OPEN">Open</option>
+          <option value="IN_PROGRESS">In Progress</option>
+          <option value="RESOLVED">Resolved</option>
+          <option value="CLOSED">Closed</option>
+        </select>
+        <div class="action-btns">
+          <button class="btn btn-primary" (click)="updateTicket(ticket)">Update</button>
+          <button class="btn btn-danger" (click)="deleteTicket(ticket.idSupport)">Delete</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="empty-state" *ngIf="tickets.length === 0">
+    <p>No support tickets found.</p>
+  </div>
 </div>

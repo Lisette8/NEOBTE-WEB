@@ -5,7 +5,7 @@ import com.sesame.neobte.DTO.Responses.Compte.CompteResponseDTO;
 import com.sesame.neobte.Entities.Class.Compte;
 import com.sesame.neobte.Entities.Enumeration.StatutCompte;
 import com.sesame.neobte.Entities.Class.Utilisateur;
-import com.sesame.neobte.Exceptions.ResourceNotFoundException;
+import com.sesame.neobte.Exceptions.customExceptions.ResourceNotFoundException;
 import com.sesame.neobte.Repositories.ICompteRepository;
 import com.sesame.neobte.Repositories.IUtilisateurRepository;
 import lombok.AllArgsConstructor;

@@ -17,7 +17,7 @@ export class ActualiteManagement implements OnInit {
 
   actualites: Actualite[] = [];
   page = 0;
-  size = 5;
+  size = 6;
   totalPages = 0;
 
   titre = '';

@@ -3,7 +3,7 @@ package com.sesame.neobte.Services;
 import com.sesame.neobte.DTO.Responses.Actualite.ActualiteResponseDTO;
 import com.sesame.neobte.Entities.Class.Actualite;
 import com.sesame.neobte.Entities.Class.Utilisateur;
-import com.sesame.neobte.Exceptions.ResourceNotFoundException;
+import com.sesame.neobte.Exceptions.customExceptions.ResourceNotFoundException;
 import com.sesame.neobte.Repositories.IActualiteRepository;
 import com.sesame.neobte.Repositories.IUtilisateurRepository;
 import lombok.AllArgsConstructor;

@@ -1,5 +1,8 @@
 package com.sesame.neobte.Exceptions;
 
+import com.sesame.neobte.Exceptions.customExceptions.BadRequestException;
+import com.sesame.neobte.Exceptions.customExceptions.ResourceNotFoundException;
+import com.sesame.neobte.Exceptions.customExceptions.UnauthorizedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;

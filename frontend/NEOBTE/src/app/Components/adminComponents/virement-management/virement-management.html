@@ -1,33 +1,39 @@
-<div class="admin-virements">
+<div class="panel">
+  <div class="panel-header">
+    <div>
+      <h3>Transfers</h3>
+      <p class="panel-subtitle">Monitor all transfer operations</p>
+    </div>
+  </div>
 
-  <h2>All Transfers</h2>
+  <div class="status-bar loading" *ngIf="loading">
+    <span class="dot"></span> Loading transfers...
+  </div>
 
-  <table>
+  <div class="table-wrap" *ngIf="!loading">
+    <table>
+      <thead>
+        <tr>
+          <th>Transfer ID</th>
+          <th>From Account</th>
+          <th>To Account</th>
+          <th>Amount</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let v of virements">
+          <td><span class="mono">#{{ v.idVirement }}</span></td>
+          <td><span class="badge badge-blue">#{{ v.compteSourceId }}</span></td>
+          <td><span class="badge badge-green">#{{ v.compteDestinationId }}</span></td>
+          <td class="amount">{{ v.montant | number:'1.2-2' }} TND</td>
+          <td class="muted">{{ v.dateDeVirement | date:'MMM d, y · HH:mm' }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Source</th>
-        <th>Destination</th>
-        <th>Amount</th>
-        <th>Date</th>
-      </tr>
-    </thead>
-
-    <tbody>
-
-      <tr *ngFor="let v of virements">
-
-        <td>{{ v.idVirement }}</td>
-        <td>{{ v.compteSourceId }}</td>
-        <td>{{ v.compteDestinationId }}</td>
-        <td>{{ v.montant }} TND</td>
-        <td>{{ v.dateDeVirement | date:'medium' }}</td>
-
-      </tr>
-
-    </tbody>
-
-  </table>
-
+  <div class="empty-state" *ngIf="!loading && virements.length === 0">
+    <p>No transfers found.</p>
+  </div>
 </div>

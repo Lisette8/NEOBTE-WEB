@@ -37,7 +37,6 @@ public class DataInitializer implements CommandLineRunner {
             admin.setAge(30);
             admin.setJob("Manager");
             admin.setGenre(null);
-            admin.setSolde(0.0);
             admin.setDateCreationCompte(new Date());
             admin.setRole(Role.ADMIN);
 

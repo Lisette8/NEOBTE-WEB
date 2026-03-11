@@ -16,6 +16,6 @@ public class AdminUserResponse {
     private String adresse;
     private String job;
     private String genre;
-    private Double solde;
+    private Double totalSolde; //l'utilisateur peut avoir plusieurs comptes bancaires de plusieurs type, donc faut calculer la somme des soldes de chaque compte...
     private Role role;
 }

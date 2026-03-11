@@ -1,4 +1,4 @@
-package com.sesame.neobte.Mappers;
+package com.sesame.neobte.Mappers_Example;
 
 import com.sesame.neobte.DTO.Responses.Admin.AdminUserResponse;
 import com.sesame.neobte.Entities.Class.Utilisateur;
@@ -9,6 +9,14 @@ public class UtilisateurMapper {
 
     //adminResponse
     public static AdminUserResponse toAdminResponse(Utilisateur user) {
+
+        double totalSolde = user.getComptes() == null ? 0.0 :
+                user.getComptes()
+                        .stream()
+                        .mapToDouble(compte -> compte.getSolde() != null ? compte.getSolde() : 0.0)
+                        .sum();
+
+
         return new AdminUserResponse(
                 user.getIdUtilisateur(),
                 user.getEmail(),
@@ -18,7 +26,7 @@ public class UtilisateurMapper {
                 user.getAdresse(),
                 user.getJob(),
                 user.getGenre() != null ? user.getGenre().name() : null,
-                user.getSolde(),
+                totalSolde,
                 user.getRole()
         );
     }

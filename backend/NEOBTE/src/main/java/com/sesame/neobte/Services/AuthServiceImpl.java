@@ -75,7 +75,6 @@ public class AuthServiceImpl implements AuthService {
         utilisateur.setGenre(request.getGenre());
         utilisateur.setMotDePasse(passwordEncoder.encode(request.getMotDePasse()));
         utilisateur.setDateCreationCompte(new Date());
-        utilisateur.setSolde(0.0);
         utilisateur.setRole(Role.CLIENT);
 
         System.out.println("User registered");
@@ -90,6 +89,7 @@ public class AuthServiceImpl implements AuthService {
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
 
+            //clean up of expired tokens
             tokenBlacklistService.blacklistToken(token, jwtService.extractExpiration(token));
         }
     }

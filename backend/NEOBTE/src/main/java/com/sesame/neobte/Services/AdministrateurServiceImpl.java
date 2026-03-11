@@ -5,7 +5,7 @@ import com.sesame.neobte.DTO.Requests.Admin.UpdateUserRequest;
 import com.sesame.neobte.DTO.Responses.Admin.AdminUserResponse;
 import com.sesame.neobte.Entities.Enumeration.Role;
 import com.sesame.neobte.Entities.Class.Utilisateur;
-import com.sesame.neobte.Mappers.UtilisateurMapper;
+import com.sesame.neobte.Mappers_Example.UtilisateurMapper;
 import com.sesame.neobte.Repositories.IUtilisateurRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -58,15 +58,11 @@ public class AdministrateurServiceImpl implements AdministrateurService {
         utilisateur.setJob(dto.getJob());
         utilisateur.setGenre(dto.getGenre());
 
-        utilisateur.setSolde(dto.getSolde() != null ? dto.getSolde() : 0.0);
 
-        // 🔐 VERY IMPORTANT
+        //mot de passe encode
         utilisateur.setMotDePasse(passwordEncoder.encode(dto.getMotDePasse()));
 
-        // 🎭 role
         utilisateur.setRole(dto.getRole() != null ? dto.getRole() : Role.CLIENT);
-
-        // optional: creation date
         utilisateur.setDateCreationCompte(new Date());
 
         return utilisateurRepository.save(utilisateur);
@@ -94,9 +90,6 @@ public class AdministrateurServiceImpl implements AdministrateurService {
 
         if (dto.getGenre() != null)
             oldUser.setGenre(dto.getGenre());
-
-        if (dto.getSolde() != null)
-            oldUser.setSolde(dto.getSolde());
 
         if (dto.getMotDePasse() != null)
             oldUser.setMotDePasse(passwordEncoder.encode(dto.getMotDePasse()));

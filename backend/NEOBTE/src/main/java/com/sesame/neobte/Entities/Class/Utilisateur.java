@@ -38,7 +38,6 @@ public class Utilisateur implements Serializable {
     private Integer age;
     private String job;
     private Genre genre;
-    private Double solde;
 
     @OneToMany(mappedBy = "utilisateur")
     @JsonIgnore

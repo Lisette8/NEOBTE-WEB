@@ -18,7 +18,6 @@ public class UpdateUserRequest {
     private Integer age;
     private String job;
     private Genre genre;
-    private Double solde;
     private String motDePasse;
     private Role role;
 }

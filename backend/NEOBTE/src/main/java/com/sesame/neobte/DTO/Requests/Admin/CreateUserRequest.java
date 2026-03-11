@@ -19,5 +19,4 @@ public class CreateUserRequest {
     private Genre genre;
     private String motDePasse;
     private Role role;
-    private Double solde;
 }

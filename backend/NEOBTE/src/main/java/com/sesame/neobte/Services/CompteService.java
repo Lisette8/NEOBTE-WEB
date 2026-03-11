@@ -3,7 +3,6 @@ package com.sesame.neobte.Services;
 
 import com.sesame.neobte.DTO.Requests.Compte.CompteCreateDTO;
 import com.sesame.neobte.DTO.Responses.Compte.CompteResponseDTO;
-import com.sesame.neobte.Entities.Compte;
 
 import java.util.List;
 

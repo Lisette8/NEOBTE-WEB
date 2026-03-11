@@ -1,6 +1,6 @@
 package com.sesame.neobte.DTO.Requests.Client;
 
-import com.sesame.neobte.Entities.Genre;
+import com.sesame.neobte.Entities.Enumeration.Genre;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

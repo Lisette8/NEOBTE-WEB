@@ -5,7 +5,7 @@ import { AuthService } from '../../../Services/auth-service';
 import { LoginRequest } from '../../../Entities/Interfaces/login-request';
 import { RegisterRequest } from '../../../Entities/Interfaces/register-request';
 import { Router } from '@angular/router';
-import { TranslationService } from '../../../Services/translation-service';
+import { TranslationService } from '../../../Services/SharedServices/translation-service';
 
 @Component({
   selector: 'app-auth-view',

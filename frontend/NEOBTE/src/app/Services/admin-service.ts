@@ -11,7 +11,7 @@ import { UserCreateDTO } from '../Entities/DTO/Admin/user-create-dto';
 })
 export class AdminService {
 
-  private api = "http://localhost:8080/api/admin";
+  private api = "http://localhost:8080/api/v1/admin";
 
   constructor(private http: HttpClient) {}
 

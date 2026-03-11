@@ -3,7 +3,7 @@ package com.sesame.neobte.Services;
 import com.sesame.neobte.DTO.Requests.Admin.CreateUserRequest;
 import com.sesame.neobte.DTO.Requests.Admin.UpdateUserRequest;
 import com.sesame.neobte.DTO.Responses.Admin.AdminUserResponse;
-import com.sesame.neobte.Entities.Utilisateur;
+import com.sesame.neobte.Entities.Class.Utilisateur;
 
 import java.util.List;
 

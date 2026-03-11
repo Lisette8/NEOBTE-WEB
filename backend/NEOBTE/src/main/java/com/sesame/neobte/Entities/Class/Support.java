@@ -1,5 +1,6 @@
-package com.sesame.neobte.Entities;
+package com.sesame.neobte.Entities.Class;
 
+import com.sesame.neobte.Entities.Enumeration.SupportStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

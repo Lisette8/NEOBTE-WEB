@@ -11,8 +11,8 @@ import { Page } from '../Entities/Interfaces/page';
 })
 export class ActualiteService {
 
-  private apiAdmin = 'http://localhost:8080/api/admin/actualite';
-  private apiClient = 'http://localhost:8080/api/client/actualite';
+  private apiAdmin = 'http://localhost:8080/api/v1/admin/actualite';
+  private apiClient = 'http://localhost:8080/api/v1/client/actualite';
 
   constructor(private http: HttpClient) { }
 

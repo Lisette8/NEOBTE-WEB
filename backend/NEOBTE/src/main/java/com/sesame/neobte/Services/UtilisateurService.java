@@ -2,7 +2,7 @@ package com.sesame.neobte.Services;
 
 import com.sesame.neobte.DTO.Requests.Client.ChangePasswordRequest;
 import com.sesame.neobte.DTO.Requests.Client.UpdateProfileRequest;
-import com.sesame.neobte.Entities.Utilisateur;
+import com.sesame.neobte.Entities.Class.Utilisateur;
 
 public interface UtilisateurService {
 

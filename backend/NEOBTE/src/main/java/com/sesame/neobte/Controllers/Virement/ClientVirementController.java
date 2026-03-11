@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
 @RestController
-@RequestMapping("/api/client/virement")
+@RequestMapping("/api/v1/client/virements")
 @AllArgsConstructor
 public class ClientVirementController {
 
@@ -21,9 +21,10 @@ public class ClientVirementController {
             @Valid @RequestBody VirementCreateDTO dto //I added valid to make sure it's validated, it's basically another layer of protection eq validation
     ) {
         return virementService.effectuerVirement(dto);
+
     }
 
-
+    
     @GetMapping("/history/{compteId}")
     public List<VirementResponseDTO> history(
             @PathVariable Long compteId

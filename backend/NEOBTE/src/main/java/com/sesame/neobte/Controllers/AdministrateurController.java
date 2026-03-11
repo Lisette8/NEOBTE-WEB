@@ -4,9 +4,10 @@ package com.sesame.neobte.Controllers;
 import com.sesame.neobte.DTO.Requests.Admin.CreateUserRequest;
 import com.sesame.neobte.DTO.Requests.Admin.UpdateUserRequest;
 import com.sesame.neobte.DTO.Responses.Admin.AdminUserResponse;
-import com.sesame.neobte.Entities.Utilisateur;
+import com.sesame.neobte.Entities.Class.Utilisateur;
 import com.sesame.neobte.Services.AdministrateurService;
 import lombok.AllArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
@@ -14,7 +15,8 @@ import java.util.*;
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @AllArgsConstructor
-@RequestMapping("/api/admin")
+@PreAuthorize("hasRole('ADMIN')")
+@RequestMapping("/api/v1/admin")
 public class AdministrateurController {
 
     private final AdministrateurService administrateurService;

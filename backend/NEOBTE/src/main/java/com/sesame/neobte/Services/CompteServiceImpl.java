@@ -2,9 +2,9 @@ package com.sesame.neobte.Services;
 
 import com.sesame.neobte.DTO.Requests.Compte.CompteCreateDTO;
 import com.sesame.neobte.DTO.Responses.Compte.CompteResponseDTO;
-import com.sesame.neobte.Entities.Compte;
-import com.sesame.neobte.Entities.StatutCompte;
-import com.sesame.neobte.Entities.Utilisateur;
+import com.sesame.neobte.Entities.Class.Compte;
+import com.sesame.neobte.Entities.Enumeration.StatutCompte;
+import com.sesame.neobte.Entities.Class.Utilisateur;
 import com.sesame.neobte.Repositories.ICompteRepository;
 import com.sesame.neobte.Repositories.IUtilisateurRepository;
 import lombok.AllArgsConstructor;

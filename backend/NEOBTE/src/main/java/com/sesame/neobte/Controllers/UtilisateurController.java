@@ -2,7 +2,7 @@ package com.sesame.neobte.Controllers;
 
 import com.sesame.neobte.DTO.Requests.Client.ChangePasswordRequest;
 import com.sesame.neobte.DTO.Requests.Client.UpdateProfileRequest;
-import com.sesame.neobte.Entities.Utilisateur;
+import com.sesame.neobte.Entities.Class.Utilisateur;
 import com.sesame.neobte.Services.UtilisateurService;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @AllArgsConstructor
-@RequestMapping("/api/client")
+@RequestMapping("/api/v1/client")
 public class UtilisateurController {
 
     UtilisateurService utilisateurService;

@@ -1,16 +1,13 @@
 package com.sesame.neobte.Controllers.Actualite;
 
 import com.sesame.neobte.DTO.Responses.Actualite.ActualiteResponseDTO;
-import com.sesame.neobte.Entities.Actualite;
 import com.sesame.neobte.Services.ActualiteService;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
-@RequestMapping("/api/client/actualite")
+@RequestMapping("/api/v1/client/actualite")
 @AllArgsConstructor
 
 public class ClientActualiteController {

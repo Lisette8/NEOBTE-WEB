@@ -1,7 +1,7 @@
 package com.sesame.neobte.Config;
 
-import com.sesame.neobte.Entities.Utilisateur;
-import com.sesame.neobte.Entities.Role;
+import com.sesame.neobte.Entities.Class.Utilisateur;
+import com.sesame.neobte.Entities.Enumeration.Role;
 import com.sesame.neobte.Repositories.IUtilisateurRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.boot.CommandLineRunner;

@@ -9,16 +9,31 @@ import { VirementCreateDTO } from '../Entities/DTO/virement-create-dto';
 })
 export class VirementService {
 
-  private apiUrl = 'http://localhost:8080/api/client/virement';
+  private apiClient = 'http://localhost:8080/api/v1/client/virements';
+  private apiAdmin = 'http://localhost:8080/api/v1/admin/virements';
 
   constructor(private http: HttpClient) {}
 
+
+
+  //admin methods
+  getAllVirements(): Observable<Virement[]> {
+    return this.http.get<Virement[]>(`${this.apiAdmin}/all`);
+  }
+
+  getVirementById(id: number): Observable<Virement> {
+    return this.http.get<Virement>(`${this.apiAdmin}/${id}`);
+  }
+
+
+
+  //client methods
   transfer(data: VirementCreateDTO): Observable<Virement> {
-    return this.http.post<Virement>(`${this.apiUrl}/transfer`, data);
+    return this.http.post<Virement>(`${this.apiClient}/transfer`, data);
   }
 
   getHistory(compteId: number): Observable<Virement[]> {
-    return this.http.get<Virement[]>(`${this.apiUrl}/history/${compteId}`);
+    return this.http.get<Virement[]>(`${this.apiClient}/history/${compteId}`);
   }
 
 }

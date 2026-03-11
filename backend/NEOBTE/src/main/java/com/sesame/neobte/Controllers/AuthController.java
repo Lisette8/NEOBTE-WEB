@@ -3,7 +3,7 @@ package com.sesame.neobte.Controllers;
 import com.sesame.neobte.DTO.Responses.Auth.AuthResponse;
 import com.sesame.neobte.DTO.Requests.Auth.LoginRequest;
 import com.sesame.neobte.DTO.Requests.Auth.RegisterRequest;
-import com.sesame.neobte.Entities.Utilisateur;
+import com.sesame.neobte.Entities.Class.Utilisateur;
 import com.sesame.neobte.Services.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @CrossOrigin(origins = "http://localhost:4200")
 @RestController
 @AllArgsConstructor
-@RequestMapping("/api/auth")
+@RequestMapping("/api/v1/auth")
 public class AuthController {
 
     private AuthService authService;

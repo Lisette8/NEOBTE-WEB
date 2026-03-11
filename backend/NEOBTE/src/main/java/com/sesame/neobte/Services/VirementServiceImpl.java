@@ -2,9 +2,9 @@ package com.sesame.neobte.Services;
 
 import com.sesame.neobte.DTO.Requests.Virement.VirementCreateDTO;
 import com.sesame.neobte.DTO.Responses.Virement.VirementResponseDTO;
-import com.sesame.neobte.Entities.Compte;
-import com.sesame.neobte.Entities.StatutCompte;
-import com.sesame.neobte.Entities.Virement;
+import com.sesame.neobte.Entities.Class.Compte;
+import com.sesame.neobte.Entities.Enumeration.StatutCompte;
+import com.sesame.neobte.Entities.Class.Virement;
 import com.sesame.neobte.Repositories.ICompteRepository;
 import com.sesame.neobte.Repositories.IVirementRepository;
 import jakarta.transaction.Transactional;
@@ -21,6 +21,8 @@ public class VirementServiceImpl implements VirementService {
     private ICompteRepository compteRepository;
 
 
+
+    //client
     @Transactional //if something goes wrong, everything will be undone
     @Override
     public VirementResponseDTO effectuerVirement(VirementCreateDTO dto) {
@@ -86,11 +88,35 @@ public class VirementServiceImpl implements VirementService {
     @Override
     public List<VirementResponseDTO> getVirementsCompte(Long compteId) {
 
-        List<Virement> virements = virementRepository.findByCompteDeIdCompte(compteId);
+        List<Virement> virements = virementRepository.findByCompteDeIdCompteOrCompteAIdCompte(compteId ,compteId)
+                .stream()
+                .sorted(Comparator.comparing(Virement::getDateDeVirement).reversed())
+                .toList();
 
         return virements.stream()
                 .map(this::mapToResponseDTO)
                 .toList();
+    }
+
+
+
+    //admin
+    @Override
+    public List<VirementResponseDTO> getAllVirements() {
+        List<Virement> virements = virementRepository.findAll();
+
+        return virements.stream()
+                .map(this::mapToResponseDTO)
+                .toList();
+    }
+
+
+    @Override
+    public VirementResponseDTO getVirementById(Long virementId) {
+        Virement virement = virementRepository.findById(virementId)
+                .orElseThrow(() -> new RuntimeException("Virement introuvable"));
+
+        return mapToResponseDTO(virement);
     }
 
 

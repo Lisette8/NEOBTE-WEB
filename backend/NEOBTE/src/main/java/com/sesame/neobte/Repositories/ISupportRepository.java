@@ -1,6 +1,6 @@
 package com.sesame.neobte.Repositories;
 
-import com.sesame.neobte.Entities.Support;
+import com.sesame.neobte.Entities.Class.Support;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

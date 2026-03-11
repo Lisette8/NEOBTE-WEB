@@ -2,7 +2,6 @@ package com.sesame.neobte.Controllers.Support;
 
 import com.sesame.neobte.DTO.Requests.Support.SupportCreateDTO;
 import com.sesame.neobte.DTO.Responses.Support.SupportResponseDTO;
-import com.sesame.neobte.Entities.Support;
 import com.sesame.neobte.Services.SupportService;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.Authentication;
@@ -11,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.*;
 
 @RestController
-@RequestMapping("/api/client/support")
+@RequestMapping("/api/v1/client/support")
 @AllArgsConstructor
 public class ClientSupportController {
 

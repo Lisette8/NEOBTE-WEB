@@ -9,7 +9,7 @@ import { LoginRequest } from '../Entities/Interfaces/login-request';
   providedIn: 'root',
 })
 export class AuthService {
-  private API_URL = 'http://localhost:8080/api/auth';
+  private API_URL = 'http://localhost:8080/api/v1/auth';
 
   constructor(private http: HttpClient) { }
 

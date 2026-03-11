@@ -1,6 +1,6 @@
 package com.sesame.neobte.Repositories;
 
-import com.sesame.neobte.Entities.Actualite;
+import com.sesame.neobte.Entities.Class.Actualite;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;

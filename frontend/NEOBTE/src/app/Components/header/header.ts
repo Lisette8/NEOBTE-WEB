@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../Services/auth-service';
-import { TranslationService, Lang } from '../../Services/translation-service';
+import { TranslationService, Lang } from '../../Services/SharedServices/translation-service';
 
 @Component({
   selector: 'app-header',

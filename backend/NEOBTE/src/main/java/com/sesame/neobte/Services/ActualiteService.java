@@ -1,10 +1,7 @@
 package com.sesame.neobte.Services;
 
 import com.sesame.neobte.DTO.Responses.Actualite.ActualiteResponseDTO;
-import com.sesame.neobte.Entities.Actualite;
 import org.springframework.data.domain.Page;
-
-import java.util.*;
 
 public interface ActualiteService {
 

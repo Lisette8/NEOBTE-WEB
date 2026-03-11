@@ -1,7 +1,4 @@
-package com.sesame.neobte.Entities;
-
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
+package com.sesame.neobte.Entities.Enumeration;
 
 public enum TypeCompte {
     COURANT, EPARGNE, PROFESSIONNEL

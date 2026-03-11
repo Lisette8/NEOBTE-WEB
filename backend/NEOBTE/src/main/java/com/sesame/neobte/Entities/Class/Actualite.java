@@ -1,4 +1,4 @@
-package com.sesame.neobte.Entities;
+package com.sesame.neobte.Entities.Class;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;

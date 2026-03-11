@@ -1,9 +1,10 @@
 package com.sesame.neobte.Controllers.Support;
 
 import com.sesame.neobte.DTO.Responses.Support.SupportResponseDTO;
-import com.sesame.neobte.Entities.Support;
+import com.sesame.neobte.Entities.Class.Support;
 import com.sesame.neobte.Services.SupportService;
 import lombok.AllArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -11,7 +12,8 @@ import java.util.*;
 
 @AllArgsConstructor
 @RestController
-@RequestMapping("/api/admin/support")
+@PreAuthorize("hasRole('ADMIN')")
+@RequestMapping("/api/v1/admin/support")
 public class AdminSupportController {
 
     private SupportService supportService;

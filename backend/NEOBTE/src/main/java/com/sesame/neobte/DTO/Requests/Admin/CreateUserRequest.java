@@ -1,7 +1,7 @@
 package com.sesame.neobte.DTO.Requests.Admin;
 
-import com.sesame.neobte.Entities.Genre;
-import com.sesame.neobte.Entities.Role;
+import com.sesame.neobte.Entities.Enumeration.Genre;
+import com.sesame.neobte.Entities.Enumeration.Role;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;

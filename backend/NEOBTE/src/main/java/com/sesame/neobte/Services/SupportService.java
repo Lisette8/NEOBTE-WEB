@@ -2,7 +2,7 @@ package com.sesame.neobte.Services;
 
 import com.sesame.neobte.DTO.Requests.Support.SupportCreateDTO;
 import com.sesame.neobte.DTO.Responses.Support.SupportResponseDTO;
-import com.sesame.neobte.Entities.Support;
+import com.sesame.neobte.Entities.Class.Support;
 
 import java.util.*;
 

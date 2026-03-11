@@ -9,8 +9,8 @@ import { Support } from '../Entities/Interfaces/support';
 
 export class SupportService {
 
-    private apiClient = 'http://localhost:8080/api/client/support';
-    private apiAdmin = 'http://localhost:8080/api/admin/support';
+    private apiClient = 'http://localhost:8080/api/v1/client/support';
+    private apiAdmin = 'http://localhost:8080/api/v1/admin/support';
 
     constructor(private http: HttpClient) {}
 

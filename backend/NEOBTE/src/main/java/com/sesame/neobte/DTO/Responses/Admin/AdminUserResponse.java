@@ -1,6 +1,6 @@
 package com.sesame.neobte.DTO.Responses.Admin;
 
-import com.sesame.neobte.Entities.Role;
+import com.sesame.neobte.Entities.Enumeration.Role;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

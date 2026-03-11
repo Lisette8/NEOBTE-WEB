@@ -7,7 +7,15 @@ import java.util.List;
 
 
 public interface VirementService {
+
+    //client related methods
     VirementResponseDTO effectuerVirement(VirementCreateDTO dto);
     List<VirementResponseDTO> getVirementsCompte(Long compteId);
+
+
+    //specific admin related methods
+    List<VirementResponseDTO> getAllVirements();
+    VirementResponseDTO getVirementById(Long virementId);
+
 
 }

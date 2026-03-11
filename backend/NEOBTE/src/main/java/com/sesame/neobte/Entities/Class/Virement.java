@@ -1,4 +1,4 @@
-package com.sesame.neobte.Entities;
+package com.sesame.neobte.Entities.Class;
 
 
 import jakarta.persistence.*;

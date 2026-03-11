@@ -3,7 +3,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Support } from '../../../Entities/Interfaces/support';
 import { SupportService } from '../../../Services/support-service';
-import { WebsocketService } from '../../../Services/websocket.service';
+import { WebsocketService } from '../../../Services/SharedServices/websocket.service';
 
 @Component({
   selector: 'app-admin-support',

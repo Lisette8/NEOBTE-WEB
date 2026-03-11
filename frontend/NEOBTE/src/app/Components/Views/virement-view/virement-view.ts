@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { VirementService } from '../../../Services/virement.service';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
-import { TranslationService } from '../../../Services/translation-service';
+import { TranslationService } from '../../../Services/SharedServices/translation-service';
 import { Virement } from '../../../Entities/Interfaces/virement';
 import { Compte } from '../../../Entities/Interfaces/compte';
 import { CompteService } from '../../../Services/compte-service';
@@ -46,6 +46,8 @@ export class VirementView implements OnInit {
       .subscribe(data => {
         this.comptes = data;
       })
+
+    this.loadAccounts();
   }
 
 
@@ -75,6 +77,7 @@ export class VirementView implements OnInit {
         this.loading = false;
         this.message = this.transService.translate('virement.success');
         this.virementForm.reset();
+        this.loadAccounts();
         console.log(res);
       },
       error: (err) => {
@@ -86,6 +89,7 @@ export class VirementView implements OnInit {
   }
 
 
+  //loaders , i created these methods to make sure everything loads and refreshes automatically 
   loadHistory() {
     const sourceId = this.virementForm.get('compteSourceId')?.value;
     if (!sourceId) {
@@ -104,5 +108,17 @@ export class VirementView implements OnInit {
         this.error = "Erreur lors du chargement de l'historique";
       }
     });
+  }
+
+
+  loadAccounts() {
+    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const userId = user.id;
+
+    this.compteService.getUserAccounts(userId)
+      .subscribe(data => {
+        this.comptes = data;
+      });
+
   }
 }

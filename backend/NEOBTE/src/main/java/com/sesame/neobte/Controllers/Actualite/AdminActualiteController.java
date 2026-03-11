@@ -4,13 +4,15 @@ import com.sesame.neobte.DTO.Requests.Actualite.ActualiteCreateDTO;
 import com.sesame.neobte.DTO.Responses.Actualite.ActualiteResponseDTO;
 import com.sesame.neobte.Services.ActualiteService;
 import lombok.AllArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.*;
 
 @RestController
-@RequestMapping("/api/admin/actualite")
+@RequestMapping("/api/v1/admin/actualite")
+@PreAuthorize("hasRole('ADMIN')")
 @AllArgsConstructor
 public class AdminActualiteController {
 

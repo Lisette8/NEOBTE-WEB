@@ -1,7 +1,7 @@
 package com.sesame.neobte.DTO.Requests.Compte;
 
 
-import com.sesame.neobte.Entities.TypeCompte;
+import com.sesame.neobte.Entities.Enumeration.TypeCompte;
 import lombok.Data;
 
 @Data

@@ -1,7 +1,8 @@
-package com.sesame.neobte.Entities;
+package com.sesame.neobte.Entities.Class;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.sesame.neobte.Entities.Enumeration.Genre;
+import com.sesame.neobte.Entities.Enumeration.Role;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

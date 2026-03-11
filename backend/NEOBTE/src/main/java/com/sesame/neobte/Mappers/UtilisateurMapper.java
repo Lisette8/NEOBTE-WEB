@@ -1,9 +1,7 @@
 package com.sesame.neobte.Mappers;
 
 import com.sesame.neobte.DTO.Responses.Admin.AdminUserResponse;
-import com.sesame.neobte.DTO.Responses.Client.ClientResponse;
-import com.sesame.neobte.Entities.Utilisateur;
-import lombok.AllArgsConstructor;
+import com.sesame.neobte.Entities.Class.Utilisateur;
 
 
 //I created this mapper just to practice and have a clear look , the other mappers will be created and implemented directly in the services...

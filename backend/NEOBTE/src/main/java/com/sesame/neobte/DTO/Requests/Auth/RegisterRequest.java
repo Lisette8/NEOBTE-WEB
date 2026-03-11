@@ -1,6 +1,6 @@
     package com.sesame.neobte.DTO.Requests.Auth;
 
-    import com.sesame.neobte.Entities.Genre;
+    import com.sesame.neobte.Entities.Enumeration.Genre;
     import lombok.AllArgsConstructor;
     import lombok.Getter;
     import lombok.Setter;

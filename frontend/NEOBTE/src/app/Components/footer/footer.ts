@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { TranslationService } from '../../Services/translation-service';
+import { TranslationService } from '../../Services/SharedServices/translation-service';
 
 @Component({
   selector: 'app-footer',

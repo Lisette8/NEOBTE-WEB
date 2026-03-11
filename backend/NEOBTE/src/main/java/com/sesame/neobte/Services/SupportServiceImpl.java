@@ -2,9 +2,9 @@ package com.sesame.neobte.Services;
 
 import com.sesame.neobte.DTO.Requests.Support.SupportCreateDTO;
 import com.sesame.neobte.DTO.Responses.Support.SupportResponseDTO;
-import com.sesame.neobte.Entities.Support;
-import com.sesame.neobte.Entities.SupportStatus;
-import com.sesame.neobte.Entities.Utilisateur;
+import com.sesame.neobte.Entities.Class.Support;
+import com.sesame.neobte.Entities.Enumeration.SupportStatus;
+import com.sesame.neobte.Entities.Class.Utilisateur;
 import com.sesame.neobte.Repositories.ISupportRepository;
 import com.sesame.neobte.Repositories.IUtilisateurRepository;
 import com.sesame.neobte.Services.Other.EmailService;

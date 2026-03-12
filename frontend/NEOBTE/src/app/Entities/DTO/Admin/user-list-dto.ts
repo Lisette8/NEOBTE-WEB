@@ -1,12 +1,18 @@
 export interface UserListDTO {
-  idUtilisateur: number;
+  id: number;
   email: string;
+  username: string;
   nom: string;
   prenom: string;
-  role: string;
-  solde: number;
-  age?: number;
+  cin?: string;
+  telephone?: string;
   adresse?: string;
+  codePostal?: string;
+  pays?: string;
+  dateNaissance?: string;
   job?: string;
-  genre?: 'HOMME' | 'FEMME';
+  genre?: string;
+  role: 'ADMIN' | 'CLIENT';
+  dateCreationCompte?: string;
+  totalSolde?: number;
 }

@@ -1,9 +1,13 @@
 export interface UserUpdateDTO {
-  email?: string;
   nom?: string;
   prenom?: string;
-  age?: number;
+  telephone?: string;
   adresse?: string;
+  codePostal?: string;
+  pays?: string;
+  dateNaissance?: string;
   job?: string;
   genre?: string;
+  motDePasse?: string;
+  role?: 'ADMIN' | 'CLIENT';
 }

@@ -1,80 +1,185 @@
 <div class="auth-page">
   <div class="auth-container">
     <div class="auth-card">
+
       <div class="auth-header">
         <div class="logo-circle">
           <img src="assets/bte-logo.png" alt="BTE Logo" class="auth-logo">
         </div>
         <h1>{{ isLoginMode ? 'Bon retour' : 'Rejoignez-nous' }}</h1>
-        <p class="subtitle">{{ isLoginMode ? 'Accédez à votre compte NEO BTE' : 'Commencez votre voyage bancaire moderne' }}</p>
+        <p class="subtitle">{{ isLoginMode ? 'Accédez à votre compte NEO BTE' : 'Créez votre profil bancaire' }}</p>
       </div>
 
       <div class="auth-body" [formGroup]="authForm">
+
+        <!-- ── SHARED: Email + Password ── -->
         <div class="form-group">
-          <label for="email">Email</label>
+          <label for="email">Email <span class="req">*</span></label>
           <div class="input-wrapper">
-            <input id="email" type="email" formControlName="email" placeholder="nom@exemple.com">
+            <i class="fas fa-envelope input-icon"></i>
+            <input id="email" type="email" formControlName="email" placeholder="name@example.com">
           </div>
+          <div class="field-error" *ngIf="fieldInvalid('email')">Please enter a valid email.</div>
         </div>
 
         <div class="form-group">
-          <label for="password">Mot de passe</label>
+          <label for="motDePasse">Password <span class="req">*</span></label>
           <div class="input-wrapper">
-            <input id="password" type="password" formControlName="motDePasse" placeholder="••••••••">
+            <i class="fas fa-lock input-icon"></i>
+            <input id="motDePasse" [type]="showPassword ? 'text' : 'password'"
+                   formControlName="motDePasse" placeholder="••••••••">
+            <button type="button" class="toggle-pw" (click)="showPassword = !showPassword">
+              <i class="fas" [class.fa-eye]="!showPassword" [class.fa-eye-slash]="showPassword"></i>
+            </button>
+          </div>
+          <div class="field-error" *ngIf="fieldInvalid('motDePasse') && !isLoginMode">
+            Password must be at least 8 characters.
           </div>
         </div>
 
+        <!-- ── REGISTER ONLY ── -->
         <div *ngIf="!isLoginMode" class="register-section">
+
+          <div class="section-divider">
+            <span>Personal Information</span>
+          </div>
+
+          <!-- Username -->
+          <div class="form-group">
+            <label for="username">Username <span class="req">*</span></label>
+            <div class="input-wrapper">
+              <i class="fas fa-at input-icon"></i>
+              <input id="username" type="text" formControlName="username" placeholder="john.doe">
+            </div>
+            <div class="field-error" *ngIf="fieldInvalid('username')">
+              Username must be 3–30 characters (letters, numbers, dots, hyphens).
+            </div>
+          </div>
+
+          <!-- Nom + Prenom -->
           <div class="form-row">
             <div class="form-group">
-              <label for="nom">Nom</label>
-              <input id="nom" type="text" formControlName="nom" placeholder="Nom">
+              <label for="nom">Last Name <span class="req">*</span></label>
+              <div class="input-wrapper">
+                <input id="nom" type="text" formControlName="nom" placeholder="Ben Ali">
+              </div>
+              <div class="field-error" *ngIf="fieldInvalid('nom')">Required.</div>
             </div>
             <div class="form-group">
-              <label for="prenom">Prénom</label>
-              <input id="prenom" type="text" formControlName="prenom" placeholder="Prénom">
+              <label for="prenom">First Name <span class="req">*</span></label>
+              <div class="input-wrapper">
+                <input id="prenom" type="text" formControlName="prenom" placeholder="Mohamed">
+              </div>
+              <div class="field-error" *ngIf="fieldInvalid('prenom')">Required.</div>
             </div>
           </div>
 
+          <!-- CIN + Téléphone -->
           <div class="form-row">
             <div class="form-group">
-              <label for="age">Âge</label>
-              <input id="age" type="number" formControlName="age" placeholder="Âge">
+              <label for="cin">CIN <span class="req">*</span>
+                <span class="field-hint">National ID</span>
+              </label>
+              <div class="input-wrapper">
+                <i class="fas fa-id-card input-icon"></i>
+                <input id="cin" type="text" formControlName="cin" placeholder="12345678" maxlength="8">
+              </div>
+              <div class="field-error" *ngIf="fieldInvalid('cin')">Must be exactly 8 digits.</div>
             </div>
             <div class="form-group">
-              <label for="genre">Genre</label>
-              <select id="genre" formControlName="genre">
-                <option value="">Choisir</option>
-                <option value="HOMME">Homme</option>
-                <option value="FEMME">Femme</option>
-              </select>
+              <label for="telephone">Phone <span class="req">*</span></label>
+              <div class="input-wrapper">
+                <i class="fas fa-phone input-icon"></i>
+                <input id="telephone" type="tel" formControlName="telephone" placeholder="+216 XX XXX XXX">
+              </div>
+              <div class="field-error" *ngIf="fieldInvalid('telephone')">Enter a valid phone number.</div>
             </div>
           </div>
 
-          <div class="form-group">
-            <label for="job">Profession</label>
-            <input id="job" type="text" formControlName="job" placeholder="Profession">
+          <!-- Date of birth + Genre -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="dateNaissance">Date of Birth <span class="req">*</span></label>
+              <div class="input-wrapper">
+                <i class="fas fa-calendar input-icon"></i>
+                <input id="dateNaissance" type="date" formControlName="dateNaissance"
+                       [max]="maxDate" [min]="minDate">
+              </div>
+              <div class="field-error" *ngIf="fieldInvalid('dateNaissance')">
+                <span *ngIf="authForm.get('dateNaissance')?.errors?.['underage']">You must be at least 18 years old.</span>
+                <span *ngIf="authForm.get('dateNaissance')?.errors?.['required']">Required.</span>
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="genre">Gender</label>
+              <div class="input-wrapper">
+                <i class="fas fa-venus-mars input-icon"></i>
+                <select id="genre" formControlName="genre">
+                  <option value="">Prefer not to say</option>
+                  <option value="HOMME">Male</option>
+                  <option value="FEMME">Female</option>
+                </select>
+              </div>
+            </div>
           </div>
 
-          <div class="form-group">
-            <label for="adresse">Adresse</label>
-            <input id="adresse" type="text" formControlName="adresse" placeholder="Adresse">
+          <div class="section-divider">
+            <span>Professional & Location</span>
           </div>
+
+          <!-- Job -->
+          <div class="form-group">
+            <label for="job">Profession <span class="req">*</span></label>
+            <div class="input-wrapper">
+              <i class="fas fa-briefcase input-icon"></i>
+              <input id="job" type="text" formControlName="job" placeholder="Engineer, Doctor, Student...">
+            </div>
+            <div class="field-error" *ngIf="fieldInvalid('job')">Required.</div>
+          </div>
+
+          <!-- Address -->
+          <div class="form-group">
+            <label for="adresse">Address</label>
+            <div class="input-wrapper">
+              <i class="fas fa-map-marker-alt input-icon"></i>
+              <input id="adresse" type="text" formControlName="adresse" placeholder="12 Rue de la République">
+            </div>
+          </div>
+
+          <!-- Postal + Country -->
+          <div class="form-row">
+            <div class="form-group">
+              <label for="codePostal">Postal Code</label>
+              <div class="input-wrapper">
+                <input id="codePostal" type="text" formControlName="codePostal" placeholder="1082">
+              </div>
+            </div>
+            <div class="form-group">
+              <label for="pays">Country</label>
+              <div class="input-wrapper">
+                <i class="fas fa-globe input-icon"></i>
+                <input id="pays" type="text" formControlName="pays" placeholder="Tunisie">
+              </div>
+            </div>
+          </div>
+
         </div>
+        <!-- ── END REGISTER ── -->
 
+        <!-- Buttons -->
         <button class="btn-primary" *ngIf="isLoginMode" (click)="onLogin()">
-          <span>Connexion</span>
+          <span>Sign In</span>
           <div class="btn-glow"></div>
         </button>
-        
+
         <button class="btn-primary" *ngIf="!isLoginMode" (click)="onRegister()">
-          <span>S'inscrire</span>
+          <span>Create Account</span>
           <div class="btn-glow"></div>
         </button>
 
         <div class="auth-footer">
           <button class="btn-link" (click)="toggleMode()">
-            {{ isLoginMode ? "Vous n'avez pas de compte ? S'inscrire" : 'Vous avez déjà un compte ? Connexion' }}
+            {{ isLoginMode ? "Don't have an account? Sign up" : 'Already have an account? Sign in' }}
           </button>
         </div>
 
@@ -82,10 +187,11 @@
           <p class="msg success" *ngIf="message">{{ message }}</p>
           <p class="msg error" *ngIf="error">{{ error }}</p>
         </div>
+
       </div>
     </div>
   </div>
-  
+
   <div class="background-elements">
     <div class="orb blue"></div>
     <div class="orb dark"></div>

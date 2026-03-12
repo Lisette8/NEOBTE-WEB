@@ -32,12 +32,17 @@ export class UserManagement implements OnInit {
   ) {
     this.userForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
+      username: ['', Validators.required],
       nom: ['', Validators.required],
       prenom: ['', Validators.required],
-      age: [null],
-      adresse: [''],
+      cin: [''],
+      telephone: [''],
+      dateNaissance: [''],
       job: [''],
-      genre: ['']
+      genre: [''],
+      adresse: [''],
+      codePostal: [''],
+      pays: ['Tunisie'],
     });
   }
 
@@ -47,16 +52,9 @@ export class UserManagement implements OnInit {
 
   loadUsers() {
     this.loading = true;
-
     this.adminService.getAllUsers().subscribe({
-      next: (data) => {
-        this.users = data;
-        this.loading = false;
-      },
-      error: () => {
-        this.error = 'Failed to load users';
-        this.loading = false;
-      }
+      next: (data) => { this.users = data; this.loading = false; },
+      error: () => { this.error = 'Failed to load users'; this.loading = false; }
     });
   }
 
@@ -65,29 +63,32 @@ export class UserManagement implements OnInit {
   }
 
   get filteredClients(): UserListDTO[] {
-    return this.users.filter(u => u.role === 'CLIENT' || u.role === 'USER'); // Adding USER just in case
+    return this.users.filter(u => u.role === 'CLIENT');
   }
 
   switchTab(tab: 'ADMINS' | 'CLIENTS') {
     this.currentTab = tab;
-    this.showForm = false; // Close form when switching tabs
+    this.showForm = false;
   }
-
-  
 
   editUser(user: UserListDTO) {
     this.showForm = true;
     this.isEditMode = true;
-    this.selectedUserId = user.idUtilisateur;
+    this.selectedUserId = user.id;
 
     this.userForm.patchValue({
       email: user.email,
+      username: user.username ?? '',
       nom: user.nom,
       prenom: user.prenom,
-      age: user.age ?? null,
-      adresse: user.adresse ?? '',
+      cin: user.cin ?? '',
+      telephone: user.telephone ?? '',
+      dateNaissance: user.dateNaissance ?? '',
       job: user.job ?? '',
-      genre: user.genre ?? ''
+      genre: user.genre ?? '',
+      adresse: user.adresse ?? '',
+      codePostal: user.codePostal ?? '',
+      pays: user.pays ?? 'Tunisie',
     });
   }
 
@@ -97,59 +98,57 @@ export class UserManagement implements OnInit {
       return;
     }
 
-    const value = this.userForm.value as any;
+    const v = this.userForm.value;
 
     if (this.isEditMode && this.selectedUserId != null) {
       const update: UserUpdateDTO = {
-        email: value.email,
-        nom: value.nom,
-        prenom: value.prenom,
-        age: value.age,
-        adresse: value.adresse,
-        job: value.job,
-        genre: value.genre
+        nom: v.nom,
+        prenom: v.prenom,
+        telephone: v.telephone,
+        dateNaissance: v.dateNaissance,
+        job: v.job,
+        genre: v.genre,
+        adresse: v.adresse,
+        codePostal: v.codePostal,
+        pays: v.pays,
       };
-
       this.adminService.updateUser(this.selectedUserId, update).subscribe({
-        next: () => {
-          this.loadUsers();
-          this.resetForm();
-        }
+        next: () => { this.loadUsers(); this.resetForm(); }
       });
     } else {
       const create: UserCreateDTO = {
-        email: value.email,
-        nom: value.nom,
-        prenom: value.prenom,
-        age: value.age,
-        adresse: value.adresse,
-        job: value.job,
-        genre: value.genre
+        email: v.email,
+        username: v.username,
+        nom: v.nom,
+        prenom: v.prenom,
+        cin: v.cin,
+        telephone: v.telephone,
+        dateNaissance: v.dateNaissance,
+        job: v.job,
+        genre: v.genre,
+        adresse: v.adresse,
+        codePostal: v.codePostal,
+        pays: v.pays,
+        motDePasse: 'Neobte@2026',
       };
-
       this.adminService.createUser(create).subscribe({
-        next: () => {
-          this.loadUsers();
-          this.resetForm();
-        }
+        next: () => { this.loadUsers(); this.resetForm(); }
       });
     }
   }
 
   async deleteUser(id: number) {
     const confirmed = await this.modalService.confirm({
-      title: 'Supprimer l\'utilisateur',
-      message: 'Êtes-vous sûr de vouloir supprimer cet utilisateur ?',
-      confirmText: 'Supprimer',
-      cancelText: 'Annuler',
+      title: 'Delete User',
+      message: 'Are you sure you want to delete this user? This action cannot be undone.',
+      confirmText: 'Delete',
+      cancelText: 'Cancel',
       type: 'danger'
     });
 
     if (confirmed) {
       this.adminService.deleteUser(id).subscribe({
-        next: () => {
-          this.loadUsers();
-        }
+        next: () => this.loadUsers()
       });
     }
   }
@@ -158,16 +157,8 @@ export class UserManagement implements OnInit {
     this.showForm = false;
     this.isEditMode = false;
     this.selectedUserId = null;
-    this.userForm.reset({
-      email: '',
-      nom: '',
-      prenom: '',
-      age: null,
-      adresse: '',
-      job: '',
-      genre: ''
-    });
+    this.userForm.reset({ pays: 'Tunisie' });
   }
-
-
 }
+
+

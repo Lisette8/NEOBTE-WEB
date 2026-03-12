@@ -2,8 +2,11 @@ package com.sesame.neobte.Controllers;
 
 import com.sesame.neobte.DTO.Requests.Client.ChangePasswordRequest;
 import com.sesame.neobte.DTO.Requests.Client.UpdateProfileRequest;
+import com.sesame.neobte.DTO.Responses.Client.ClientResponse;
 import com.sesame.neobte.Entities.Class.Utilisateur;
 import com.sesame.neobte.Services.UtilisateurService;
+import com.sesame.neobte.Services.UtilisateurServiceImpl;
+import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -14,7 +17,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/client")
 public class UtilisateurController {
 
-    UtilisateurService utilisateurService;
+    UtilisateurServiceImpl utilisateurService;
 
 
 
@@ -26,22 +29,18 @@ public class UtilisateurController {
 
 
     @PutMapping("/current")
-    public Utilisateur updateProfile(@RequestBody UpdateProfileRequest dto,
-                                     Authentication authentication) {
-
+    public ClientResponse updateProfile(@Valid @RequestBody UpdateProfileRequest dto,
+                                        Authentication authentication) {
         Long userId = (Long) authentication.getPrincipal();
-        return utilisateurService.updateUtilisateur(userId, dto);
+        Utilisateur updated = utilisateurService.updateUtilisateur(userId, dto);
+        return utilisateurService.mapToClientResponse(updated);
     }
 
     @PutMapping("/change-password")
-    public String changePassword(
-            @RequestBody ChangePasswordRequest request,
-            Authentication authentication) {
-
+    public String changePassword(@Valid @RequestBody ChangePasswordRequest request,
+                                 Authentication authentication) {
         Long userId = (Long) authentication.getPrincipal();
-
         utilisateurService.changePassword(userId, request);
-
         return "Password updated successfully";
     }
 

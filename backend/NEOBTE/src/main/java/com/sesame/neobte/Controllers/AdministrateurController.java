@@ -24,7 +24,7 @@ public class AdministrateurController {
 
 
     @GetMapping("/all")
-    public List<Utilisateur> getAllUsers() {
+    public List<AdminUserResponse> getAllUsers() {
         return administrateurService.getAllUsers();
     }
 

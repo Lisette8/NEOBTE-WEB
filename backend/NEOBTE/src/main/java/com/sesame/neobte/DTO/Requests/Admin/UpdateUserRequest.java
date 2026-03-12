@@ -7,15 +7,18 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDate;
+
 @Data
-@Getter
-@Setter
 @AllArgsConstructor
 public class UpdateUserRequest {
     private String nom;
     private String prenom;
+    private String telephone;
     private String adresse;
-    private Integer age;
+    private String codePostal;
+    private String pays;
+    private LocalDate dateNaissance;
     private String job;
     private Genre genre;
     private String motDePasse;

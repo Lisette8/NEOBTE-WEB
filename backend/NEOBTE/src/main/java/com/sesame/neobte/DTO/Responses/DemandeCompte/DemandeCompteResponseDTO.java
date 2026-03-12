@@ -19,7 +19,10 @@ public class DemandeCompteResponseDTO {
 
     //pour admin
     private Long utilisateurId;
+    private String utilisateurUsername;
     private String utilisateurNom;
     private String utilisateurPrenom;
     private String utilisateurEmail;
+    private String utilisateurTelephone;
+    private String utilisateurCin;
 }

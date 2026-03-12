@@ -27,7 +27,6 @@ public class AuthServiceImpl implements AuthService {
     private final TokenBlacklistService tokenBlacklistService;
 
 
-
     @Override
     public AuthResponse login(LoginRequest request) {
 
@@ -42,7 +41,7 @@ public class AuthServiceImpl implements AuthService {
                 utilisateur.getMotDePasse()
         );
 
-        if(!ifTrueMDP){
+        if (!ifTrueMDP) {
             throw new UnauthorizedException("Invalid email or password");
         }
 
@@ -51,35 +50,42 @@ public class AuthServiceImpl implements AuthService {
                 utilisateur.getRole().toString()
         );
 
-
-        System.out.println("User logged in");
         return new AuthResponse(token);
-
     }
 
 
     @Override
     public Utilisateur register(RegisterRequest request) {
 
-        Utilisateur checkUtilisateurAlreadyExists = clientRepository.findByEmail(request.getEmail());
-        if (checkUtilisateurAlreadyExists != null) {
-            throw new BadRequestException("Client with email " + request.getEmail() + " already exists");
+        if (clientRepository.findByEmail(request.getEmail()) != null) {
+            throw new BadRequestException("An account with email " + request.getEmail() + " already exists");
+        }
+
+        if (clientRepository.existsByUsername(request.getUsername())) {
+            throw new BadRequestException("Username '" + request.getUsername() + "' is already taken");
+        }
+
+        if (clientRepository.existsByCin(request.getCin())) {
+            throw new BadRequestException("A profile with this CIN already exists");
         }
 
         Utilisateur utilisateur = new Utilisateur();
-
         utilisateur.setEmail(request.getEmail());
+        utilisateur.setUsername(request.getUsername());
         utilisateur.setNom(request.getNom());
         utilisateur.setPrenom(request.getPrenom());
-        utilisateur.setAdresse(request.getAdresse());
-        utilisateur.setAge(request.getAge());
+        utilisateur.setCin(request.getCin());
+        utilisateur.setTelephone(request.getTelephone());
+        utilisateur.setDateNaissance(request.getDateNaissance());
         utilisateur.setJob(request.getJob());
         utilisateur.setGenre(request.getGenre());
+        utilisateur.setAdresse(request.getAdresse());
+        utilisateur.setCodePostal(request.getCodePostal());
+        utilisateur.setPays(request.getPays() != null ? request.getPays() : "Tunisie");
         utilisateur.setMotDePasse(passwordEncoder.encode(request.getMotDePasse()));
         utilisateur.setDateCreationCompte(new Date());
         utilisateur.setRole(Role.CLIENT);
 
-        System.out.println("User registered");
         return clientRepository.save(utilisateur);
     }
 
@@ -90,8 +96,6 @@ public class AuthServiceImpl implements AuthService {
 
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
-
-            //clean up of expired tokens
             tokenBlacklistService.blacklistToken(token, jwtService.extractExpiration(token));
         }
     }

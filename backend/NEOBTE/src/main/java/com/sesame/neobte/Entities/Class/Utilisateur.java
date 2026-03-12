@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
+import java.time.LocalDate;
 import java.util.*;
 
 @Entity
@@ -18,25 +19,46 @@ import java.util.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Utilisateur implements Serializable {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idUtilisateur;
 
-    @Column(unique = true)
+    @Column(unique = true, nullable = false)
     private String email;
 
-    @JsonIgnore //password is hashed and hidden. hash is only visible in the db
+    @Column(unique = true, nullable = false)
+    private String username;
+
+    @JsonIgnore // password is hashed — only visible in db
     private String motDePasse;
 
     @Enumerated(EnumType.STRING)
     private Role role;
 
     private Date dateCreationCompte;
+
+    @Column(nullable = false)
     private String nom;
+
+    @Column(nullable = false)
     private String prenom;
+
+    // Tunisian national ID — required for banking (CIN)
+    @Column(unique = true)
+    private String cin;
+
+    private String telephone;
     private String adresse;
-    private Integer age;
+    private String codePostal;
+    private String pays;
+
+    // Date of birth — replaces raw age, more standard in fintech
+    private LocalDate dateNaissance;
+
     private String job;
+
+    @Enumerated(EnumType.STRING)
     private Genre genre;
 
     @OneToMany(mappedBy = "utilisateur")
@@ -46,5 +68,9 @@ public class Utilisateur implements Serializable {
     @OneToMany(mappedBy = "utilisateur")
     @JsonIgnore
     private List<Support> supports = new ArrayList<>();
+
+    @OneToMany(mappedBy = "utilisateur")
+    @JsonIgnore
+    private List<DemandeCompte> demandesCompte = new ArrayList<>();
 
 }

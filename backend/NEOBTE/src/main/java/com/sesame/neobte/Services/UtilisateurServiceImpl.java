@@ -8,7 +8,6 @@ import com.sesame.neobte.Exceptions.customExceptions.BadRequestException;
 import com.sesame.neobte.Exceptions.customExceptions.ResourceNotFoundException;
 import com.sesame.neobte.Repositories.IUtilisateurRepository;
 import lombok.AllArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -16,11 +15,10 @@ import org.springframework.stereotype.Service;
 @AllArgsConstructor
 public class UtilisateurServiceImpl implements UtilisateurService {
 
-    @Autowired
-    private IUtilisateurRepository utilisateurRepository;
-    private PasswordEncoder passwordEncoder;
+    private final IUtilisateurRepository utilisateurRepository;
+    private final PasswordEncoder passwordEncoder;
 
-    //methods
+
     @Override
     public Utilisateur createUtilisateur(Utilisateur utilisateur) {
         utilisateur.setMotDePasse(passwordEncoder.encode(utilisateur.getMotDePasse()));
@@ -37,54 +35,63 @@ public class UtilisateurServiceImpl implements UtilisateurService {
 
     @Override
     public Utilisateur updateUtilisateur(Long id, UpdateProfileRequest dto) {
-        Utilisateur oldUtilisateur = getUtilisateurById(id);
+        Utilisateur user = getUtilisateurById(id);
 
-        oldUtilisateur.setNom(dto.getNom());
-        oldUtilisateur.setPrenom(dto.getPrenom());
-        oldUtilisateur.setAge(dto.getAge());
-        oldUtilisateur.setAdresse(dto.getAdresse());
-        oldUtilisateur.setJob(dto.getJob());
-        oldUtilisateur.setGenre(dto.getGenre());
+        user.setNom(dto.getNom());
+        user.setPrenom(dto.getPrenom());
+        user.setTelephone(dto.getTelephone());
+        user.setJob(dto.getJob());
+        user.setGenre(dto.getGenre());
+        user.setAdresse(dto.getAdresse());
+        user.setCodePostal(dto.getCodePostal());
+        user.setPays(dto.getPays());
 
-        System.out.println("Client updated");
-        return utilisateurRepository.save(oldUtilisateur);
+        return utilisateurRepository.save(user);
     }
+
 
     @Override
     public void changePassword(Long id, ChangePasswordRequest request) {
         Utilisateur user = getUtilisateurById(id);
 
-        boolean matches = passwordEncoder.matches(
-                request.getOldPassword(),
-                user.getMotDePasse()
-        );
-
-        if (!matches) {
+        if (!passwordEncoder.matches(request.getOldPassword(), user.getMotDePasse())) {
             throw new BadRequestException("Old password is incorrect");
         }
 
-        String encodedPassword = passwordEncoder.encode(request.getNewPassword());
+        if (request.getNewPassword().equals(request.getOldPassword())) {
+            throw new BadRequestException("New password must be different from old password");
+        }
 
-
-        System.out.println("Password changed");
-        user.setMotDePasse(encodedPassword);
+        user.setMotDePasse(passwordEncoder.encode(request.getNewPassword()));
         utilisateurRepository.save(user);
     }
 
 
     @Override
     public void deleteUtilisateur(Long id) {
-        utilisateurRepository.deleteById(id);
+        Utilisateur user = getUtilisateurById(id);
+        utilisateurRepository.delete(user);
     }
 
 
-
-    private ClientResponse mapToClientResponse(Utilisateur user) {
-        return new ClientResponse(
-                user.getIdUtilisateur(),
-                user.getEmail(),
-                user.getNom(),
-                user.getPrenom()
-        );
+    // mapper
+    public ClientResponse mapToClientResponse(Utilisateur user) {
+        return ClientResponse.builder()
+                .id(user.getIdUtilisateur())
+                .email(user.getEmail())
+                .username(user.getUsername())
+                .nom(user.getNom())
+                .prenom(user.getPrenom())
+                .cin(user.getCin())
+                .telephone(user.getTelephone())
+                .adresse(user.getAdresse())
+                .codePostal(user.getCodePostal())
+                .pays(user.getPays())
+                .dateNaissance(user.getDateNaissance())
+                .job(user.getJob())
+                .genre(user.getGenre())
+                .role(user.getRole())
+                .dateCreationCompte(user.getDateCreationCompte())
+                .build();
     }
 }

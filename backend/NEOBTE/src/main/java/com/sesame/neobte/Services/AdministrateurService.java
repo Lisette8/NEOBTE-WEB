@@ -8,7 +8,7 @@ import com.sesame.neobte.Entities.Class.Utilisateur;
 import java.util.List;
 
 public interface AdministrateurService {
-    List<Utilisateur> getAllUsers();
+    List<AdminUserResponse> getAllUsers();
     Utilisateur getUserEntityById(Long id);
     AdminUserResponse getUserById(Long id);
     Utilisateur createUtilisateur(CreateUserRequest dto);

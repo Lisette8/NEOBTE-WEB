@@ -13,10 +13,13 @@ import java.util.List;
 public interface IDemandeCompteRepository extends JpaRepository<DemandeCompte, Long> {
     List<DemandeCompte> findByUtilisateur_IdUtilisateurOrderByDateDemandeDesc(Long userId);
     List<DemandeCompte> findByStatutDemandeOrderByDateDemandeAsc(StatutDemande statut);
+    List<DemandeCompte> findAllByOrderByStatutDemandeAscDateDemandeDesc();
 
     boolean existsByUtilisateur_IdUtilisateurAndTypeCompteAndStatutDemande(
             Long userId,
             TypeCompte typeCompte,
             StatutDemande statut
     );
+
+
 }

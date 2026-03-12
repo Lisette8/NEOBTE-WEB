@@ -5,8 +5,8 @@ import com.sesame.neobte.DTO.Requests.Admin.UpdateUserRequest;
 import com.sesame.neobte.DTO.Responses.Admin.AdminUserResponse;
 import com.sesame.neobte.Entities.Enumeration.Role;
 import com.sesame.neobte.Entities.Class.Utilisateur;
+import com.sesame.neobte.Exceptions.customExceptions.BadRequestException;
 import com.sesame.neobte.Exceptions.customExceptions.ResourceNotFoundException;
-import com.sesame.neobte.Mappers_Example.UtilisateurMapper;
 import com.sesame.neobte.Repositories.IUtilisateurRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -19,50 +19,61 @@ import java.util.List;
 @AllArgsConstructor
 public class AdministrateurServiceImpl implements AdministrateurService {
 
-    private IUtilisateurRepository utilisateurRepository;
-    private PasswordEncoder passwordEncoder;
-
+    private final IUtilisateurRepository utilisateurRepository;
+    private final PasswordEncoder passwordEncoder;
 
 
     @Override
-    public List<Utilisateur> getAllUsers() {
-        return utilisateurRepository.findAll();
+    public List<AdminUserResponse> getAllUsers() {
+        return utilisateurRepository.findAll()
+                .stream()
+                .map(this::toAdminResponse)
+                .toList();
     }
 
 
-    //ENTITY
     public Utilisateur getUserEntityById(Long id) {
         return utilisateurRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id " + id));
     }
 
-    //DTO
+
     @Override
     public AdminUserResponse getUserById(Long id) {
-        Utilisateur user = utilisateurRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id " + id));
-
-        return UtilisateurMapper.toAdminResponse(user);
+        Utilisateur user = getUserEntityById(id);
+        return toAdminResponse(user);
     }
-
 
 
     @Override
     public Utilisateur createUtilisateur(CreateUserRequest dto) {
         Utilisateur utilisateur = new Utilisateur();
 
+        if(utilisateurRepository.existsByEmail(dto.getEmail())) {
+            throw new BadRequestException("Email already exists");
+        }
+
+        if(utilisateurRepository.existsByUsername(dto.getEmail())) {
+            throw new BadRequestException("Username already exists");
+        }
+
+        if(utilisateurRepository.existsByCin(dto.getEmail())) {
+            throw new BadRequestException("CIN already exists");
+        }
+
         utilisateur.setEmail(dto.getEmail());
+        utilisateur.setUsername(dto.getUsername());
         utilisateur.setNom(dto.getNom());
         utilisateur.setPrenom(dto.getPrenom());
+        utilisateur.setCin(dto.getCin());
+        utilisateur.setTelephone(dto.getTelephone());
         utilisateur.setAdresse(dto.getAdresse());
-        utilisateur.setAge(dto.getAge());
+        utilisateur.setCodePostal(dto.getCodePostal());
+        utilisateur.setPays(dto.getPays() != null ? dto.getPays() : "Tunisie");
+        utilisateur.setDateNaissance(dto.getDateNaissance());
         utilisateur.setJob(dto.getJob());
         utilisateur.setGenre(dto.getGenre());
-
-
-        //mot de passe encode
         utilisateur.setMotDePasse(passwordEncoder.encode(dto.getMotDePasse()));
-
         utilisateur.setRole(dto.getRole() != null ? dto.getRole() : Role.CLIENT);
         utilisateur.setDateCreationCompte(new Date());
 
@@ -72,41 +83,55 @@ public class AdministrateurServiceImpl implements AdministrateurService {
 
     @Override
     public Utilisateur updateUser(Long id, UpdateUserRequest dto) {
-        Utilisateur oldUser = getUserEntityById(id);
+        Utilisateur user = getUserEntityById(id);
 
-        if (dto.getNom() != null)
-            oldUser.setNom(dto.getNom());
+        if (dto.getNom() != null)          user.setNom(dto.getNom());
+        if (dto.getPrenom() != null)        user.setPrenom(dto.getPrenom());
+        if (dto.getTelephone() != null)     user.setTelephone(dto.getTelephone());
+        if (dto.getAdresse() != null)       user.setAdresse(dto.getAdresse());
+        if (dto.getCodePostal() != null)    user.setCodePostal(dto.getCodePostal());
+        if (dto.getPays() != null)          user.setPays(dto.getPays());
+        if (dto.getDateNaissance() != null) user.setDateNaissance(dto.getDateNaissance());
+        if (dto.getJob() != null)           user.setJob(dto.getJob());
+        if (dto.getGenre() != null)         user.setGenre(dto.getGenre());
+        if (dto.getMotDePasse() != null)    user.setMotDePasse(passwordEncoder.encode(dto.getMotDePasse()));
+        if (dto.getRole() != null)          user.setRole(dto.getRole());
 
-        if (dto.getPrenom() != null)
-            oldUser.setPrenom(dto.getPrenom());
-
-        if (dto.getAdresse() != null)
-            oldUser.setAdresse(dto.getAdresse());
-
-        if (dto.getAge() != null)
-            oldUser.setAge(dto.getAge());
-
-        if (dto.getJob() != null)
-            oldUser.setJob(dto.getJob());
-
-        if (dto.getGenre() != null)
-            oldUser.setGenre(dto.getGenre());
-
-        if (dto.getMotDePasse() != null)
-            oldUser.setMotDePasse(passwordEncoder.encode(dto.getMotDePasse()));
-
-        if (dto.getRole() != null)
-            oldUser.setRole(dto.getRole());
-
-
-        return utilisateurRepository.save(oldUser);
+        return utilisateurRepository.save(user);
     }
 
 
     @Override
     public void deleteUser(Long id) {
-        utilisateurRepository.deleteById(id);
+        Utilisateur user = getUserEntityById(id);
+        utilisateurRepository.delete(user);
     }
 
 
+    // mapper
+    private AdminUserResponse toAdminResponse(Utilisateur user) {
+        double totalSolde = user.getComptes() == null ? 0.0 :
+                user.getComptes().stream()
+                        .mapToDouble(c -> c.getSolde() != null ? c.getSolde() : 0.0)
+                        .sum();
+
+        return AdminUserResponse.builder()
+                .id(user.getIdUtilisateur())
+                .email(user.getEmail())
+                .username(user.getUsername())
+                .nom(user.getNom())
+                .prenom(user.getPrenom())
+                .cin(user.getCin())
+                .telephone(user.getTelephone())
+                .adresse(user.getAdresse())
+                .codePostal(user.getCodePostal())
+                .pays(user.getPays())
+                .dateNaissance(user.getDateNaissance())
+                .job(user.getJob())
+                .genre(user.getGenre())
+                .role(user.getRole())
+                .dateCreationCompte(user.getDateCreationCompte())
+                .totalSolde(totalSolde)
+                .build();
+    }
 }

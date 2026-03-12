@@ -10,6 +10,7 @@ import java.util.Date;
 @AllArgsConstructor
 @Getter
 @Setter
+@Builder
 public class SupportResponseDTO {
     private Long idSupport;
     private String sujet;

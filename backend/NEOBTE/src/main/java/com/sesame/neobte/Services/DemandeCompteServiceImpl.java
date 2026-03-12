@@ -34,7 +34,6 @@ public class DemandeCompteServiceImpl implements DemandeCompteService {
     private final EmailService emailService;
 
 
-
     @Override
     @Transactional
     public DemandeCompteResponseDTO submitDemande(DemandeCompteCreateDTO dto) {
@@ -42,7 +41,7 @@ public class DemandeCompteServiceImpl implements DemandeCompteService {
         Utilisateur user = utilisateurRepository.findById(dto.getUtilisateurId())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        // Idempotency guard: si le client possede deja d'une demande active...
+        // idempotency guard: reject if user already has a pending request for this account type
         boolean alreadyPending = demandeRepository
                 .existsByUtilisateur_IdUtilisateurAndTypeCompteAndStatutDemande(
                         dto.getUtilisateurId(), dto.getTypeCompte(), StatutDemande.EN_ATTENTE);
@@ -61,6 +60,7 @@ public class DemandeCompteServiceImpl implements DemandeCompteService {
 
         DemandeCompte saved = demandeRepository.save(demande);
 
+        // Fire-and-forget confirmation email (async, won't block the response)
         sendConfirmationEmailAsync(user.getEmail(), user.getPrenom(), dto.getTypeCompte().name());
 
         log.info("New account request submitted: demandeId={}, userId={}, type={}",
@@ -82,16 +82,8 @@ public class DemandeCompteServiceImpl implements DemandeCompteService {
 
     @Override
     public List<DemandeCompteResponseDTO> getAllDemandes() {
-        return demandeRepository.findAll()
+        return demandeRepository.findAllByOrderByStatutDemandeAscDateDemandeDesc()
                 .stream()
-                // Pending first, then by date descending
-                .sorted((a, b) -> {
-                    if (a.getStatutDemande() == StatutDemande.EN_ATTENTE &&
-                            b.getStatutDemande() != StatutDemande.EN_ATTENTE) return -1;
-                    if (b.getStatutDemande() == StatutDemande.EN_ATTENTE &&
-                            a.getStatutDemande() != StatutDemande.EN_ATTENTE) return 1;
-                    return b.getDateDemande().compareTo(a.getDateDemande());
-                })
                 .map(this::mapToDTO)
                 .toList();
     }
@@ -182,11 +174,7 @@ public class DemandeCompteServiceImpl implements DemandeCompteService {
     }
 
 
-
-
-
-
-    //email functions
+    // async email functions
     @Async
     protected void sendConfirmationEmailAsync(String email, String prenom, String typeCompte) {
         try {
@@ -215,9 +203,7 @@ public class DemandeCompteServiceImpl implements DemandeCompteService {
     }
 
 
-
-
-    //mappers
+    // mapper
     private DemandeCompteResponseDTO mapToDTO(DemandeCompte d) {
         DemandeCompteResponseDTO dto = new DemandeCompteResponseDTO();
         dto.setIdDemande(d.getIdDemande());
@@ -235,9 +221,12 @@ public class DemandeCompteServiceImpl implements DemandeCompteService {
         Utilisateur u = d.getUtilisateur();
         if (u != null) {
             dto.setUtilisateurId(u.getIdUtilisateur());
+            dto.setUtilisateurUsername(u.getUsername());
             dto.setUtilisateurNom(u.getNom());
             dto.setUtilisateurPrenom(u.getPrenom());
             dto.setUtilisateurEmail(u.getEmail());
+            dto.setUtilisateurTelephone(u.getTelephone());
+            dto.setUtilisateurCin(u.getCin());
         }
 
         return dto;

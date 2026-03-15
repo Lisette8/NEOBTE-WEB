@@ -6,7 +6,7 @@ import com.sesame.neobte.DTO.Responses.Compte.CompteResponseDTO;
 
 import java.util.List;
 
-public interface    CompteService {
+public interface CompteService {
     public CompteResponseDTO createCompte(CompteCreateDTO dto);
     public List<CompteResponseDTO> getAllComptes();
     public CompteResponseDTO getCompteById(Long id);

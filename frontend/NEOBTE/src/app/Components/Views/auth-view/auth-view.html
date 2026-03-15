@@ -2,88 +2,206 @@
   <div class="auth-container">
     <div class="auth-card">
 
-      <div class="auth-header">
-        <div class="logo-circle">
-          <img src="assets/bte-logo.png" alt="BTE Logo" class="auth-logo">
-        </div>
-        <h1>{{ isLoginMode ? 'Bon retour' : 'Créer un compte' }}</h1>
-        <p class="subtitle">{{ isLoginMode ? 'Accédez à votre espace NEO BTE' : 'Rejoignez la banque digitale BTE' }}</p>
-      </div>
-
-      <div class="auth-body" [formGroup]="authForm">
-
-        <div class="form-group">
-          <label>Email <span class="req">*</span></label>
-          <div class="input-wrapper">
-            <i class="fas fa-envelope input-icon"></i>
-            <input type="email" formControlName="email" placeholder="name@example.com">
+      <!-- ── LOGIN / REGISTER ── -->
+      <ng-container *ngIf="step === 'login' || step === 'register'">
+        <div class="auth-header">
+          <div class="logo-circle">
+            <img src="assets/bte-logo.png" alt="BTE Logo" class="auth-logo">
           </div>
-          <div class="field-error" *ngIf="fieldInvalid('email')">Enter a valid email address.</div>
+          <h1>{{ isLoginMode ? 'Bon retour' : 'Créer un compte' }}</h1>
+          <p class="subtitle">{{ isLoginMode ? 'Accédez à votre espace NEO BTE' : 'Rejoignez la banque digitale BTE' }}</p>
         </div>
 
-        <div class="form-group">
-          <label>Password <span class="req">*</span></label>
-          <div class="input-wrapper">
-            <i class="fas fa-lock input-icon"></i>
-            <input [type]="showPassword ? 'text' : 'password'" formControlName="motDePasse" placeholder="••••••••">
-            <button type="button" class="toggle-pw" (click)="showPassword = !showPassword">
-              <i class="fas" [class.fa-eye]="!showPassword" [class.fa-eye-slash]="showPassword"></i>
-            </button>
-          </div>
-          <div class="field-error" *ngIf="fieldInvalid('motDePasse') && !isLoginMode">
-            Password must be at least 8 characters.
-          </div>
-        </div>
-
-        <!-- Register-only fields -->
-        <ng-container *ngIf="!isLoginMode">
-          <div class="form-row">
-            <div class="form-group">
-              <label>First Name <span class="req">*</span></label>
-              <div class="input-wrapper">
-                <input type="text" formControlName="prenom" placeholder="Mohamed">
-              </div>
-              <div class="field-error" *ngIf="fieldInvalid('prenom')">Required.</div>
+        <div class="auth-body" [formGroup]="authForm">
+          <div class="form-group">
+            <label>Email <span class="req">*</span></label>
+            <div class="input-wrapper">
+              <i class="fas fa-envelope input-icon"></i>
+              <input type="email" formControlName="email" placeholder="name@example.com">
             </div>
-            <div class="form-group">
-              <label>Last Name <span class="req">*</span></label>
-              <div class="input-wrapper">
-                <input type="text" formControlName="nom" placeholder="Ben Ali">
-              </div>
-              <div class="field-error" *ngIf="fieldInvalid('nom')">Required.</div>
-            </div>
+            <div class="field-error" *ngIf="fieldInvalid(authForm, 'email')">Enter a valid email address.</div>
           </div>
 
           <div class="form-group">
-            <label>Phone <span class="req">*</span></label>
+            <label>Password <span class="req">*</span></label>
             <div class="input-wrapper">
-              <i class="fas fa-phone input-icon"></i>
-              <input type="tel" formControlName="telephone" placeholder="+216 XX XXX XXX">
+              <i class="fas fa-lock input-icon"></i>
+              <input [type]="showPassword ? 'text' : 'password'" formControlName="motDePasse" placeholder="••••••••">
+              <button type="button" class="toggle-pw" (click)="showPassword = !showPassword">
+                <i class="fas" [class.fa-eye]="!showPassword" [class.fa-eye-slash]="showPassword"></i>
+              </button>
             </div>
-            <div class="field-error" *ngIf="fieldInvalid('telephone')">Enter a valid phone number.</div>
+            <div class="field-error" *ngIf="fieldInvalid(authForm, 'motDePasse') && !isLoginMode">
+              Password must be at least 8 characters.
+            </div>
           </div>
 
-          <p class="kyc-note">
-            <i class="fas fa-info-circle"></i>
-            Identity documents (CIN, date of birth) will be collected when you open a bank account.
-          </p>
-        </ng-container>
+          <ng-container *ngIf="!isLoginMode">
+            <div class="form-row">
+              <div class="form-group">
+                <label>First Name <span class="req">*</span></label>
+                <div class="input-wrapper">
+                  <input type="text" formControlName="prenom" placeholder="Mohamed">
+                </div>
+                <div class="field-error" *ngIf="fieldInvalid(authForm, 'prenom')">Required.</div>
+              </div>
+              <div class="form-group">
+                <label>Last Name <span class="req">*</span></label>
+                <div class="input-wrapper">
+                  <input type="text" formControlName="nom" placeholder="Ben Ali">
+                </div>
+                <div class="field-error" *ngIf="fieldInvalid(authForm, 'nom')">Required.</div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Phone <span class="req">*</span></label>
+              <div class="input-wrapper">
+                <i class="fas fa-phone input-icon"></i>
+                <input type="tel" formControlName="telephone" placeholder="+216 XX XXX XXX">
+              </div>
+              <div class="field-error" *ngIf="fieldInvalid(authForm, 'telephone')">Enter a valid phone number.</div>
+            </div>
+            <p class="kyc-note">
+              <i class="fas fa-info-circle"></i>
+              Identity documents (CIN, date of birth) will be collected when you open a bank account.
+            </p>
+          </ng-container>
 
-        <div class="field-error global-error" *ngIf="error">{{ error }}</div>
+          <div class="field-error global-error" *ngIf="error">{{ error }}</div>
 
-        <button class="btn-primary" (click)="onSubmit()" [disabled]="loading">
-          <span *ngIf="!loading">{{ isLoginMode ? 'Sign In' : 'Create Account' }}</span>
-          <span *ngIf="loading" class="loader"></span>
-          <div class="btn-glow"></div>
-        </button>
+          <button class="btn-primary" (click)="onSubmitAuth()" [disabled]="loading">
+            <span *ngIf="!loading">{{ isLoginMode ? 'Sign In' : 'Create Account' }}</span>
+            <span *ngIf="loading" class="loader"></span>
+            <div class="btn-glow"></div>
+          </button>
 
-        <div class="auth-footer">
-          <button class="btn-link" (click)="toggleMode()">
-            {{ isLoginMode ? "Don't have an account? Sign up" : 'Already have an account? Sign in' }}
+          <div class="auth-footer">
+            <button class="btn-link" (click)="toggleMode()">
+              {{ isLoginMode ? "Don't have an account? Sign up" : 'Already have an account? Sign in' }}
+            </button>
+            <button class="btn-link forgot-link" *ngIf="isLoginMode" (click)="goToForgot()">
+              Forgot password?
+            </button>
+          </div>
+        </div>
+      </ng-container>
+
+
+      <!-- ── FORGOT PASSWORD — enter email ── -->
+      <ng-container *ngIf="step === 'forgot'">
+        <div class="auth-header">
+          <div class="step-icon">🔐</div>
+          <h1>Forgot Password</h1>
+          <p class="subtitle">Enter your email and we'll send you a 6-digit verification code</p>
+        </div>
+        <div class="auth-body" [formGroup]="forgotForm">
+          <div class="form-group">
+            <label>Email <span class="req">*</span></label>
+            <div class="input-wrapper">
+              <i class="fas fa-envelope input-icon"></i>
+              <input type="email" formControlName="email" placeholder="name@example.com">
+            </div>
+            <div class="field-error" *ngIf="fieldInvalid(forgotForm, 'email')">Enter a valid email address.</div>
+          </div>
+          <div class="field-error global-error" *ngIf="error">{{ error }}</div>
+          <button class="btn-primary" (click)="submitForgot()" [disabled]="loading">
+            <span *ngIf="!loading">Send Verification Code</span>
+            <span *ngIf="loading" class="loader"></span>
+            <div class="btn-glow"></div>
+          </button>
+          <div class="auth-footer">
+            <button class="btn-link" (click)="backToLogin()">← Back to Sign In</button>
+          </div>
+        </div>
+      </ng-container>
+
+
+      <!-- ── VERIFY CODE ── -->
+      <ng-container *ngIf="step === 'verify-code'">
+        <div class="auth-header">
+          <div class="step-icon">📩</div>
+          <h1>Check your email</h1>
+          <p class="subtitle">We sent a 6-digit code to <strong>{{ resetEmail }}</strong></p>
+        </div>
+        <div class="auth-body" [formGroup]="codeForm">
+          <div class="form-group">
+            <label>Verification Code <span class="req">*</span></label>
+            <div class="input-wrapper">
+              <input type="text" formControlName="code" placeholder="000000"
+                maxlength="6" class="code-input">
+            </div>
+            <div class="field-error" *ngIf="fieldInvalid(codeForm, 'code')">Enter the 6-digit code.</div>
+          </div>
+          <div class="field-error global-error" *ngIf="error">{{ error }}</div>
+          <button class="btn-primary" (click)="submitCode()" [disabled]="loading">
+            <span *ngIf="!loading">Verify Code</span>
+            <span *ngIf="loading" class="loader"></span>
+            <div class="btn-glow"></div>
+          </button>
+          <div class="auth-footer">
+            <button class="btn-link" (click)="resendCode()" [disabled]="loading">
+              Didn't receive it? Resend
+            </button>
+            <button class="btn-link" (click)="goToForgot()">← Change email</button>
+          </div>
+        </div>
+      </ng-container>
+
+
+      <!-- ── NEW PASSWORD ── -->
+      <ng-container *ngIf="step === 'new-password'">
+        <div class="auth-header">
+          <div class="step-icon">🔑</div>
+          <h1>New Password</h1>
+          <p class="subtitle">Choose a strong password for your account</p>
+        </div>
+        <div class="auth-body" [formGroup]="newPasswordForm">
+          <div class="form-group">
+            <label>New Password <span class="req">*</span></label>
+            <div class="input-wrapper">
+              <i class="fas fa-lock input-icon"></i>
+              <input [type]="showPassword ? 'text' : 'password'" formControlName="newPassword" placeholder="••••••••">
+              <button type="button" class="toggle-pw" (click)="showPassword = !showPassword">
+                <i class="fas" [class.fa-eye]="!showPassword" [class.fa-eye-slash]="showPassword"></i>
+              </button>
+            </div>
+            <div class="field-error" *ngIf="fieldInvalid(newPasswordForm, 'newPassword')">
+              Must be at least 8 characters.
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Confirm Password <span class="req">*</span></label>
+            <div class="input-wrapper">
+              <i class="fas fa-lock input-icon"></i>
+              <input [type]="showPassword ? 'text' : 'password'" formControlName="confirmPassword" placeholder="••••••••">
+            </div>
+            <div class="field-error" *ngIf="fieldInvalid(newPasswordForm, 'confirmPassword')">Required.</div>
+          </div>
+          <div class="field-error global-error" *ngIf="error">{{ error }}</div>
+          <button class="btn-primary" (click)="submitNewPassword()" [disabled]="loading">
+            <span *ngIf="!loading">Reset Password</span>
+            <span *ngIf="loading" class="loader"></span>
+            <div class="btn-glow"></div>
           </button>
         </div>
+      </ng-container>
 
-      </div>
+
+      <!-- ── SUCCESS ── -->
+      <ng-container *ngIf="step === 'done'">
+        <div class="auth-header">
+          <div class="step-icon success-icon-circle">✓</div>
+          <h1>Password Reset!</h1>
+          <p class="subtitle">Your password has been updated successfully.</p>
+        </div>
+        <div class="auth-body">
+          <button class="btn-primary" (click)="backToLogin()">
+            Sign In Now
+            <div class="btn-glow"></div>
+          </button>
+        </div>
+      </ng-container>
+
     </div>
   </div>
 

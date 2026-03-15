@@ -33,6 +33,20 @@ export class AuthService {
     );
   }
  
+  // ── Password Reset ──
+  forgotPassword(email: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.API_URL}/forgot-password`, { email });
+  }
+ 
+  verifyResetCode(email: string, code: string): Observable<{ resetToken: string }> {
+    return this.http.post<{ resetToken: string }>(`${this.API_URL}/verify-reset-code`, { email, code });
+  }
+ 
+  resetPassword(resetToken: string, newPassword: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.API_URL}/reset-password`, { resetToken, newPassword });
+  }
+ 
+  // ── Profile ──
   getCurrentUser(): Observable<any> {
     return this.http.get<any>(`${this.CLIENT_URL}/current`);
   }
@@ -63,4 +77,3 @@ export class AuthService {
  
   isLoggedIn(): boolean { return this.getToken() != null; }
 }
- 

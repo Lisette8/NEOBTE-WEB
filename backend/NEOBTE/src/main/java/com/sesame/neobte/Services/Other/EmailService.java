@@ -13,84 +13,43 @@ public class EmailService {
 
     private JavaMailSender mailSender;
 
-
-    //support
-    public void sendSupportResponseEmail(String to, String subject, String adminReply) {
-
+    private void send(String to, String subject, String html) {
         try {
-
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
-
             helper.setTo(to);
-            helper.setSubject("Support reply: " + subject);
+            helper.setSubject(subject);
             helper.setFrom("neobte-reply@gmail.com");
-
-            String htmlContent = EmailTemplateLoader.loadSupportReplyTemplate(subject, adminReply);
-
-            helper.setText(htmlContent, true);
-
+            helper.setText(html, true);
             mailSender.send(message);
-
         } catch (Exception e) {
             e.printStackTrace();
+            throw new RuntimeException("Failed to send email to " + to, e);
         }
     }
 
+    public void sendSupportResponseEmail(String to, String subject, String adminReply) {
+        send(to, "Support reply: " + subject,
+                EmailTemplateLoader.loadSupportReplyTemplate(subject, adminReply));
+    }
 
-    //demandeCompte
     public void sendDemandeConfirmationEmail(String to, String prenom, String typeCompte) {
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true);
-
-            helper.setTo(to);
-            helper.setSubject("NEO BTE — Your account request has been received");
-            helper.setFrom("neobte-reply@gmail.com");
-
-            String html = EmailTemplateLoader.loadDemandeConfirmationTemplate(prenom, typeCompte);
-            helper.setText(html, true);
-
-            mailSender.send(message);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        send(to, "NEO BTE — Your account request has been received",
+                EmailTemplateLoader.loadDemandeConfirmationTemplate(prenom, typeCompte));
     }
 
     public void sendDemandeApprovalEmail(String to, String prenom, String typeCompte, Long compteId) {
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true);
-
-            helper.setTo(to);
-            helper.setSubject("NEO BTE — Your account has been approved!");
-            helper.setFrom("neobte-reply@gmail.com");
-
-            String html = EmailTemplateLoader.loadDemandeApprovalTemplate(prenom, typeCompte, compteId);
-            helper.setText(html, true);
-
-            mailSender.send(message);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        send(to, "NEO BTE — Your account has been approved!",
+                EmailTemplateLoader.loadDemandeApprovalTemplate(prenom, typeCompte, compteId));
     }
 
     public void sendDemandeRejectionEmail(String to, String prenom, String typeCompte, String reason) {
-        try {
-            MimeMessage message = mailSender.createMimeMessage();
-            MimeMessageHelper helper = new MimeMessageHelper(message, true);
-
-            helper.setTo(to);
-            helper.setSubject("NEO BTE — Update on your account request");
-            helper.setFrom("neobte-reply@gmail.com");
-
-            String html = EmailTemplateLoader.loadDemandeRejectionTemplate(prenom, typeCompte, reason);
-            helper.setText(html, true);
-
-            mailSender.send(message);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        send(to, "NEO BTE — Update on your account request",
+                EmailTemplateLoader.loadDemandeRejectionTemplate(prenom, typeCompte, reason));
     }
 
+    public void sendPasswordResetEmail(String to, String prenom, String code) {
+        send(to, "NEO BTE — Your password reset code",
+                EmailTemplateLoader.loadPasswordResetTemplate(prenom, code));
+    }
 }

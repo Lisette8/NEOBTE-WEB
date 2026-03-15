@@ -25,10 +25,10 @@ public class SecurityConfig {
 
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) {
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> {})
-                .csrf(AbstractHttpConfigurer::disable) // disable csrf for Postman
+                .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
@@ -37,11 +37,15 @@ public class SecurityConfig {
 
                         // v1 permit all for quicker testing via postman
                         // v2 permit all auth(login and register), rest is protected (Client)
-                        .requestMatchers("/api/v1/auth/login").permitAll()
-                        .requestMatchers("/api/v1/auth/register").permitAll()
+                        .requestMatchers(
+                                "/api/v1/auth/login",
+                                "/api/v1/auth/register",
+                                "/api/v1/auth/forgot-password",
+                                "/api/v1/auth/verify-reset-code",
+                                "/api/v1/auth/reset-password"
+                        ).permitAll()
 
                         .requestMatchers("/api/v1/auth/logout").hasAnyRole("ADMIN", "CLIENT")
-
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/client/**").hasAnyRole("CLIENT","ADMIN")
 

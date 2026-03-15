@@ -13,11 +13,21 @@ import { Router } from '@angular/router';
   styleUrl: './auth-view.css',
 })
 export class AuthView implements OnInit {
-  isLoginMode = true;
-  authForm: FormGroup;
+ 
+  step: 'login' | 'register' | 'forgot' | 'verify-code' | 'new-password' | 'done' = 'login';
   showPassword = false;
   error = '';
   loading = false;
+ 
+  // Forms
+  authForm: FormGroup;
+  forgotForm: FormGroup;
+  codeForm: FormGroup;
+  newPasswordForm: FormGroup;
+ 
+  // State passed between steps
+  resetEmail = '';
+  resetToken = '';
  
   constructor(
     private authService: AuthService,
@@ -31,6 +41,19 @@ export class AuthView implements OnInit {
       nom:        [''],
       telephone:  [''],
     });
+ 
+    this.forgotForm = this.fb.group({
+      email: ['', [Validators.required, Validators.email]],
+    });
+ 
+    this.codeForm = this.fb.group({
+      code: ['', [Validators.required, Validators.pattern(/^[0-9]{6}$/)]],
+    });
+ 
+    this.newPasswordForm = this.fb.group({
+      newPassword:     ['', [Validators.required, Validators.minLength(8)]],
+      confirmPassword: ['', Validators.required],
+    });
   }
  
   ngOnInit(): void {
@@ -40,54 +63,44 @@ export class AuthView implements OnInit {
     }
   }
  
+  // ── Auth (login / register) ──────────────────────────────────────────
+ 
+  get isLoginMode() { return this.step === 'login'; }
+ 
   toggleMode() {
-    this.isLoginMode = !this.isLoginMode;
+    this.step = this.step === 'login' ? 'register' : 'login';
     this.error = '';
     this.authForm.reset();
-    this.updateValidators();
+    this.updateAuthValidators();
   }
  
-  private updateValidators() {
-    if (this.isLoginMode) {
-      this.authForm.get('prenom')?.clearValidators();
-      this.authForm.get('nom')?.clearValidators();
-      this.authForm.get('telephone')?.clearValidators();
+  private updateAuthValidators() {
+    if (this.step === 'login') {
+      ['prenom', 'nom', 'telephone'].forEach(f => this.authForm.get(f)?.clearValidators());
       this.authForm.get('motDePasse')?.setValidators([Validators.required]);
     } else {
       this.authForm.get('prenom')?.setValidators([Validators.required]);
       this.authForm.get('nom')?.setValidators([Validators.required]);
-      this.authForm.get('telephone')?.setValidators([
-        Validators.required,
-        Validators.pattern(/^[+]?[0-9]{8,15}$/)
-      ]);
-      this.authForm.get('motDePasse')?.setValidators([
-        Validators.required,
-        Validators.minLength(8)
-      ]);
+      this.authForm.get('telephone')?.setValidators([Validators.required, Validators.pattern(/^[+]?[0-9]{8,15}$/)]);
+      this.authForm.get('motDePasse')?.setValidators([Validators.required, Validators.minLength(8)]);
     }
-    ['prenom', 'nom', 'telephone', 'motDePasse'].forEach(f =>
-      this.authForm.get(f)?.updateValueAndValidity()
-    );
+    ['prenom', 'nom', 'telephone', 'motDePasse'].forEach(f => this.authForm.get(f)?.updateValueAndValidity());
   }
  
-  fieldInvalid(field: string): boolean {
-    const ctrl = this.authForm.get(field);
+  fieldInvalid(form: FormGroup, field: string): boolean {
+    const ctrl = form.get(field);
     return !!(ctrl?.invalid && ctrl?.touched);
   }
  
-  onSubmit() {
+  onSubmitAuth() {
     this.error = '';
-    this.updateValidators();
- 
-    if (this.authForm.invalid) {
-      this.authForm.markAllAsTouched();
-      return;
-    }
+    this.updateAuthValidators();
+    if (this.authForm.invalid) { this.authForm.markAllAsTouched(); return; }
  
     this.loading = true;
     const v = this.authForm.value;
  
-    if (this.isLoginMode) {
+    if (this.step === 'login') {
       this.authService.login({ email: v.email, motDePasse: v.motDePasse }).subscribe({
         next: () => {
           const role = this.authService.getUserRole();
@@ -96,19 +109,69 @@ export class AuthView implements OnInit {
         error: () => { this.error = 'Invalid credentials. Please try again.'; this.loading = false; }
       });
     } else {
-      this.authService.register({
-        email: v.email,
-        motDePasse: v.motDePasse,
-        prenom: v.prenom,
-        nom: v.nom,
-        telephone: v.telephone,
-      }).subscribe({
+      this.authService.register({ email: v.email, motDePasse: v.motDePasse, prenom: v.prenom, nom: v.nom, telephone: v.telephone }).subscribe({
         next: () => this.router.navigate(['/home-view']),
-        error: (err) => {
-          this.error = err?.error?.message || 'Registration failed. Please try again.';
-          this.loading = false;
-        }
+        error: (err) => { this.error = err?.error?.message || 'Registration failed.'; this.loading = false; }
       });
     }
+  }
+ 
+  // ── Forgot Password flow ─────────────────────────────────────────────
+ 
+  goToForgot() { this.step = 'forgot'; this.error = ''; this.forgotForm.reset(); }
+  backToLogin() { this.step = 'login'; this.error = ''; }
+ 
+  submitForgot() {
+    if (this.forgotForm.invalid) { this.forgotForm.markAllAsTouched(); return; }
+    this.loading = true;
+    this.error = '';
+    const email = this.forgotForm.value.email;
+ 
+    this.authService.forgotPassword(email).subscribe({
+      next: () => {
+        this.resetEmail = email;
+        this.loading = false;
+        this.step = 'verify-code';
+      },
+      error: (err) => { this.error = err?.error?.message || 'Something went wrong.'; this.loading = false; }
+    });
+  }
+ 
+  submitCode() {
+    if (this.codeForm.invalid) { this.codeForm.markAllAsTouched(); return; }
+    this.loading = true;
+    this.error = '';
+ 
+    this.authService.verifyResetCode(this.resetEmail, this.codeForm.value.code).subscribe({
+      next: (res) => {
+        this.resetToken = res.resetToken;
+        this.loading = false;
+        this.step = 'new-password';
+      },
+      error: (err) => { this.error = err?.error?.message || 'Invalid code.'; this.loading = false; }
+    });
+  }
+ 
+  submitNewPassword() {
+    this.error = '';
+    const v = this.newPasswordForm.value;
+    if (this.newPasswordForm.invalid) { this.newPasswordForm.markAllAsTouched(); return; }
+    if (v.newPassword !== v.confirmPassword) { this.error = 'Passwords do not match.'; return; }
+ 
+    this.loading = true;
+    this.authService.resetPassword(this.resetToken, v.newPassword).subscribe({
+      next: () => { this.loading = false; this.step = 'done'; },
+      error: (err) => { this.error = err?.error?.message || 'Reset failed.'; this.loading = false; }
+    });
+  }
+ 
+  resendCode() {
+    this.loading = true;
+    this.error = '';
+    this.codeForm.reset();
+    this.authService.forgotPassword(this.resetEmail).subscribe({
+      next: () => { this.loading = false; },
+      error: () => { this.error = 'Failed to resend code.'; this.loading = false; }
+    });
   }
 }

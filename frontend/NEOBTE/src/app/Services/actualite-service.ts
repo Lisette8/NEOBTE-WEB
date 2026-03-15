@@ -16,8 +16,7 @@ export class ActualiteService {
 
   constructor(private http: HttpClient) { }
 
-
-  //client side methods
+  // Client side methods
   getAll(page: number, size: number) {
     return this.http.get<Page<Actualite>>(`${this.apiClient}/all?page=${page}&size=${size}`);
   }
@@ -26,38 +25,16 @@ export class ActualiteService {
     return this.http.get<Actualite>(`${this.apiClient}/${id}`);
   }
 
-
-
-  //admin side methods
+  // Admin side methods — authInterceptor already injects the token, no need to add it manually
   create(data: ActualiteCreateDTO) {
-
-    const token = localStorage.getItem('token');
-
-    return this.http.post<Actualite>(`${this.apiAdmin}/add`, data, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
+    return this.http.post<Actualite>(`${this.apiAdmin}/add`, data);
   }
 
   update(id: number, data: ActualiteCreateDTO) {
-    const token = localStorage.getItem('token');
-    
-    return this.http.put<Actualite>(`${this.apiAdmin}/update/${id}`, data, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
+    return this.http.put<Actualite>(`${this.apiAdmin}/update/${id}`, data);
   }
 
   delete(id: number) {
-
-    const token = localStorage.getItem('token');
-
-    return this.http.delete(`${this.apiAdmin}/delete/${id}` , {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
+    return this.http.delete(`${this.apiAdmin}/delete/${id}`);
   }
 }

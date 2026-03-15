@@ -22,12 +22,16 @@ public class Compte implements Serializable {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idCompte;
 
-
     private Double solde;
+
     @Enumerated(EnumType.STRING)
     private TypeCompte typeCompte;
+
     @Enumerated(EnumType.STRING)
     private StatutCompte statutCompte;
+
+    @Column(nullable = false, updatable = false)
+    private Date dateCreation;
 
     @ManyToOne
     private Utilisateur utilisateur;
@@ -39,4 +43,10 @@ public class Compte implements Serializable {
     @OneToMany(mappedBy = "compteA")
     @JsonIgnore
     private List<Virement> virementsEntrants = new ArrayList<>();
+
+
+
+
+    @PrePersist
+    protected void onCreate() { this.dateCreation = new Date(); }
 }

@@ -1,11 +1,8 @@
 <div class="admin-shell">
 
-  <!-- Sidebar -->
   <aside class="sidebar">
     <div class="sidebar-brand">
-      <div class="brand-logo">
-        <span class="brand-icon">N</span>
-      </div>
+      <div class="brand-logo"><span class="brand-icon">N</span></div>
       <div class="brand-text">
         <span class="brand-name">NeoBTE</span>
         <span class="brand-role">Admin Panel</span>
@@ -15,13 +12,21 @@
     <nav class="sidebar-nav">
       <p class="nav-section-label">Management</p>
 
+      <button class="nav-item" [class.active]="selectedTab === 'demandes'" (click)="selectedTab = 'demandes'">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+          </svg>
+        </span>
+        <span class="nav-label">Account Requests</span>
+      </button>
+
       <button class="nav-item" [class.active]="selectedTab === 'users'" (click)="selectedTab = 'users'">
         <span class="nav-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
             <circle cx="9" cy="7" r="4"/>
-            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
-            <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            <path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
           </svg>
         </span>
         <span class="nav-label">Users</span>
@@ -30,8 +35,7 @@
       <button class="nav-item" [class.active]="selectedTab === 'comptes'" (click)="selectedTab = 'comptes'">
         <span class="nav-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <rect x="2" y="5" width="20" height="14" rx="2"/>
-            <line x1="2" y1="10" x2="22" y2="10"/>
+            <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
           </svg>
         </span>
         <span class="nav-label">Accounts</span>
@@ -40,10 +44,8 @@
       <button class="nav-item" [class.active]="selectedTab === 'virements'" (click)="selectedTab = 'virements'">
         <span class="nav-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="17 1 21 5 17 9"/>
-            <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
-            <polyline points="7 23 3 19 7 15"/>
-            <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+            <polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+            <polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
           </svg>
         </span>
         <span class="nav-label">Transfers</span>
@@ -62,13 +64,25 @@
         <span class="nav-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z"/>
-            <line x1="8" y1="6" x2="16" y2="6"/>
-            <line x1="8" y1="10" x2="16" y2="10"/>
+            <line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/>
             <line x1="8" y1="14" x2="12" y2="14"/>
           </svg>
         </span>
         <span class="nav-label">Actualités</span>
       </button>
+
+      <p class="nav-section-label" style="margin-top: 16px;">Finance</p>
+
+      <button class="nav-item" [class.active]="selectedTab === 'treasury'" (click)="selectedTab = 'treasury'">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="1" x2="12" y2="23"/>
+            <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+          </svg>
+        </span>
+        <span class="nav-label">Treasury</span>
+      </button>
+
     </nav>
 
     <div class="sidebar-footer">
@@ -80,10 +94,7 @@
     </div>
   </aside>
 
-  <!-- Main Content -->
   <main class="admin-main">
-
-    <!-- Top bar -->
     <div class="topbar">
       <div class="topbar-title">
         <h1>{{ tabTitles[selectedTab] }}</h1>
@@ -94,15 +105,15 @@
       </div>
     </div>
 
-    <!-- View Content -->
     <div class="content-area">
-      <app-user-management *ngIf="selectedTab === 'users'"></app-user-management>
-      <app-compte-management *ngIf="selectedTab === 'comptes'"></app-compte-management>
-      <app-virement-management *ngIf="selectedTab === 'virements'"></app-virement-management>
-      <app-admin-support *ngIf="selectedTab === 'support'"></app-admin-support>
+      <app-demande-management   *ngIf="selectedTab === 'demandes'"></app-demande-management>
+      <app-user-management      *ngIf="selectedTab === 'users'"></app-user-management>
+      <app-compte-management    *ngIf="selectedTab === 'comptes'"></app-compte-management>
+      <app-virement-management  *ngIf="selectedTab === 'virements'"></app-virement-management>
+      <app-admin-support        *ngIf="selectedTab === 'support'"></app-admin-support>
       <app-actualite-management *ngIf="selectedTab === 'news'"></app-actualite-management>
+      <app-treasury-component   *ngIf="selectedTab === 'treasury'"></app-treasury-component>
     </div>
-
   </main>
 
 </div>

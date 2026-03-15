@@ -5,8 +5,11 @@ import { CommonModule } from '@angular/common';
 import { Virement } from '../../../Entities/Interfaces/virement';
 import { Compte } from '../../../Entities/Interfaces/compte';
 import { CompteService } from '../../../Services/compte-service';
+import { AuthService } from '../../../Services/auth-service';
 import { ConfirmModalService } from '../../../Services/SharedServices/confirm-modal.service';
 import { Router } from '@angular/router';
+import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
+import { RecipientPreview } from '../../../Entities/Interfaces/recipient-preview';
 
 @Component({
   selector: 'app-virement-view',
@@ -15,175 +18,127 @@ import { Router } from '@angular/router';
   templateUrl: './virement-view.html',
   styleUrl: './virement-view.css',
 })
-
-
 export class VirementView implements OnInit {
-
-  comptes: Compte[] = [];
-  virementForm: FormGroup;
-  history: Virement[] = [];
+ 
+  step: 'lookup' | 'confirm' | 'success' = 'lookup';
+  transferForm: FormGroup;
+  recipient: RecipientPreview | null = null;
+  resolving = false;
+  resolveError = '';
+  lastCompletedTransfer: Virement | null = null;
+ 
+  private identifierChange$ = new Subject<string>();
+ 
   loading = false;
-  message = '';
   error = '';
-  historyFilter: 'all' | 'sent' | 'received' = 'all';
-
-  get selectedCompte(): Compte | undefined {
-    const id = this.virementForm.get('compteSourceId')?.value;
-    return this.comptes.find(c => c.idCompte == id);
-  }
-
-  isSent(v: Virement): boolean {
-    const id = this.virementForm.get('compteSourceId')?.value;
-    return v.compteSourceId == id;
-  }
-
-  fieldInvalid(field: string): boolean {
-    const ctrl = this.virementForm.get(field);
-    return !!(ctrl?.invalid && ctrl?.touched);
-  }
-
-  get amountExceedsBalance(): boolean {
-    const montant = this.virementForm.get('montant')?.value;
-    return !!(this.selectedCompte && montant > this.selectedCompte.solde);
-  }
-
-  // #10 - filtered history based on active tab
-  get filteredHistory(): Virement[] {
-    if (this.historyFilter === 'sent')     return this.history.filter(v => this.isSent(v));
-    if (this.historyFilter === 'received') return this.history.filter(v => !this.isSent(v));
-    return this.history;
-  }
-
+  history: Virement[] = [];
+  historyLoading = false;
+ 
   constructor(
     private virementService: VirementService,
-    private compteService: CompteService,
     private fb: FormBuilder,
     private modalService: ConfirmModalService,
-    private router: Router
   ) {
-    this.virementForm = this.fb.group({
-      compteSourceId: [null, [Validators.required]],
-      compteDestinationId: [null, [Validators.required]],
-      montant: [null, [Validators.required, Validators.min(1)]]
-    });
-
-    // Re-validate montant whenever source account changes (balance changes)
-    this.virementForm.get('compteSourceId')?.valueChanges.subscribe(() => {
-      this.virementForm.get('montant')?.updateValueAndValidity();
+    this.transferForm = this.fb.group({
+      recipientIdentifier: ['', Validators.required],
+      montant: [null, [Validators.required, Validators.min(1)]],
     });
   }
-
+ 
   ngOnInit() {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    const userId = user.id;
-
-    this.compteService.getUserAccounts(userId)
-      .subscribe(data => {
-        this.comptes = data;
-        // Pre-fill source account if navigated from compte-view
-        const preselected = history.state?.['compteId'];
-        if (preselected) {
-          this.virementForm.get('compteSourceId')?.setValue(preselected);
+    this.loadHistory();
+ 
+    this.identifierChange$.pipe(
+      debounceTime(600),
+      distinctUntilChanged(),
+      switchMap(identifier => {
+        if (!identifier || identifier.length < 5) {
+          this.recipient = null;
+          this.resolveError = '';
+          this.resolving = false;
+          return [];
         }
-      });
-
-    this.loadAccounts();
-
-    // Auto-load history whenever source account changes
-    this.virementForm.get('compteSourceId')?.valueChanges.subscribe(value => {
-      if (value) {
-        this.loadHistory();
-      } else {
-        this.history = [];
-      }
+        this.resolving = true;
+        this.resolveError = '';
+        return this.virementService.resolveRecipient(identifier);
+      })
+    ).subscribe({
+      next: (preview) => {
+        this.resolving = false;
+        if (preview.found) { this.recipient = preview; this.resolveError = ''; }
+        else { this.recipient = null; this.resolveError = 'No account found with that email or phone number.'; }
+      },
+      error: () => { this.resolving = false; this.recipient = null; this.resolveError = 'Could not look up recipient.'; }
     });
   }
-
-
-
-  async transfer() {
-    if (this.virementForm.invalid) {
-      this.virementForm.markAllAsTouched();
-      return;
+ 
+  onIdentifierInput(event: Event) {
+    this.identifierChange$.next((event.target as HTMLInputElement).value);
+  }
+ 
+  fieldInvalid(field: string): boolean {
+    const ctrl = this.transferForm.get(field);
+    return !!(ctrl?.invalid && ctrl?.touched);
+  }
+ 
+  get montant(): number { return this.transferForm.get('montant')?.value ?? 0; }
+ 
+  // Compute fee from recipient's feeRate (provided by backend on resolve)
+  get estimatedFee(): number {
+    if (!this.recipient || !this.montant) return 0;
+    const rate = this.recipient.feeRate ?? 0.005;
+    return Math.round(this.montant * rate * 1000) / 1000;
+  }
+ 
+  get totalDebite(): number { return this.montant + this.estimatedFee; }
+ 
+  proceedToConfirm() {
+    this.error = '';
+    if (!this.recipient) { this.resolveError = 'Please enter a valid recipient.'; return; }
+    if (!this.montant || this.transferForm.get('montant')?.invalid) {
+      this.transferForm.get('montant')?.markAsTouched(); return;
     }
-
-    if (this.virementForm.value.compteSourceId === this.virementForm.value.compteDestinationId) {
-      this.error = "Vous ne pouvez pas effectuer un virement vers le même compte";
-      return;
-    }
-
-    if (this.amountExceedsBalance) {
-      this.error = "Solde insuffisant pour ce virement";
-      return;
-    }
-
-    const { montant, compteSourceId, compteDestinationId } = this.virementForm.value;
-
+    this.step = 'confirm';
+  }
+ 
+  async confirmTransfer() {
     const confirmed = await this.modalService.confirm({
-      title: 'Confirmer le virement',
-      message: `Vous êtes sur le point de transférer ${montant} TND du compte #${compteSourceId} vers le compte #${compteDestinationId}. Cette action est irréversible.`,
-      confirmText: 'Envoyer',
-      cancelText: 'Annuler',
+      title: 'Confirm Transfer',
+      message: `Send ${this.montant} TND to ${this.recipient!.displayName}? Total debited: ${this.totalDebite} TND (includes ${this.estimatedFee} TND fee).`,
+      confirmText: 'Send',
+      cancelText: 'Cancel',
       type: 'warning'
     });
-
+ 
     if (!confirmed) return;
-
+ 
     this.loading = true;
-    this.message = '';
     this.error = '';
-
-    const request = {
-      ...this.virementForm.value,
-      idempotencyKey: crypto.randomUUID() //randomUUID generates random id for the transfer
-    }
-
-    this.virementService.transfer(request).subscribe({
-      next: (res) => {
-        this.loading = false;
-        // #8 - preserve source account, only reset destination and amount
-        const sourceId = this.virementForm.get('compteSourceId')?.value;
-        this.virementForm.reset();
-        this.virementForm.get('compteSourceId')?.setValue(sourceId);
-        this.loadAccounts();
-        this.loadHistory();
-        console.log(res);
-      },
-      error: (err) => {
-        this.loading = false;
-        console.error(err);
-      }
+ 
+    this.virementService.transfer({
+      recipientIdentifier: this.transferForm.value.recipientIdentifier,
+      montant: this.montant,
+      idempotencyKey: crypto.randomUUID(),
+    }).subscribe({
+      next: (result) => { this.loading = false; this.lastCompletedTransfer = result; this.step = 'success'; this.loadHistory(); },
+      error: (err) => { this.loading = false; this.error = err?.error?.message || 'Transfer failed.'; this.step = 'lookup'; }
     });
   }
-
-
-  //loaders , i created these methods to make sure everything loads and refreshes automatically 
+ 
+  resetForm() {
+    this.step = 'lookup';
+    this.recipient = null;
+    this.resolveError = '';
+    this.error = '';
+    this.lastCompletedTransfer = null;
+    this.transferForm.reset();
+  }
+ 
   loadHistory() {
-    const sourceId = this.virementForm.get('compteSourceId')?.value;
-    if (!sourceId) return;
-
-    this.loading = true;
-    this.virementService.getHistory(sourceId).subscribe({
-      next: (data) => {
-        this.history = data;
-        this.loading = false;
-      },
-      error: () => {
-        this.loading = false;
-        this.error = "Erreur lors du chargement de l'historique";
-      }
+    this.historyLoading = true;
+    this.virementService.getHistory().subscribe({
+      next: (data) => { this.history = data; this.historyLoading = false; },
+      error: () => { this.historyLoading = false; }
     });
-  }
-
-
-  loadAccounts() {
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
-    const userId = user.id;
-
-    this.compteService.getUserAccounts(userId)
-      .subscribe(data => {
-        this.comptes = data;
-      });
-
   }
 }

@@ -55,38 +55,40 @@ public class AuthServiceImpl implements AuthService {
 
 
     @Override
-    public Utilisateur register(RegisterRequest request) {
+    public AuthResponse register(RegisterRequest request) {
 
         if (clientRepository.findByEmail(request.getEmail()) != null) {
             throw new BadRequestException("An account with email " + request.getEmail() + " already exists");
         }
 
-        if (clientRepository.existsByUsername(request.getUsername())) {
-            throw new BadRequestException("Username '" + request.getUsername() + "' is already taken");
-        }
-
-        if (clientRepository.existsByCin(request.getCin())) {
-            throw new BadRequestException("A profile with this CIN already exists");
+        if (clientRepository.existsByTelephone(request.getTelephone())) {
+            throw new BadRequestException("This phone number is already linked to an account");
         }
 
         Utilisateur utilisateur = new Utilisateur();
         utilisateur.setEmail(request.getEmail());
-        utilisateur.setUsername(request.getUsername());
         utilisateur.setNom(request.getNom());
         utilisateur.setPrenom(request.getPrenom());
-        utilisateur.setCin(request.getCin());
         utilisateur.setTelephone(request.getTelephone());
-        utilisateur.setDateNaissance(request.getDateNaissance());
-        utilisateur.setJob(request.getJob());
-        utilisateur.setGenre(request.getGenre());
-        utilisateur.setAdresse(request.getAdresse());
-        utilisateur.setCodePostal(request.getCodePostal());
-        utilisateur.setPays(request.getPays() != null ? request.getPays() : "Tunisie");
         utilisateur.setMotDePasse(passwordEncoder.encode(request.getMotDePasse()));
         utilisateur.setDateCreationCompte(new Date());
         utilisateur.setRole(Role.CLIENT);
 
-        return clientRepository.save(utilisateur);
+        // Oracle DB still has NOT NULL on username column — auto-generate from email prefix
+        String baseUsername = request.getEmail().split("@")[0].replaceAll("[^a-zA-Z0-9._-]", "");
+        String username = baseUsername;
+        int suffix = 1;
+        while (clientRepository.existsByUsername(username)) {
+            username = baseUsername + suffix++;
+        }
+        utilisateur.setUsername(username);
+
+        // KYC fields (cin, dateNaissance, job, adresse, etc.) collected later at bank account opening
+
+        Utilisateur saved = clientRepository.save(utilisateur);
+
+        String token = jwtService.generateToken(saved.getIdUtilisateur(), saved.getRole().toString());
+        return new AuthResponse(token);
     }
 
 

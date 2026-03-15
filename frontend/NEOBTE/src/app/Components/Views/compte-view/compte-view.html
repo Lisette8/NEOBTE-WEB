@@ -1,42 +1,149 @@
 <div class="comptes-page">
 
-  <div class="page-header">
-    <h1>My Accounts</h1>
-    <p class="page-sub">{{ comptes.length }} account{{ comptes.length !== 1 ? 's' : '' }} linked to your profile</p>
-  </div>
+  <!-- ── ACCOUNT LIST ── -->
+  <ng-container *ngIf="step === 'list'">
 
-  <div class="accounts-container">
-
-    <div class="account-card" *ngFor="let compte of comptes">
-
-      <div class="ac-top">
-        <div class="ac-type-badge">{{ compte.typeCompte }}</div>
-        <span class="ac-status" [class.active]="compte.statutCompte === 'ACTIVE'"
-                                [class.blocked]="compte.statutCompte === 'BLOCKED'"
-                                [class.closed]="compte.statutCompte === 'CLOSED'">
-          {{ compte.statutCompte }}
-        </span>
+    <div class="page-header">
+      <div>
+        <h1>My Accounts</h1>
+        <p class="page-sub">{{ comptes.length }} account{{ comptes.length !== 1 ? 's' : '' }} linked to your profile</p>
       </div>
-
-      <div class="ac-id">Account #{{ compte.idCompte }}</div>
-
-      <div class="ac-balance">
-        {{ compte.solde | number:'1.2-2' }}
-        <span class="ac-currency">TND</span>
-      </div>
-
-      <button class="btn-transfer"
-              (click)="goToTransfer(compte.idCompte)"
-              [disabled]="compte.statutCompte !== 'ACTIVE'">
-        ↔ New Transfer
+      <button class="btn-open-account" (click)="step = 'select-type'">
+        + Open New Account
       </button>
+    </div>
+
+    <div class="success-banner" *ngIf="submitSuccess">
+      <i class="fas fa-check-circle"></i> {{ submitSuccess }}
+    </div>
+
+    <p class="loading-text" *ngIf="loading">Loading...</p>
+    <p class="error-text" *ngIf="error">{{ error }}</p>
+
+    <div class="accounts-container">
+      <div class="account-card" *ngFor="let compte of comptes">
+        <div class="ac-top">
+          <div class="ac-type-badge">{{ compte.typeCompte }}</div>
+          <span class="ac-status"
+            [class.active]="compte.statutCompte === 'ACTIVE'"
+            [class.blocked]="compte.statutCompte === 'BLOCKED'"
+            [class.closed]="compte.statutCompte === 'CLOSED'">
+            {{ compte.statutCompte }}
+          </span>
+        </div>
+        <div class="ac-id">Account #{{ compte.idCompte }}</div>
+        <div class="ac-balance">
+          {{ compte.solde | number:'1.2-2' }}
+          <span class="ac-currency">TND</span>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="empty-state" *ngIf="comptes.length === 0 && !loading">
+      <p>No accounts yet. Open your first account to get started.</p>
+    </div>
+
+    <!-- Pending requests -->
+    <div class="demandes-section" *ngIf="pendingDemandes.length > 0">
+      <h2>Pending Requests</h2>
+      <div class="demande-card" *ngFor="let d of pendingDemandes">
+        <span class="demande-type">{{ d.typeCompte }}</span>
+        <span class="demande-status pending">Under review</span>
+      </div>
+    </div>
+
+  </ng-container>
+
+
+  <!-- ── SELECT ACCOUNT TYPE ── -->
+  <ng-container *ngIf="step === 'select-type'">
+
+    <div class="page-header">
+      <div>
+        <h1>Open a New Account</h1>
+        <p class="page-sub">Choose the type that suits you</p>
+      </div>
+      <button class="btn-back" (click)="step = 'list'">← Back</button>
+    </div>
+
+    <div class="type-cards">
+      <div class="type-card" *ngFor="let t of availableAccountTypes" (click)="selectType(t.type)">
+        <div class="type-icon">{{ t.icon }}</div>
+        <h3>{{ t.label }}</h3>
+        <p class="type-desc">{{ t.desc }}</p>
+        <p class="type-needs"><strong>Required:</strong> {{ t.needs }}</p>
+        <button class="btn-select">Select →</button>
+      </div>
+    </div>
+
+  </ng-container>
+
+
+  <!-- ── KYC FORM ── -->
+  <ng-container *ngIf="step === 'fill-kyc' && kycForm">
+
+    <div class="page-header">
+      <div>
+        <h1>Identity Verification</h1>
+        <p class="page-sub">Required to open your {{ selectedType }} account</p>
+      </div>
+      <button class="btn-back" (click)="cancelRequest()">← Back</button>
+    </div>
+
+    <div class="kyc-card" [formGroup]="kycForm">
+
+      <div class="form-group">
+        <label>CIN (National ID) <span class="req">*</span></label>
+        <input class="form-input" type="text" formControlName="cin" placeholder="12345678" maxlength="8">
+        <div class="field-error" *ngIf="fieldInvalid('cin')">Must be exactly 8 digits.</div>
+      </div>
+
+      <div class="form-group">
+        <label>Date of Birth <span class="req">*</span></label>
+        <input class="form-input" type="date" formControlName="dateNaissance">
+        <div class="field-error" *ngIf="fieldInvalid('dateNaissance')">Required.</div>
+      </div>
+
+      <ng-container *ngIf="selectedType === 'COURANT' || selectedType === 'PROFESSIONNEL'">
+        <div class="form-group">
+          <label>Address <span class="req">*</span></label>
+          <input class="form-input" type="text" formControlName="adresse" placeholder="12 Rue de la République, Tunis">
+          <div class="field-error" *ngIf="fieldInvalid('adresse')">Required.</div>
+        </div>
+
+        <div class="form-group">
+          <label>Profession <span class="req">*</span></label>
+          <input class="form-input" type="text" formControlName="job" placeholder="Engineer, Doctor, Freelancer...">
+          <div class="field-error" *ngIf="fieldInvalid('job')">Required.</div>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="selectedType === 'PROFESSIONNEL'">
+        <div class="form-group">
+          <label>Company / Business Name <span class="req">*</span></label>
+          <input class="form-input" type="text" formControlName="nomEntreprise" placeholder="ACME Corp">
+          <div class="field-error" *ngIf="fieldInvalid('nomEntreprise')">Required.</div>
+        </div>
+      </ng-container>
+
+      <div class="form-group">
+        <label>Additional notes <span class="optional">(optional)</span></label>
+        <textarea class="form-input" formControlName="motif" rows="3"
+          placeholder="Any additional information for the bank..."></textarea>
+      </div>
+
+      <div class="field-error global-error" *ngIf="submitError">{{ submitError }}</div>
+
+      <div class="kyc-actions">
+        <button class="btn-ghost" (click)="cancelRequest()">Cancel</button>
+        <button class="btn-primary" (click)="submitDemande()" [disabled]="submitting">
+          {{ submitting ? 'Submitting...' : 'Submit Request' }}
+        </button>
+      </div>
 
     </div>
 
-  </div>
-
-  <div class="empty-state" *ngIf="comptes.length === 0">
-    <p>No accounts found for your profile.</p>
-  </div>
+  </ng-container>
 
 </div>

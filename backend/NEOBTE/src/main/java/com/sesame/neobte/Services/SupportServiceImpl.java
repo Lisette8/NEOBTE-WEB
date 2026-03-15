@@ -61,17 +61,17 @@ public class SupportServiceImpl implements SupportService {
         support.setUtilisateur(user);
         support.setDateCreation(LocalDateTime.now());
 
-        supportRepository.save(support);
+        Support saved = supportRepository.save(support);
 
-        //send notif
-        messagingTemplate.convertAndSend("/topic/support", "New support ticket from: " + user.getEmail());
+        // broadcast full ticket DTO so the admin panel can parse it directly
+        messagingTemplate.convertAndSend("/topic/support", mapToResponseDTO(saved));
 
-        return mapToResponseDTO(support);
+        return mapToResponseDTO(saved);
     }
 
 
     @Override
-    public Support updateStatus(Long id, String response, String status) {
+    public SupportResponseDTO updateStatus(Long id, String response, String status) {
 
         Support support = supportRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Ticket not found"));
@@ -83,9 +83,7 @@ public class SupportServiceImpl implements SupportService {
 
         // send email to client
         String clientEmail = support.getUtilisateur().getEmail();
-
         String subject = "Response to your support ticket";
-
         String message =
                 "Hello,\n\n" +
                         "Our support team replied to your ticket:\n\n" +
@@ -96,7 +94,7 @@ public class SupportServiceImpl implements SupportService {
 
         emailService.sendSupportResponseEmail(clientEmail, subject, message);
 
-        return saved;
+        return mapToResponseDTO(saved);
     }
 
 

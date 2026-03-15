@@ -53,11 +53,11 @@ public class AdministrateurServiceImpl implements AdministrateurService {
             throw new BadRequestException("Email already exists");
         }
 
-        if(utilisateurRepository.existsByUsername(dto.getEmail())) {
+        if(utilisateurRepository.existsByUsername(dto.getUsername())) {
             throw new BadRequestException("Username already exists");
         }
 
-        if(utilisateurRepository.existsByCin(dto.getEmail())) {
+        if(utilisateurRepository.existsByCin(dto.getCin())) {
             throw new BadRequestException("CIN already exists");
         }
 

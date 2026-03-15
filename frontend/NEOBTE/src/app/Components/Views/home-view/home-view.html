@@ -1,85 +1,125 @@
-<div class="home-shell">
+<div class="dashboard">
 
-  <!-- ─── WELCOME BANNER ─── -->
-  <section class="welcome-banner">
-    <div class="wb-bg">
-      <div class="wb-orb"></div>
+  <!-- ── TOP BAR ── -->
+  <div class="dash-topbar">
+    <div class="dash-greeting">
+      <p class="dash-hello">Good {{ getTimeOfDay() }},</p>
+      <h1 class="dash-name">{{ userName || 'Welcome back' }} 👋</h1>
     </div>
-    <div class="wb-content">
-      <div>
-        <p class="wb-greeting">Bonjour 👋</p>
-        <h1 class="wb-title">Votre espace NEO BTE</h1>
-        <p class="wb-sub">Retrouvez vos comptes, virements et actualités en un coup d'œil.</p>
+    <a routerLink="/compte-view" [queryParams]="{open: 'true'}" class="btn-new-account">+ New Account</a>
+  </div>
+
+  <!-- ── TOTAL BALANCE HERO ── -->
+  <div class="balance-hero" *ngIf="!loading">
+    <p class="bh-label">Total Balance</p>
+    <h2 class="bh-amount">{{ totalBalance | number:'1.3-3' }} <span class="bh-currency">TND</span></h2>
+    <p class="bh-sub">Across {{ activeComptes.length }} active account{{ activeComptes.length !== 1 ? 's' : '' }}</p>
+  </div>
+
+  <div class="balance-hero skeleton" *ngIf="loading">
+    <div class="sk-line wide"></div>
+    <div class="sk-line tall"></div>
+    <div class="sk-line short"></div>
+  </div>
+
+  <!-- ── ACCOUNTS ── -->
+  <section class="dash-section">
+    <div class="section-header">
+      <h2>My Accounts</h2>
+      <a routerLink="/compte-view" [queryParams]="{open: 'true'}" class="section-link">Open new →</a>
+    </div>
+
+    <div class="accounts-scroll" *ngIf="!loading">
+
+      <!-- Account cards -->
+      <div class="account-card"
+        *ngFor="let compte of comptes"
+        (click)="openAccount(compte.idCompte)"
+        [class.inactive]="compte.statutCompte !== 'ACTIVE'">
+
+        <div class="ac-header">
+          <span class="ac-icon">{{ getAccountIcon(compte.typeCompte) }}</span>
+          <span class="ac-status-dot"
+            [class.active]="compte.statutCompte === 'ACTIVE'"
+            [class.blocked]="compte.statutCompte === 'BLOCKED'"
+            [class.closed]="compte.statutCompte === 'CLOSED'">
+          </span>
+        </div>
+        <p class="ac-label">{{ getAccountLabel(compte.typeCompte) }}</p>
+        <p class="ac-id">#{{ compte.idCompte }}</p>
+        <p class="ac-balance">{{ compte.solde | number:'1.3-3' }}</p>
+        <p class="ac-currency">TND</p>
+
+        <div class="ac-footer">
+          <span class="ac-status-text">{{ compte.statutCompte }}</span>
+          <span class="ac-arrow">→</span>
+        </div>
       </div>
-      <div class="wb-actions">
-        <a routerLink="/virement-view" class="btn-wb">Nouveau virement</a>
-        <a routerLink="/support-view" class="btn-wb-ghost">Contacter le support</a>
+
+      <!-- Empty state -->
+      <div class="no-accounts" *ngIf="comptes.length === 0">
+        <p class="no-ac-icon">🏦</p>
+        <p class="no-ac-text">No accounts yet</p>
+        <a routerLink="/compte-view" class="btn-open-first">Open your first account</a>
+      </div>
+
+    </div>
+
+    <!-- Skeleton loader -->
+    <div class="accounts-scroll" *ngIf="loading">
+      <div class="account-card skeleton" *ngFor="let i of [1,2]">
+        <div class="sk-line short"></div>
+        <div class="sk-line wide"></div>
+        <div class="sk-line tall"></div>
+      </div>
+    </div>
+
+    <!-- Pending requests banner -->
+    <div class="pending-banner" *ngIf="pendingDemandes.length > 0">
+      <span class="pb-icon">⏳</span>
+      <span>{{ pendingDemandes.length }} account request{{ pendingDemandes.length > 1 ? 's' : '' }} under review</span>
+    </div>
+
+  </section>
+
+  <!-- ── QUICK ACTIONS ── -->
+  <section class="dash-section">
+    <h2>Quick Actions</h2>
+    <div class="quick-actions">
+      <a routerLink="/virement-view" class="qa-card qa-send">
+        <div class="qa-icon">↑</div>
+        <span>Send Money</span>
+      </a>
+      <a routerLink="/receive" class="qa-card qa-receive">
+        <div class="qa-icon">↓</div>
+        <span>Receive</span>
+      </a>
+      <a routerLink="/support-view" class="qa-card qa-support">
+        <div class="qa-icon">💬</div>
+        <span>Support</span>
+      </a>
+      <a routerLink="/actualite-view" class="qa-card qa-news">
+        <div class="qa-icon">📰</div>
+        <span>News</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- ── LATEST NEWS ── -->
+  <section class="dash-section" *ngIf="actualites.length > 0">
+    <div class="section-header">
+      <h2>BTE News</h2>
+      <a routerLink="/actualite-view" class="section-link">See all →</a>
+    </div>
+    <div class="news-list">
+      <div class="news-item" *ngFor="let act of actualites">
+        <div class="ni-dot"></div>
+        <div class="ni-body">
+          <p class="ni-title">{{ act.titre }}</p>
+          <p class="ni-date">{{ act.dateCreationActualite | date:'MMM d, y' }}</p>
+        </div>
       </div>
     </div>
   </section>
 
-  <div class="home-grid">
-
-    <!-- ─── QUICK LINKS ─── -->
-    <section class="quick-links">
-      <a routerLink="/compte-view" class="ql-card">
-        <div class="ql-icon">🏦</div>
-        <span>Mes Comptes</span>
-      </a>
-      <a routerLink="/virement-view" class="ql-card">
-        <div class="ql-icon">↔️</div>
-        <span>Virements</span>
-      </a>
-      <a routerLink="/support-view" class="ql-card">
-        <div class="ql-icon">💬</div>
-        <span>Support</span>
-      </a>
-      <a routerLink="/actualite-view" class="ql-card">
-        <div class="ql-icon">📰</div>
-        <span>Actualités</span>
-      </a>
-    </section>
-
-    <!-- ─── ACTUALITES ─── -->
-    <section class="news-section">
-      <div class="section-hd">
-        <h2>Actualités BTE</h2>
-        <a routerLink="/actualite-view" class="see-all">Voir tout →</a>
-      </div>
-
-      <div class="news-list">
-        <div class="news-item" *ngFor="let act of actualites">
-          <div class="ni-dot"></div>
-          <div class="ni-body">
-            <div class="ni-title">{{ act.titre }}</div>
-            <div class="ni-desc">{{ act.description }}</div>
-            <div class="ni-date">{{ act.dateCreationActualite | date: 'dd MMM yyyy' }}</div>
-          </div>
-        </div>
-
-        <div class="empty-news" *ngIf="actualites.length === 0">
-          <p>Aucune actualité disponible pour le moment.</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- ─── INFO CARDS ─── -->
-    <section class="info-cards">
-      <div class="info-card ic-blue">
-        <div class="ic-icon">🔒</div>
-        <div>
-          <div class="ic-title">Sécurité activée</div>
-          <div class="ic-sub">Votre compte est protégé par chiffrement 256-bit</div>
-        </div>
-      </div>
-      <div class="info-card ic-green">
-        <div class="ic-icon">📞</div>
-        <div>
-          <div class="ic-title">Support 24/7</div>
-          <div class="ic-sub">+216 71 112 000 · contact&#64;bte.com.tn</div>
-        </div>
-      </div>
-    </section>
-
-  </div>
 </div>

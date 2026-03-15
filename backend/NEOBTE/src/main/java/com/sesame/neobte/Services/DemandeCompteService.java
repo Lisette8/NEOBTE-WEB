@@ -7,19 +7,10 @@ import com.sesame.neobte.DTO.Responses.DemandeCompte.DemandeCompteResponseDTO;
 import java.util.List;
 
 public interface DemandeCompteService {
-    // Client: submit a new account request
-    DemandeCompteResponseDTO submitDemande(DemandeCompteCreateDTO dto);
-
-    // Client: view own requests
+    DemandeCompteResponseDTO submitDemande(DemandeCompteCreateDTO dto, Long userId);
     List<DemandeCompteResponseDTO> getDemandesByUser(Long userId);
-
-    // Admin: view all requests (optionally filtered by status)
     List<DemandeCompteResponseDTO> getAllDemandes();
     List<DemandeCompteResponseDTO> getDemandesByStatut(String statut);
-
-    // Admin: approve → creates the Compte, notifies client
     DemandeCompteResponseDTO approveDemande(Long demandeId, AdminDemandeDecisionDTO dto);
-
-    // Admin: reject → saves reason, notifies client
     DemandeCompteResponseDTO rejectDemande(Long demandeId, AdminDemandeDecisionDTO dto);
 }

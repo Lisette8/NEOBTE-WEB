@@ -8,15 +8,17 @@ import { Support } from '../../../Entities/Interfaces/support';
 @Component({
   selector: 'app-support-view',
   standalone: true,
-  imports: [CommonModule, FormsModule ],
+  imports: [CommonModule, FormsModule],
   templateUrl: './support-view.html',
   styleUrl: './support-view.css',
 })
-
-
 export class SupportView implements OnInit {
 
   tickets: Support[] = [];
+  loading = false;
+  submitting = false;
+  error = '';
+  successMessage = '';
 
   newTicket: SupportCreateDTO = {
     sujet: '',
@@ -29,31 +31,38 @@ export class SupportView implements OnInit {
     this.loadTickets();
   }
 
-
   loadTickets() {
-    this.supportService.getMyTickets().subscribe(data => {
-      this.tickets = data;
+    this.loading = true;
+    this.supportService.getMyTickets().subscribe({
+      next: (data) => {
+        this.tickets = data;
+        this.loading = false;
+      },
+      error: () => {
+        this.error = 'Failed to load tickets.';
+        this.loading = false;
+      }
     });
   }
-  
-  
+
   createTicket() {
-
-    console.log("button clicked");
-
     if (!this.newTicket.sujet || !this.newTicket.message) return;
 
-    this.supportService.createTicket(this.newTicket).subscribe(() => {
+    this.submitting = true;
+    this.successMessage = '';
+    this.error = '';
 
-      this.newTicket = {
-        sujet: '',
-        message: ''
-      };
-
-      this.loadTickets();
+    this.supportService.createTicket(this.newTicket).subscribe({
+      next: () => {
+        this.newTicket = { sujet: '', message: '' };
+        this.successMessage = 'Ticket submitted successfully!';
+        this.submitting = false;
+        this.loadTickets();
+      },
+      error: () => {
+        this.error = 'Failed to submit ticket.';
+        this.submitting = false;
+      }
     });
   }
-
-
-
 }

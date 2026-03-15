@@ -1,39 +1,38 @@
 <div class="support-container">
 
     <h2>Contact Support</h2>
-
+  
     <div class="ticket-form">
-
-        <input type="text" placeholder="Subject" [(ngModel)]="newTicket.sujet" />
-
-        <textarea placeholder="Describe your problem..." [(ngModel)]="newTicket.message"></textarea>
-
-        <button (click)="createTicket()" [disabled]="!newTicket.sujet || !newTicket.message">
-            Send Ticket
-        </button>
-
+      <input type="text" placeholder="Subject" [(ngModel)]="newTicket.sujet" />
+      <textarea placeholder="Describe your problem..." [(ngModel)]="newTicket.message"></textarea>
+  
+      <p class="msg success" *ngIf="successMessage">{{ successMessage }}</p>
+      <p class="msg error" *ngIf="error">{{ error }}</p>
+  
+      <button (click)="createTicket()" [disabled]="!newTicket.sujet || !newTicket.message || submitting">
+        {{ submitting ? 'Sending...' : 'Send Ticket' }}
+      </button>
     </div>
-
+  
     <hr>
-
+  
     <h2>My Tickets</h2>
-
+  
+    <p *ngIf="loading">Loading...</p>
+  
     <div class="ticket" *ngFor="let ticket of tickets">
-
-        <div class="ticket-header">
-            <strong>{{ ticket.sujet }}</strong>
-            <span class="status">{{ ticket.status }}</span>
-        </div>
-
-        <p>{{ ticket.message }}</p>
-
-        <div *ngIf="ticket.reponseAdmin" class="admin-response">
-            <strong>Admin Response:</strong>
-            <p>{{ ticket.reponseAdmin }}</p>
-        </div>
-
-        <small>{{ ticket.dateCreation }}</small>
-
+      <div class="ticket-header">
+        <strong>{{ ticket.sujet }}</strong>
+        <span class="status">{{ ticket.status }}</span>
+      </div>
+      <p>{{ ticket.message }}</p>
+      <div *ngIf="ticket.reponseAdmin" class="admin-response">
+        <strong>Admin Response:</strong>
+        <p>{{ ticket.reponseAdmin }}</p>
+      </div>
+      <small>{{ ticket.dateCreation | date:'MMM d, y · HH:mm' }}</small>
     </div>
-
-</div>
+  
+    <p *ngIf="!loading && tickets.length === 0">No tickets yet.</p>
+  
+  </div>

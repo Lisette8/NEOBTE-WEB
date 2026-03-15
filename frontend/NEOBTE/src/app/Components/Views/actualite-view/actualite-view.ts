@@ -13,11 +13,11 @@ import { CommonModule } from '@angular/common';
 export class ActualiteView implements OnInit {
 
   actualites: Actualite[] = [];
-
   page = 0;
   size = 5;
   totalPages = 0;
-
+  loading = false;
+  error = '';
 
   constructor(private actualiteService: ActualiteService) {}
 
@@ -26,9 +26,18 @@ export class ActualiteView implements OnInit {
   }
 
   loadActualites() {
-    this.actualiteService.getAll(this.page, this.size).subscribe(data => {
-      this.actualites = data.content;
-      this.totalPages = data.totalPages;
+    this.loading = true;
+    this.error = '';
+    this.actualiteService.getAll(this.page, this.size).subscribe({
+      next: (data) => {
+        this.actualites = data.content;
+        this.totalPages = data.totalPages;
+        this.loading = false;
+      },
+      error: () => {
+        this.error = 'Failed to load news.';
+        this.loading = false;
+      }
     });
   }
 

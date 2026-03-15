@@ -25,7 +25,7 @@ public class AuthController {
     }
 
     @PostMapping("/register")
-    public Utilisateur register(@Valid @RequestBody RegisterRequest request) {
+    public AuthResponse register(@Valid @RequestBody RegisterRequest request) {
         return authService.register(request);
     }
 
@@ -34,7 +34,5 @@ public class AuthController {
         authService.logout(request);
         return "Logged out successfully";
     }
-
-
 
 }

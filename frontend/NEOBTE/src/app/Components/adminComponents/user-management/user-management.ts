@@ -116,6 +116,8 @@ export class UserManagement implements OnInit {
         next: () => { this.loadUsers(); this.resetForm(); }
       });
     } else {
+      // Generate a random temporary password — user must change it on first login
+      const tempPassword = 'Tmp@' + Math.random().toString(36).slice(2, 10);
       const create: UserCreateDTO = {
         email: v.email,
         username: v.username,
@@ -129,7 +131,7 @@ export class UserManagement implements OnInit {
         adresse: v.adresse,
         codePostal: v.codePostal,
         pays: v.pays,
-        motDePasse: 'Neobte@2026',
+        motDePasse: tempPassword,
       };
       this.adminService.createUser(create).subscribe({
         next: () => { this.loadUsers(); this.resetForm(); }

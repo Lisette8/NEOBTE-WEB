@@ -14,77 +14,71 @@ import { ActualiteView } from './Components/Views/actualite-view/actualite-view'
 import { ActualiteManagement } from './Components/adminComponents/actualite-management/actualite-management';
 import { CompteView } from './Components/Views/compte-view/compte-view';
 import { CompteManagement } from './Components/adminComponents/compte-management/compte-management';
+import { AccountDetailView } from './Components/Views/account-detail-view/account-detail-view';
+import { ReceiveView } from './Components/Views/receive-view/receive-view';
+import { TreasuryComponent } from './Components/adminComponents/treasury-component/treasury-component';
 
 export const routes: Routes = [
-    {
-        path: 'home-view',
-        component: HomeView,
-        canActivate: [authGuard],
-    },
-    {
-        path: 'auth-view',
-        component: AuthView,
-        canActivate: [loginGuard],
-    },
-    {
-        path: 'admin-dashboard',
-        component: AdminDashboard,
-        canActivate: [authGuard, adminGuard],
-    },
-    {
-        path: 'user-management',
-        component: UserManagement,
-        canActivate: [authGuard, adminGuard],
-    },
-    {
-        path: 'landing-view',
-        component: LandingView,
-    },
-    {
-        path: 'support-view',
-        component: SupportView,
-        canActivate: [authGuard],
-    },
-    {
-        path: 'virement-view',
-        component: VirementView,
-        canActivate: [authGuard],
-    },
-    {
-        path: 'admin-support',
-        component: AdminSupport,
-        canActivate: [authGuard, adminGuard],
-    },
-    {
-        path: 'actualite-view',
-        component: ActualiteView,
-        canActivate: [authGuard],
-    },
-    {
-        path: 'actualite-management',
-        component: ActualiteManagement,
-        canActivate: [authGuard, adminGuard],
-    },
-    {
-        path: 'compte-view',
-        component: CompteView,
-        canActivate: [authGuard],
-    },
-    {
-        path: 'compte-management',
-        component: CompteManagement,
-        canActivate: [authGuard, adminGuard],
-    },
-    {
-        path: '',
-        redirectTo: 'landing-view',
-        pathMatch: 'full',
-    },
-    {
-        path: '**',
-        redirectTo: 'landing-view',
-    },
-    
-
-
+  {
+    path: 'home-view',
+    component: HomeView,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'account/:id',
+    component: AccountDetailView,
+    canActivate: [authGuard],
+  },
+  { path: 'receive',        
+    component: ReceiveView,        
+    canActivate: [authGuard] 
+  },
+  {
+    path: 'auth-view',
+    component: AuthView,
+    canActivate: [loginGuard],
+  },
+  {
+    path: 'admin-dashboard',
+    component: AdminDashboard,
+    canActivate: [authGuard, adminGuard],
+  },
+  {
+    path: 'treasury-component',
+    component: TreasuryComponent,
+    canActivate: [authGuard, adminGuard],
+  },
+  {
+    path: 'landing-view',
+    component: LandingView,
+  },
+  {
+    path: 'support-view',
+    component: SupportView,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'virement-view',
+    component: VirementView,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'actualite-view',
+    component: ActualiteView,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'compte-view',
+    component: CompteView,
+    canActivate: [authGuard],
+  },
+  {
+    path: '',
+    redirectTo: 'landing-view',
+    pathMatch: 'full',
+  },
+  {
+    path: '**',
+    redirectTo: 'landing-view',
+  },
 ];

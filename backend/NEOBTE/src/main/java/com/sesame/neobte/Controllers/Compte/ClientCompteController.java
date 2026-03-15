@@ -18,7 +18,7 @@ public class ClientCompteController {
     private final CompteService compteService;
 
 
-    @GetMapping("/utilisateur/{id}")
+    @GetMapping("/utilisateur/{userId}")
     public List<CompteResponseDTO> getUserAccounts(@PathVariable Long userId){
         return compteService.getComptesByUtilisateur(userId);
     }

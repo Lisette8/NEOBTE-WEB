@@ -1,8 +1,11 @@
 package com.sesame.neobte.Controllers.Virement;
 
 import com.sesame.neobte.DTO.Requests.Virement.VirementCreateDTO;
+import com.sesame.neobte.DTO.Responses.Virement.RecipientPreviewDTO;
 import com.sesame.neobte.DTO.Responses.Virement.VirementResponseDTO;
+import com.sesame.neobte.Security.Services.JwtService;
 import com.sesame.neobte.Services.VirementService;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import org.springframework.web.bind.annotation.*;
@@ -15,21 +18,27 @@ import java.util.*;
 public class ClientVirementController {
 
     private VirementService virementService;
+    private JwtService jwtService;
+
+    @GetMapping("/resolve-recipient")
+    public RecipientPreviewDTO resolveRecipient(@RequestParam String identifier) {
+        return virementService.resolveRecipient(identifier);
+    }
+
 
     @PostMapping("/transfer")
     public VirementResponseDTO transfer(
-            @Valid @RequestBody VirementCreateDTO dto //I added valid to make sure it's validated, it's basically another layer of protection eq validation
-    ) {
-        return virementService.effectuerVirement(dto);
-
+            @Valid @RequestBody VirementCreateDTO dto,
+            HttpServletRequest request) {
+        Long userId = jwtService.extractUserId(request.getHeader("Authorization").substring(7));
+        return virementService.effectuerVirement(dto, userId);
     }
 
-    
-    @GetMapping("/history/{compteId}")
-    public List<VirementResponseDTO> history(
-            @PathVariable Long compteId
-    ) {
-        return virementService.getVirementsCompte(compteId);
+
+    @GetMapping("/history")
+    public List<VirementResponseDTO> history(HttpServletRequest request) {
+        Long userId = jwtService.extractUserId(request.getHeader("Authorization").substring(7));
+        return virementService.getVirementsUtilisateur(userId);
     }
 
 

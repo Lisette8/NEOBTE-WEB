@@ -30,7 +30,7 @@ public class Utilisateur implements Serializable {
     @Column(unique = true, nullable = false)
     private String username;
 
-    @JsonIgnore // password is hashed — only visible in db
+    @JsonIgnore // password is hashed — hash visible in db
     private String motDePasse;
 
     @Enumerated(EnumType.STRING)
@@ -44,33 +44,28 @@ public class Utilisateur implements Serializable {
     @Column(nullable = false)
     private String prenom;
 
-    // Tunisian national ID — required for banking (CIN)
     @Column(unique = true)
     private String cin;
 
+    @Column(unique = true)
     private String telephone;
+
     private String adresse;
     private String codePostal;
     private String pays;
-
-    // Date of birth — replaces raw age, more standard in fintech
     private LocalDate dateNaissance;
-
     private String job;
 
     @Enumerated(EnumType.STRING)
     private Genre genre;
 
-    @OneToMany(mappedBy = "utilisateur")
-    @JsonIgnore
+    @OneToMany(mappedBy = "utilisateur") @JsonIgnore
     private List<Compte> comptes = new ArrayList<>();
 
-    @OneToMany(mappedBy = "utilisateur")
-    @JsonIgnore
+    @OneToMany(mappedBy = "utilisateur") @JsonIgnore
     private List<Support> supports = new ArrayList<>();
 
-    @OneToMany(mappedBy = "utilisateur")
-    @JsonIgnore
+    @OneToMany(mappedBy = "utilisateur") @JsonIgnore
     private List<DemandeCompte> demandesCompte = new ArrayList<>();
 
 }

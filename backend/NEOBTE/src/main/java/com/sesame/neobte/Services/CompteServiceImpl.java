@@ -31,7 +31,7 @@ public class CompteServiceImpl implements CompteService {
 
         compte.setSolde(dto.getSolde());
         compte.setTypeCompte(dto.getTypeCompte());
-        compte.setStatutCompte(StatutCompte.ACTIF);
+        compte.setStatutCompte(StatutCompte.ACTIVE);
         compte.setUtilisateur(user);
 
         Compte saved = compteRepository.save(compte);
@@ -66,10 +66,8 @@ public class CompteServiceImpl implements CompteService {
 
     @Override
     public List<CompteResponseDTO> getComptesByUtilisateur(Long userId) {
-        return compteRepository.findAll()
+        return compteRepository.findByUtilisateur_IdUtilisateur(userId)
                 .stream()
-                .filter(c -> c.getUtilisateur() != null &&
-                        c.getUtilisateur().getIdUtilisateur().equals(userId))
                 .map(this::mapToCompteDTO)
                 .toList();
     }

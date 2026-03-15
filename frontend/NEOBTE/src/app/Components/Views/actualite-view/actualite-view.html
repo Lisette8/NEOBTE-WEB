@@ -1,35 +1,24 @@
 <h2>Actualités</h2>
 
-<div class="news-container">
+<p *ngIf="loading">Chargement...</p>
+<p class="error" *ngIf="error">{{ error }}</p>
+
+<div class="news-container" *ngIf="!loading">
 
   <div class="news-card" *ngFor="let act of actualites">
-
     <h3>{{ act.titre }}</h3>
+    <p class="date">{{ act.dateCreationActualite | date:'mediumDate' }}</p>
+    <p class="description">{{ act.description }}</p>
+  </div>
 
-    <p class="date">
-      {{ act.dateCreationActualite | date:'mediumDate' }}
-    </p>
-
-    <p class="description">
-      {{ act.description }}
-    </p>
-
+  <div class="empty-state" *ngIf="actualites.length === 0 && !error">
+    <p>Aucune actualité disponible pour le moment.</p>
   </div>
 
 </div>
 
 <div class="pagination">
-
-  <button (click)="previousPage()" [disabled]="page === 0">
-    Previous
-  </button>
-
-  <span>
-    Page {{ page + 1 }} / {{ totalPages }}
-  </span>
-
-  <button (click)="nextPage()" [disabled]="page === totalPages - 1">
-    Next
-  </button>
-
+  <button (click)="previousPage()" [disabled]="page === 0 || loading">Previous</button>
+  <span>Page {{ page + 1 }} / {{ totalPages }}</span>
+  <button (click)="nextPage()" [disabled]="page === totalPages - 1 || loading">Next</button>
 </div>

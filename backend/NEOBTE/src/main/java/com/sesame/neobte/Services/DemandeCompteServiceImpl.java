@@ -8,6 +8,7 @@ import com.sesame.neobte.Entities.Class.DemandeCompte;
 import com.sesame.neobte.Entities.Class.Utilisateur;
 import com.sesame.neobte.Entities.Enumeration.StatutCompte;
 import com.sesame.neobte.Entities.Enumeration.StatutDemande;
+import com.sesame.neobte.Entities.Enumeration.TypeCompte;
 import com.sesame.neobte.Exceptions.customExceptions.BadRequestException;
 import com.sesame.neobte.Exceptions.customExceptions.ResourceNotFoundException;
 import com.sesame.neobte.Repositories.ICompteRepository;
@@ -36,21 +37,34 @@ public class DemandeCompteServiceImpl implements DemandeCompteService {
 
     @Override
     @Transactional
-    public DemandeCompteResponseDTO submitDemande(DemandeCompteCreateDTO dto) {
+    public DemandeCompteResponseDTO submitDemande(DemandeCompteCreateDTO dto, Long userId) {
 
-        Utilisateur user = utilisateurRepository.findById(dto.getUtilisateurId())
+        Utilisateur user = utilisateurRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        // idempotency guard: reject if user already has a pending request for this account type
+        // Validate KYC fields based on account type
+        validateKycForType(dto);
+
+        // Guard 1: user already has an active/existing account of this type
+        boolean alreadyOwns = compteRepository
+                .existsByUtilisateur_IdUtilisateurAndTypeCompte(userId, dto.getTypeCompte());
+        if (alreadyOwns) {
+            throw new BadRequestException(
+                    "You already have a " + dto.getTypeCompte() + " account. Only one account per type is allowed.");
+        }
+
+        // Guard 2: user already has a pending request for this type
         boolean alreadyPending = demandeRepository
                 .existsByUtilisateur_IdUtilisateurAndTypeCompteAndStatutDemande(
-                        dto.getUtilisateurId(), dto.getTypeCompte(), StatutDemande.EN_ATTENTE);
-
+                        userId, dto.getTypeCompte(), StatutDemande.EN_ATTENTE);
         if (alreadyPending) {
             throw new BadRequestException(
-                    "You already have a pending request for a " + dto.getTypeCompte() + " account. " +
-                            "Please wait for the admin to process it before submitting a new one.");
+                    "You already have a pending request for a " + dto.getTypeCompte() + " account.");
         }
+
+        // Persist KYC fields onto the user profile (won't overwrite if already set)
+        updateUserKyc(user, dto);
+        utilisateurRepository.save(user);
 
         DemandeCompte demande = new DemandeCompte();
         demande.setTypeCompte(dto.getTypeCompte());
@@ -60,13 +74,48 @@ public class DemandeCompteServiceImpl implements DemandeCompteService {
 
         DemandeCompte saved = demandeRepository.save(demande);
 
-        // Fire-and-forget confirmation email (async, won't block the response)
         sendConfirmationEmailAsync(user.getEmail(), user.getPrenom(), dto.getTypeCompte().name());
 
-        log.info("New account request submitted: demandeId={}, userId={}, type={}",
-                saved.getIdDemande(), user.getIdUtilisateur(), dto.getTypeCompte());
+        log.info("New account request: demandeId={}, userId={}, type={}",
+                saved.getIdDemande(), userId, dto.getTypeCompte());
 
         return mapToDTO(saved);
+    }
+
+
+    private void validateKycForType(DemandeCompteCreateDTO dto) {
+        // CIN and dateNaissance required for ALL account types
+        if (dto.getCin() == null || dto.getCin().isBlank())
+            throw new BadRequestException("CIN is required to open any bank account");
+        if (dto.getDateNaissance() == null)
+            throw new BadRequestException("Date of birth is required to open any bank account");
+
+        if (dto.getTypeCompte() == TypeCompte.COURANT || dto.getTypeCompte() == TypeCompte.PROFESSIONNEL) {
+            if (dto.getAdresse() == null || dto.getAdresse().isBlank())
+                throw new BadRequestException("Address is required for " + dto.getTypeCompte() + " accounts");
+            if (dto.getJob() == null || dto.getJob().isBlank())
+                throw new BadRequestException("Profession is required for " + dto.getTypeCompte() + " accounts");
+        }
+
+        if (dto.getTypeCompte() == TypeCompte.PROFESSIONNEL) {
+            if (dto.getNomEntreprise() == null || dto.getNomEntreprise().isBlank())
+                throw new BadRequestException("Company name is required for PROFESSIONNEL accounts");
+        }
+    }
+
+
+    private void updateUserKyc(Utilisateur user, DemandeCompteCreateDTO dto) {
+        // Only write fields that haven't been set yet — don't overwrite existing verified data
+        if (user.getCin() == null) user.setCin(dto.getCin());
+        if (user.getDateNaissance() == null) user.setDateNaissance(dto.getDateNaissance());
+        if (user.getAdresse() == null && dto.getAdresse() != null) user.setAdresse(dto.getAdresse());
+        if (user.getJob() == null && dto.getJob() != null) user.setJob(dto.getJob());
+        // nomEntreprise stored in job field for PRO accounts if not already set
+        if (dto.getTypeCompte() == TypeCompte.PROFESSIONNEL
+                && dto.getNomEntreprise() != null
+                && user.getJob() == null) {
+            user.setJob(dto.getJob() + " @ " + dto.getNomEntreprise());
+        }
     }
 
 
@@ -95,7 +144,7 @@ public class DemandeCompteServiceImpl implements DemandeCompteService {
         try {
             statutDemande = StatutDemande.valueOf(statut.toUpperCase());
         } catch (IllegalArgumentException e) {
-            throw new BadRequestException("Invalid status: " + statut + ". Valid values: EN_ATTENTE, APPROUVEE, REJETEE");
+            throw new BadRequestException("Invalid status: " + statut);
         }
         return demandeRepository.findByStatutDemandeOrderByDateDemandeAsc(statutDemande)
                 .stream()
@@ -107,24 +156,19 @@ public class DemandeCompteServiceImpl implements DemandeCompteService {
     @Override
     @Transactional
     public DemandeCompteResponseDTO approveDemande(Long demandeId, AdminDemandeDecisionDTO dto) {
-
         DemandeCompte demande = demandeRepository.findById(demandeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Request not found: " + demandeId));
 
-        if (demande.getStatutDemande() != StatutDemande.EN_ATTENTE) {
-            throw new BadRequestException("This request has already been processed (status: " +
-                    demande.getStatutDemande() + ")");
-        }
+        if (demande.getStatutDemande() != StatutDemande.EN_ATTENTE)
+            throw new BadRequestException("This request has already been processed");
 
-        // Create the actual bank account
         Compte compte = new Compte();
         compte.setSolde(0.0);
         compte.setTypeCompte(demande.getTypeCompte());
-        compte.setStatutCompte(StatutCompte.ACTIF);
+        compte.setStatutCompte(StatutCompte.ACTIVE);
         compte.setUtilisateur(demande.getUtilisateur());
         Compte savedCompte = compteRepository.save(compte);
 
-        // Update the request
         demande.setStatutDemande(StatutDemande.APPROUVEE);
         demande.setDateDecision(LocalDateTime.now());
         demande.setCommentaireAdmin(dto.getCommentaireAdmin());
@@ -135,9 +179,7 @@ public class DemandeCompteServiceImpl implements DemandeCompteService {
         sendApprovalEmailAsync(user.getEmail(), user.getPrenom(),
                 demande.getTypeCompte().name(), savedCompte.getIdCompte());
 
-        log.info("Account request APPROVED: demandeId={}, newCompteId={}, userId={}",
-                demandeId, savedCompte.getIdCompte(), user.getIdUtilisateur());
-
+        log.info("Account request APPROVED: demandeId={}, newCompteId={}", demandeId, savedCompte.getIdCompte());
         return mapToDTO(demande);
     }
 
@@ -145,18 +187,14 @@ public class DemandeCompteServiceImpl implements DemandeCompteService {
     @Override
     @Transactional
     public DemandeCompteResponseDTO rejectDemande(Long demandeId, AdminDemandeDecisionDTO dto) {
-
         DemandeCompte demande = demandeRepository.findById(demandeId)
                 .orElseThrow(() -> new ResourceNotFoundException("Request not found: " + demandeId));
 
-        if (demande.getStatutDemande() != StatutDemande.EN_ATTENTE) {
-            throw new BadRequestException("This request has already been processed (status: " +
-                    demande.getStatutDemande() + ")");
-        }
+        if (demande.getStatutDemande() != StatutDemande.EN_ATTENTE)
+            throw new BadRequestException("This request has already been processed");
 
-        if (dto.getCommentaireAdmin() == null || dto.getCommentaireAdmin().isBlank()) {
+        if (dto.getCommentaireAdmin() == null || dto.getCommentaireAdmin().isBlank())
             throw new BadRequestException("A reason is required when rejecting a request");
-        }
 
         demande.setStatutDemande(StatutDemande.REJETEE);
         demande.setDateDecision(LocalDateTime.now());
@@ -167,43 +205,30 @@ public class DemandeCompteServiceImpl implements DemandeCompteService {
         sendRejectionEmailAsync(user.getEmail(), user.getPrenom(),
                 demande.getTypeCompte().name(), dto.getCommentaireAdmin());
 
-        log.info("Account request REJECTED: demandeId={}, userId={}, reason={}",
-                demandeId, user.getIdUtilisateur(), dto.getCommentaireAdmin());
-
+        log.info("Account request REJECTED: demandeId={}", demandeId);
         return mapToDTO(demande);
     }
 
 
-    // async email functions
     @Async
     protected void sendConfirmationEmailAsync(String email, String prenom, String typeCompte) {
-        try {
-            emailService.sendDemandeConfirmationEmail(email, prenom, typeCompte);
-        } catch (Exception e) {
-            log.error("Failed to send confirmation email to {}: {}", email, e.getMessage());
-        }
+        try { emailService.sendDemandeConfirmationEmail(email, prenom, typeCompte); }
+        catch (Exception e) { log.error("Failed to send confirmation email to {}: {}", email, e.getMessage()); }
     }
 
     @Async
     protected void sendApprovalEmailAsync(String email, String prenom, String typeCompte, Long compteId) {
-        try {
-            emailService.sendDemandeApprovalEmail(email, prenom, typeCompte, compteId);
-        } catch (Exception e) {
-            log.error("Failed to send approval email to {}: {}", email, e.getMessage());
-        }
+        try { emailService.sendDemandeApprovalEmail(email, prenom, typeCompte, compteId); }
+        catch (Exception e) { log.error("Failed to send approval email to {}: {}", email, e.getMessage()); }
     }
 
     @Async
     protected void sendRejectionEmailAsync(String email, String prenom, String typeCompte, String reason) {
-        try {
-            emailService.sendDemandeRejectionEmail(email, prenom, typeCompte, reason);
-        } catch (Exception e) {
-            log.error("Failed to send rejection email to {}: {}", email, e.getMessage());
-        }
+        try { emailService.sendDemandeRejectionEmail(email, prenom, typeCompte, reason); }
+        catch (Exception e) { log.error("Failed to send rejection email to {}: {}", email, e.getMessage()); }
     }
 
 
-    // mapper
     private DemandeCompteResponseDTO mapToDTO(DemandeCompte d) {
         DemandeCompteResponseDTO dto = new DemandeCompteResponseDTO();
         dto.setIdDemande(d.getIdDemande());
@@ -213,10 +238,7 @@ public class DemandeCompteServiceImpl implements DemandeCompteService {
         dto.setDateDemande(d.getDateDemande());
         dto.setDateDecision(d.getDateDecision());
         dto.setCommentaireAdmin(d.getCommentaireAdmin());
-
-        if (d.getCompteOuvert() != null) {
-            dto.setCompteOuvertId(d.getCompteOuvert().getIdCompte());
-        }
+        if (d.getCompteOuvert() != null) dto.setCompteOuvertId(d.getCompteOuvert().getIdCompte());
 
         Utilisateur u = d.getUtilisateur();
         if (u != null) {
@@ -228,7 +250,6 @@ public class DemandeCompteServiceImpl implements DemandeCompteService {
             dto.setUtilisateurTelephone(u.getTelephone());
             dto.setUtilisateurCin(u.getCin());
         }
-
         return dto;
     }
 }

@@ -1,189 +1,172 @@
 <div class="virement-page">
   <div class="virement-container">
+
     <div class="virement-card glass-card">
-      <div class="virement-header">
-        <h1>Virement Bancaire</h1>
-        <p class="subtitle">Transférez des fonds en toute sécurité</p>
-      </div>
 
-      <form [formGroup]="virementForm" (ngSubmit)="transfer()" class="virement-form">
-
-        <!-- SOURCE ACCOUNT -->
-        <div class="form-group">
-          <label for="compteSourceId">
-            Compte Source
-          </label>
-
-          <div class="input-wrapper">
-            <i class="fas fa-wallet input-icon"></i>
-
-            <select id="compteSourceId" formControlName="compteSourceId">
-
-              <option value="" disabled selected>
-                Sélectionnez votre compte
-              </option>
-
-              <option *ngFor="let compte of comptes"
-                      [value]="compte.idCompte">
-
-                Compte #{{ compte.idCompte }} — {{ compte.typeCompte }}
-
-              </option>
-
-            </select>
-
-          </div>
-
-          <!-- Balance display -->
-          <div class="balance-hint" *ngIf="selectedCompte">
-            <span class="balance-label">Solde disponible:</span>
-            <span class="balance-value">{{ selectedCompte.solde | number:'1.2-2' }} TND</span>
-          </div>
-
-          <div class="field-error" *ngIf="fieldInvalid('compteSourceId')">
-            Veuillez sélectionner un compte source.
-          </div>
-
+      <!-- STEP 1: LOOKUP -->
+      <ng-container *ngIf="step === 'lookup'">
+        <div class="virement-header">
+          <h1>Send Money</h1>
+          <p class="subtitle">Transfer funds to any NEO BTE account holder</p>
         </div>
 
-        <!-- DESTINATION ACCOUNT -->
-        <div class="form-group">
-          <label for="compteDestinationId">
-            Compte Destination
-          </label>
-
-          <div class="input-wrapper">
-            <i class="fas fa-paper-plane input-icon"></i>
-
-            <input
-              id="compteDestinationId"
-              type="number"
-              formControlName="compteDestinationId"
-              placeholder="87654321">
-
+        <div class="transfer-form" [formGroup]="transferForm">
+          <div class="form-group">
+            <label>Recipient</label>
+            <div class="input-wrapper">
+              <i class="fas fa-search input-icon"></i>
+              <input type="text" formControlName="recipientIdentifier"
+                placeholder="Email or phone number"
+                (input)="onIdentifierInput($event)">
+              <span class="resolving-spinner" *ngIf="resolving">⟳</span>
+            </div>
+            <p class="field-hint">Enter the recipient's email or phone number</p>
+            <p class="field-error" *ngIf="resolveError">{{ resolveError }}</p>
           </div>
 
-          <div class="field-error" *ngIf="fieldInvalid('compteDestinationId')">
-            Veuillez saisir un numéro de compte de destination.
+          <div class="recipient-card" *ngIf="recipient">
+            <div class="recipient-avatar">{{ recipient.displayName.charAt(0).toUpperCase() }}</div>
+            <div class="recipient-info">
+              <div class="recipient-name">{{ recipient.displayName }}</div>
+              <div class="recipient-meta">
+                {{ recipient.maskedIdentifier }} ·
+                <span class="account-type-pill">{{ recipient.primaryCompteType }}</span>
+              </div>
+            </div>
+            <i class="fas fa-check-circle recipient-check"></i>
           </div>
 
+          <div class="form-group" *ngIf="recipient">
+            <label>Amount</label>
+            <div class="input-wrapper">
+              <i class="fas fa-coins input-icon"></i>
+              <input type="number" min="1" formControlName="montant" placeholder="0.000">
+              <span class="currency-label">TND</span>
+            </div>
+            <div class="field-error" *ngIf="fieldInvalid('montant')">Amount must be at least 1 TND.</div>
+          </div>
+
+          <!-- Fee preview — shown once amount is entered -->
+          <div class="fee-preview" *ngIf="recipient && montant > 0">
+            <div class="fee-row">
+              <span>Amount</span>
+              <span>{{ montant | number:'1.3-3' }} TND</span>
+            </div>
+            <div class="fee-row fee-charge">
+              <span>Service fee ({{ recipient.feeRate * 100 | number:'1.1-1' }}%)</span>
+              <span>{{ estimatedFee | number:'1.3-3' }} TND</span>
+            </div>
+            <div class="fee-row fee-total">
+              <span>Total debited</span>
+              <span>{{ totalDebite | number:'1.3-3' }} TND</span>
+            </div>
+          </div>
+
+          <div class="field-error global-error" *ngIf="error">{{ error }}</div>
+
+          <button class="btn-primary" (click)="proceedToConfirm()"
+            [disabled]="!recipient || !montant || transferForm.get('montant')?.invalid">
+            Continue →
+            <div class="btn-glow"></div>
+          </button>
+        </div>
+      </ng-container>
+
+
+      <!-- STEP 2: CONFIRM -->
+      <ng-container *ngIf="step === 'confirm'">
+        <div class="virement-header">
+          <h1>Review Transfer</h1>
+          <p class="subtitle">Please confirm the details below</p>
         </div>
 
-        <!-- AMOUNT -->
-        <div class="form-group">
-          <label for="montant">
-            Montant
-          </label>
-
-          <div class="input-wrapper">
-            <i class="fas fa-coins input-icon"></i>
-
-            <input
-              id="montant"
-              type="number"
-              min="1"
-              formControlName="montant"
-              placeholder="0.00">
-
-            <span class="currency-label">TND</span>
-
+        <div class="confirm-summary">
+          <div class="summary-row">
+            <span class="summary-label">To</span>
+            <span class="summary-value">{{ recipient?.displayName }}</span>
           </div>
-
-          <div class="field-error" *ngIf="fieldInvalid('montant') && virementForm.get('montant')?.errors?.['required']">
-            Veuillez saisir un montant.
+          <div class="summary-row">
+            <span class="summary-label">Account</span>
+            <span class="summary-value">
+              #{{ recipient?.primaryCompteId }}
+              <span class="account-type-pill">{{ recipient?.primaryCompteType }}</span>
+            </span>
           </div>
-          <div class="field-error" *ngIf="fieldInvalid('montant') && virementForm.get('montant')?.errors?.['min']">
-            Le montant doit être d'au moins 1 TND.
+          <div class="summary-row">
+            <span class="summary-label">Amount sent</span>
+            <span class="summary-value">{{ montant | number:'1.3-3' }} TND</span>
           </div>
-          <div class="field-error" *ngIf="amountExceedsBalance">
-            Le montant dépasse votre solde disponible de {{ selectedCompte?.solde | number:'1.2-2' }} TND.
+          <div class="summary-row">
+            <span class="summary-label">Service fee</span>
+            <span class="summary-value fee-value">+ {{ estimatedFee | number:'1.3-3' }} TND</span>
           </div>
-
-        </div>
-
-        <!-- SUBMIT BUTTON -->
-        <button type="submit" class="btn-primary" [disabled]="loading || virementForm.invalid || amountExceedsBalance">
-
-          <span *ngIf="!loading">
-            Envoyer le virement
-          </span>
-
-          <span *ngIf="loading" class="loader"></span>
-
-          <div class="btn-glow"></div>
-
-        </button>
-
-        <!-- MESSAGES -->
-        <div class="messages" *ngIf="message || error">
-
-          <p class="msg success" *ngIf="message">
-            {{ message }}
+          <div class="summary-row summary-amount">
+            <span class="summary-label">Total debited</span>
+            <span class="summary-value amount-highlight">{{ totalDebite | number:'1.3-3' }} TND</span>
+          </div>
+          <p class="summary-note">
+            <i class="fas fa-info-circle"></i>
+            Funds will be debited from your primary account.
           </p>
-
-          <p class="msg error" *ngIf="error">
-            {{ error }}
-          </p>
-
         </div>
 
-      </form>
+        <div class="field-error global-error" *ngIf="error">{{ error }}</div>
+
+        <div class="confirm-actions">
+          <button class="btn-ghost" (click)="step = 'lookup'" [disabled]="loading">← Edit</button>
+          <button class="btn-primary" (click)="confirmTransfer()" [disabled]="loading">
+            <span *ngIf="!loading">Send {{ montant | number:'1.3-3' }} TND</span>
+            <span *ngIf="loading" class="loader"></span>
+            <div class="btn-glow"></div>
+          </button>
+        </div>
+      </ng-container>
+
+
+      <!-- STEP 3: SUCCESS -->
+      <ng-container *ngIf="step === 'success'">
+        <div class="success-state">
+          <div class="success-icon">✓</div>
+          <h2>Transfer Sent!</h2>
+          <p class="success-desc">
+            <strong>{{ lastCompletedTransfer?.montant | number:'1.3-3' }} TND</strong>
+            sent to <strong>{{ lastCompletedTransfer?.recipientName }}</strong>
+          </p>
+          <p class="success-fee" *ngIf="lastCompletedTransfer?.frais">
+            Service fee: {{ lastCompletedTransfer?.frais | number:'1.3-3' }} TND
+          </p>
+          <button class="btn-primary" (click)="resetForm()">
+            New Transfer <div class="btn-glow"></div>
+          </button>
+        </div>
+      </ng-container>
     </div>
+
 
     <!-- HISTORY -->
     <div class="history-card glass-card">
-
-      <div class="history-header">
-        <h2>Historique des virements</h2>
-        <div class="history-tabs">
-          <button class="htab" [class.active]="historyFilter === 'all'"      (click)="historyFilter = 'all'">Tout</button>
-          <button class="htab" [class.active]="historyFilter === 'sent'"     (click)="historyFilter = 'sent'">Envoyés</button>
-          <button class="htab" [class.active]="historyFilter === 'received'" (click)="historyFilter = 'received'">Reçus</button>
-        </div>
-      </div>
-
+      <div class="history-header"><h2>Transfer History</h2></div>
       <div class="history-content">
-
-        <div *ngIf="filteredHistory.length === 0" class="no-history">
-          <i class="fas fa-history empty-icon"></i>
-          <p>{{ history.length === 0 ? 'Aucun historique de virement.' : 'Aucun virement ' + historyFilter + '.' }}</p>
+        <p *ngIf="historyLoading">Loading...</p>
+        <div *ngIf="!historyLoading && history.length === 0" class="no-history">
+          <p>No transfers yet.</p>
         </div>
-
-        <div class="history-list" *ngIf="filteredHistory.length > 0">
-
-          <div class="history-item" *ngFor="let v of filteredHistory">
-
-            <div class="history-icon" [class.sent]="isSent(v)" [class.received]="!isSent(v)">
-              <i class="fas" [class.fa-arrow-up]="isSent(v)" [class.fa-arrow-down]="!isSent(v)"></i>
-            </div>
-
+        <div class="history-list" *ngIf="history.length > 0">
+          <div class="history-item" *ngFor="let v of history">
+            <div class="history-icon"><i class="fas fa-arrow-right"></i></div>
             <div class="history-details">
-
-              <p class="history-target">
-                <span class="direction-badge" [class.sent]="isSent(v)" [class.received]="!isSent(v)">
-                  {{ isSent(v) ? 'Envoyé' : 'Reçu' }}
-                </span>
-                {{ isSent(v) ? ('Vers #' + v.compteDestinationId) : ('De #' + v.compteSourceId) }}
-              </p>
-
-              <p class="history-date">
-                {{ v.dateDeVirement | date:'MMM d, y · HH:mm' }}
-              </p>
-
+              <p class="history-target"><strong>{{ v.recipientName }}</strong></p>
+              <p class="history-sender muted">From: {{ v.senderName }}</p>
+              <p class="history-date">{{ v.dateDeVirement | date:'MMM d, y · HH:mm' }}</p>
             </div>
-
-            <div class="history-amount" [class.sent]="isSent(v)" [class.received]="!isSent(v)">
-              {{ isSent(v) ? '−' : '+' }}{{ v.montant | number:'1.2-2' }} TND
+            <div class="history-amount-col">
+              <span class="history-amount">{{ v.montant | number:'1.3-3' }} TND</span>
+              <span class="history-fee" *ngIf="v.frais">fee: {{ v.frais | number:'1.3-3' }}</span>
             </div>
-
           </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <div class="background-elements">
-    <div class="orb blue"></div>
-    <div class="orb dark"></div>
   </div>
 </div>

@@ -12,18 +12,17 @@ import java.util.Date;
 @Builder
 public class VirementResponseDTO {
     private Long idVirement;
-
-    @NotNull
     private Long compteSourceId;
-
-    @NotNull
     private Long compteDestinationId;
-
-    @NotNull
-    @Min(1)
+    private String recipientName;
+    private String senderName;
     private Double montant;
 
-    private Date dateDeVirement;
+    //tax
+    private Double frais;
+    private Double totalDebite; //montant + frais — le paiement de la personne qui a envoyé
+    private Double tauxFrais;
 
+    private Date dateDeVirement;
     private String idempotencyKey;
 }

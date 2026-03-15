@@ -25,7 +25,7 @@ public class AdminSupportController {
     }
 
     @PutMapping("/update/{id}")
-    public Support update(
+    public SupportResponseDTO update(
             @PathVariable Long id,
             @RequestParam String response,
             @RequestParam String status

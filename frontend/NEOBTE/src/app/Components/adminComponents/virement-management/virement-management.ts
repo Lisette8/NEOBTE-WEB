@@ -2,7 +2,6 @@ import { Component, OnInit } from '@angular/core';
 import { VirementService } from '../../../Services/virement.service';
 import { Virement } from '../../../Entities/Interfaces/virement';
 import { CommonModule } from '@angular/common';
-import { from } from 'rxjs';
 
 @Component({
   selector: 'app-virement-management',

@@ -1,6 +1,5 @@
 export interface VirementCreateDTO {
-  compteSourceId: number;
-  compteDestinationId: number;
+  recipientIdentifier: string;
   montant: number;
   idempotencyKey: string;
 }

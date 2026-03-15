@@ -1,22 +1,25 @@
-
-
 <div class="form-card" *ngIf="showForm" [formGroup]="userForm">
   <div class="form-grid">
-    <input class="form-control" formControlName="email" placeholder="Email">
-    <input class="form-control" formControlName="nom" placeholder="Nom">
-    <input class="form-control" formControlName="prenom" placeholder="Prenom">
-    <input class="form-control" formControlName="age" type="number" placeholder="Age">
-    <input class="form-control" formControlName="job" placeholder="Job">
+    <input class="form-control" formControlName="email" placeholder="Email *">
+    <input class="form-control" formControlName="username" placeholder="Username *">
+    <input class="form-control" formControlName="nom" placeholder="Nom *">
+    <input class="form-control" formControlName="prenom" placeholder="Prénom *">
+    <input class="form-control" formControlName="cin" placeholder="CIN (8 digits)">
+    <input class="form-control" formControlName="telephone" placeholder="Téléphone">
+    <input class="form-control" formControlName="dateNaissance" type="date" placeholder="Date de naissance">
+    <input class="form-control" formControlName="job" placeholder="Profession">
     <input class="form-control" formControlName="adresse" placeholder="Adresse">
-    
+    <input class="form-control" formControlName="codePostal" placeholder="Code postal">
+    <input class="form-control" formControlName="pays" placeholder="Pays">
     <select class="form-control" formControlName="genre">
       <option value="">Genre</option>
       <option value="HOMME">HOMME</option>
       <option value="FEMME">FEMME</option>
     </select>
   </div>
-  
+
   <div class="form-actions">
+    <button class="btn btn-ghost" (click)="resetForm()">Cancel</button>
     <button class="btn btn-save" (click)="saveUser()">
       {{ isEditMode ? 'Update User' : 'Create User' }}
     </button>
@@ -26,11 +29,13 @@
 <div class="users-card">
   <div class="users-header">
     <h2>Users Management</h2>
-    <div class="tabs-container">
-      <button class="tab-btn" [class.active]="currentTab === 'CLIENTS'" (click)="switchTab('CLIENTS')">Clients</button>
-      <button class="tab-btn" [class.active]="currentTab === 'ADMINS'" (click)="switchTab('ADMINS')">Admins</button>
+    <div class="header-right">
+      <div class="tabs-container">
+        <button class="tab-btn" [class.active]="currentTab === 'CLIENTS'" (click)="switchTab('CLIENTS')">Clients</button>
+        <button class="tab-btn" [class.active]="currentTab === 'ADMINS'" (click)="switchTab('ADMINS')">Admins</button>
+      </div>
+      <button class="btn btn-save" (click)="showForm = true; isEditMode = false; resetForm()">+ New User</button>
     </div>
-    
   </div>
 
   <p class="status-msg loading" *ngIf="loading">Loading data...</p>
@@ -43,34 +48,38 @@
           <th>ID</th>
           <th>Email</th>
           <th>Nom</th>
-          <th>Prenom</th>
-          <th>Age</th>
+          <th>Prénom</th>
+          <th>Date de naissance</th>
           <th>Job</th>
           <th>Adresse</th>
           <th>Genre</th>
           <th>Role</th>
-          <th>Solde</th>
+          <th>Solde total</th>
           <th class="text-center" *ngIf="currentTab === 'CLIENTS'">Actions</th>
         </tr>
       </thead>
       <tbody>
         <tr *ngFor="let user of (currentTab === 'CLIENTS' ? filteredClients : filteredAdmins)">
-          <td><strong>#{{ user.idUtilisateur }}</strong></td>
+          <td><strong>#{{ user.id }}</strong></td>
           <td>{{ user.email }}</td>
           <td>{{ user.nom }}</td>
           <td>{{ user.prenom }}</td>
-          <td>{{ user.age }}</td>
+          <td>{{ user.dateNaissance | date:'dd/MM/yyyy' }}</td>
           <td><span class="badge">{{ user.job }}</span></td>
           <td>{{ user.adresse }}</td>
           <td>{{ user.genre }}</td>
           <td>{{ user.role }}</td>
-          <td class="font-mono">{{ user.solde }}</td>
+          <td class="font-mono">{{ user.totalSolde | number:'1.2-2' }} TND</td>
           <td class="action-cells" *ngIf="currentTab === 'CLIENTS'">
             <button class="btn btn-edit" (click)="editUser(user)">Edit</button>
-            <button class="btn btn-delete" (click)="deleteUser(user.idUtilisateur)">Delete</button>
+            <button class="btn btn-delete" (click)="deleteUser(user.id)">Delete</button>
           </td>
         </tr>
       </tbody>
     </table>
+  </div>
+
+  <div class="empty-state" *ngIf="!loading && users.length === 0">
+    <p>No users found.</p>
   </div>
 </div>

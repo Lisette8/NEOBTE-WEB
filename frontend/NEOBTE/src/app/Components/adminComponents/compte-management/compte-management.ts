@@ -3,52 +3,176 @@ import { Component, OnInit } from '@angular/core';
 import { CompteService } from '../../../Services/compte-service';
 import { Compte } from '../../../Entities/Interfaces/compte';
 import { ConfirmModalService } from '../../../Services/SharedServices/confirm-modal.service';
+import { DemandeCloture } from '../../../Entities/Interfaces/demande-cloture';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-compte-management',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './compte-management.html',
   styleUrl: './compte-management.css',
 })
-export class CompteManagement implements OnInit{
-
-  comptes: Compte[] = [];  
-  
+export class CompteManagement implements OnInit {
+ 
+  activeTab: 'comptes' | 'clotures' = 'comptes';
+ 
+  // Accounts
+  comptes: Compte[] = [];
+  accountsLoading = true;
+ 
+  // Closure requests
+  demandes: DemandeCloture[] = [];
+  clotureFilter: 'EN_ATTENTE' | 'APPROUVEE' | 'REJETEE' | 'ALL' = 'EN_ATTENTE';
+  cloturesLoading = true;
+ 
+  // Inline action panel
+  actionCompteId: number | null = null;
+  actionType: 'status' | null = null;
+  selectedStatut = '';
+  actionCommentaire = '';
+  actionLoading = false;
+  actionError = '';
+ 
+  // Closure decision panel
+  clotureActionId: number | null = null;
+  clotureActionType: 'approve' | 'reject' | null = null;
+  clotureCommentaire = '';
+  clotureSubmitting = false;
+  clotureError = '';
+ 
+  readonly statuts = ['ACTIVE', 'SUSPENDED', 'BLOCKED', 'CLOSED'];
+ 
   constructor(
     private compteService: CompteService,
     private modalService: ConfirmModalService
-  ){}
-
-  ngOnInit(): void {
-    this.loadAccounts();
+  ) {}
+ 
+  ngOnInit() {
+    this.loadComptes();
+    this.loadClotures();
   }
-
-
-  loadAccounts(){
-    this.compteService.getAllAccounts().subscribe(
-      data => { this.comptes = data}
-    )
-  }
-
-
-  async deleteAccount(id: number){
-    const confirmed = await this.modalService.confirm({
-      title: 'Supprimer le compte',
-      message: 'Êtes-vous sûr de vouloir supprimer ce compte ? Cette action est irréversible.',
-      confirmText: 'Supprimer',
-      cancelText: 'Annuler',
-      type: 'danger'
+ 
+  loadComptes() {
+    this.accountsLoading = true;
+    this.compteService.getAllAccounts().subscribe({
+      next: (data) => { this.comptes = data; this.accountsLoading = false; },
+      error: () => { this.accountsLoading = false; }
     });
-
-    if(confirmed){
-      this.compteService.deleteAccount(id).subscribe(
-        () => {
-          this.loadAccounts();
-        }
-      )
+  }
+ 
+  loadClotures() {
+    this.cloturesLoading = true;
+    this.compteService.getAllDemandesCloture().subscribe({
+      next: (data) => {
+        this.demandes = this.clotureFilter === 'ALL'
+          ? data
+          : data.filter(d => d.statut === this.clotureFilter);
+        this.cloturesLoading = false;
+      },
+      error: () => { this.cloturesLoading = false; }
+    });
+  }
+ 
+  onClotureFilterChange() { this.loadClotures(); }
+ 
+  // Status change
+  openStatusAction(id: number, currentStatut: string) {
+    this.actionCompteId = id;
+    this.actionType = 'status';
+    this.selectedStatut = currentStatut;
+    this.actionCommentaire = '';
+    this.actionError = '';
+  }
+ 
+  cancelAction() {
+    this.actionCompteId = null;
+    this.actionType = null;
+    this.actionError = '';
+  }
+ 
+  async submitStatusChange() {
+    if (!this.selectedStatut) return;
+ 
+    const confirmed = await this.modalService.confirm({
+      title: 'Confirmer le changement',
+      message: `Changer le statut du compte vers ${this.selectedStatut} ?`,
+      confirmText: 'Confirmer',
+      cancelText: 'Annuler',
+      type: 'warning'
+    });
+    if (!confirmed) return;
+ 
+    this.actionLoading = true;
+    this.compteService.updateStatutCompte(this.actionCompteId!, this.selectedStatut, this.actionCommentaire).subscribe({
+      next: () => { this.actionLoading = false; this.cancelAction(); this.loadComptes(); },
+      error: (err) => { this.actionError = err?.error?.message || 'Échec.'; this.actionLoading = false; }
+    });
+  }
+ 
+  // Closure decisions
+  openClotureAction(id: number, type: 'approve' | 'reject') {
+    this.clotureActionId = id;
+    this.clotureActionType = type;
+    this.clotureCommentaire = '';
+    this.clotureError = '';
+  }
+ 
+  cancelClotureAction() {
+    this.clotureActionId = null;
+    this.clotureActionType = null;
+    this.clotureError = '';
+  }
+ 
+  async submitClotureAction() {
+    if (this.clotureActionType === 'reject' && !this.clotureCommentaire.trim()) {
+      this.clotureError = 'Un motif est requis pour rejeter.';
+      return;
+    }
+ 
+    const confirmed = await this.modalService.confirm({
+      title: this.clotureActionType === 'approve' ? 'Approuver la clôture' : 'Rejeter la demande',
+      message: this.clotureActionType === 'approve'
+        ? 'Approuver cette demande de clôture ? Si le solde est non nul, le compte sera bloqué.'
+        : 'Rejeter cette demande de clôture ?',
+      confirmText: this.clotureActionType === 'approve' ? 'Approuver' : 'Rejeter',
+      cancelText: 'Annuler',
+      type: this.clotureActionType === 'approve' ? 'warning' : 'danger'
+    });
+    if (!confirmed) return;
+ 
+    this.clotureSubmitting = true;
+    const call = this.clotureActionType === 'approve'
+      ? this.compteService.approuverCloture(this.clotureActionId!, this.clotureCommentaire || undefined)
+      : this.compteService.rejeterCloture(this.clotureActionId!, this.clotureCommentaire);
+ 
+    call.subscribe({
+      next: () => { this.clotureSubmitting = false; this.cancelClotureAction(); this.loadClotures(); },
+      error: (err) => { this.clotureError = err?.error?.message || 'Échec.'; this.clotureSubmitting = false; }
+    });
+  }
+ 
+  getStatutClass(s: string): string {
+    switch (s) {
+      case 'ACTIVE':    return 'badge-green';
+      case 'SUSPENDED': return 'badge-amber';
+      case 'BLOCKED':   return 'badge-amber';
+      case 'CLOSED':    return 'badge-red';
+      default:          return 'badge-gray';
     }
   }
-  
-
+ 
+  getDemandeStatutClass(s: string): string {
+    switch (s) {
+      case 'EN_ATTENTE': return 'badge-yellow';
+      case 'APPROUVEE':  return 'badge-green';
+      case 'REJETEE':    return 'badge-red';
+      default:           return 'badge-gray';
+    }
+  }
+ 
+  get pendingCloturesCount(): number {
+    return this.demandes.filter(d => d.statut === 'EN_ATTENTE').length;
+  }
 }
+

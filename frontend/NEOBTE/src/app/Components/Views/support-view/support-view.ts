@@ -13,56 +13,51 @@ import { Support } from '../../../Entities/Interfaces/support';
   styleUrl: './support-view.css',
 })
 export class SupportView implements OnInit {
-
+ 
   tickets: Support[] = [];
   loading = false;
   submitting = false;
   error = '';
   successMessage = '';
-
-  newTicket: SupportCreateDTO = {
-    sujet: '',
-    message: ''
-  };
-
+ 
+  newTicket: SupportCreateDTO = { sujet: '', message: '' };
+ 
   constructor(private supportService: SupportService) {}
-
-  ngOnInit(): void {
-    this.loadTickets();
-  }
-
+ 
+  ngOnInit(): void { this.loadTickets(); }
+ 
   loadTickets() {
     this.loading = true;
     this.supportService.getMyTickets().subscribe({
-      next: (data) => {
-        this.tickets = data;
-        this.loading = false;
-      },
-      error: () => {
-        this.error = 'Failed to load tickets.';
-        this.loading = false;
-      }
+      next: (data) => { this.tickets = data; this.loading = false; },
+      error: () => { this.error = 'Impossible de charger les tickets.'; this.loading = false; }
     });
   }
-
+ 
   createTicket() {
     if (!this.newTicket.sujet || !this.newTicket.message) return;
-
     this.submitting = true;
     this.successMessage = '';
     this.error = '';
-
+ 
     this.supportService.createTicket(this.newTicket).subscribe({
       next: () => {
         this.newTicket = { sujet: '', message: '' };
-        this.successMessage = 'Ticket submitted successfully!';
+        this.successMessage = 'Ticket envoyé avec succès !';
         this.submitting = false;
         this.loadTickets();
       },
-      error: () => {
-        this.error = 'Failed to submit ticket.';
-        this.submitting = false;
-      }
+      error: () => { this.error = 'Échec de l\'envoi du ticket.'; this.submitting = false; }
     });
+  }
+ 
+  getStatusLabel(status: string): string {
+    switch (status) {
+      case 'OPEN':        return 'Ouvert';
+      case 'IN_PROGRESS': return 'En cours';
+      case 'RESOLVED':    return 'Résolu';
+      case 'CLOSED':      return 'Fermé';
+      default:            return status;
+    }
   }
 }

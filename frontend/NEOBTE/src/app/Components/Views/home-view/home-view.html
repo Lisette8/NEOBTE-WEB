@@ -1,122 +1,142 @@
 <div class="dashboard">
 
-  <!-- ── TOP BAR ── -->
-  <div class="dash-topbar">
-    <div class="dash-greeting">
-      <p class="dash-hello">Good {{ getTimeOfDay() }},</p>
-      <h1 class="dash-name">{{ userName || 'Welcome back' }} 👋</h1>
+  <!-- TOP BAR -->
+  <div class="dash-top">
+    <div>
+      <p class="dash-greeting-label">{{ getTimeOfDay() }},</p>
+      <h1 class="dash-greeting-name">{{ userName || 'Bienvenue' }}</h1>
     </div>
-    <a routerLink="/compte-view" [queryParams]="{open: 'true'}" class="btn-new-account">+ New Account</a>
+    <a routerLink="/compte-view" [queryParams]="{open: 'true'}" class="btn-new-account">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      Nouveau compte
+    </a>
   </div>
 
-  <!-- ── TOTAL BALANCE HERO ── -->
-  <div class="balance-hero" *ngIf="!loading">
-    <p class="bh-label">Total Balance</p>
-    <h2 class="bh-amount">{{ totalBalance | number:'1.3-3' }} <span class="bh-currency">TND</span></h2>
-    <p class="bh-sub">Across {{ activeComptes.length }} active account{{ activeComptes.length !== 1 ? 's' : '' }}</p>
+  <!-- BALANCE HERO -->
+  <div class="balance-hero" [class.loading]="loading" *ngIf="!loading">
+    <p class="bh-label">Solde total</p>
+    <div class="bh-amount">{{ totalBalance | number:'1.3-3' }}<span class="bh-currency">TND</span></div>
+    <p class="bh-sub">{{ activeComptes.length }} compte{{ activeComptes.length !== 1 ? 's' : '' }} actif{{ activeComptes.length !== 1 ? 's' : '' }}</p>
   </div>
 
-  <div class="balance-hero skeleton" *ngIf="loading">
-    <div class="sk-line wide"></div>
-    <div class="sk-line tall"></div>
-    <div class="sk-line short"></div>
-  </div>
+  <div class="balance-hero loading skeleton-pulse" *ngIf="loading" style="min-height:130px"></div>
 
-  <!-- ── ACCOUNTS ── -->
+  <!-- COMPTES -->
   <section class="dash-section">
-    <div class="section-header">
-      <h2>My Accounts</h2>
-      <a routerLink="/compte-view" [queryParams]="{open: 'true'}" class="section-link">Open new →</a>
+    <div class="section-hd">
+      <h2>Mes comptes</h2>
+      <a routerLink="/compte-view" [queryParams]="{open: 'true'}" class="section-link">Ouvrir →</a>
     </div>
 
-    <div class="accounts-scroll" *ngIf="!loading">
-
-      <!-- Account cards -->
-      <div class="account-card"
-        *ngFor="let compte of comptes"
+    <div class="accounts-row" *ngIf="!loading">
+      <div class="account-card anim-fade-up delay-{{ i+1 }}"
+        *ngFor="let compte of visibleComptes; let i = index"
         (click)="openAccount(compte.idCompte)"
         [class.inactive]="compte.statutCompte !== 'ACTIVE'">
-
-        <div class="ac-header">
-          <span class="ac-icon">{{ getAccountIcon(compte.typeCompte) }}</span>
-          <span class="ac-status-dot"
-            [class.active]="compte.statutCompte === 'ACTIVE'"
-            [class.blocked]="compte.statutCompte === 'BLOCKED'"
-            [class.closed]="compte.statutCompte === 'CLOSED'">
-          </span>
+        <div class="ac-top">
+          <div class="ac-type-icon">
+            <svg *ngIf="compte.typeCompte === 'COURANT'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+            </svg>
+            <svg *ngIf="compte.typeCompte === 'EPARGNE'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+            <svg *ngIf="compte.typeCompte === 'PROFESSIONNEL'" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+            </svg>
+          </div>
+          <div class="ac-dot" [class.active]="compte.statutCompte === 'ACTIVE'" [class.blocked]="compte.statutCompte === 'BLOCKED'" [class.closed]="compte.statutCompte === 'CLOSED'"></div>
         </div>
         <p class="ac-label">{{ getAccountLabel(compte.typeCompte) }}</p>
-        <p class="ac-id">#{{ compte.idCompte }}</p>
+        <p class="ac-id">Compte #{{ compte.idCompte }}</p>
         <p class="ac-balance">{{ compte.solde | number:'1.3-3' }}</p>
         <p class="ac-currency">TND</p>
-
         <div class="ac-footer">
-          <span class="ac-status-text">{{ compte.statutCompte }}</span>
+          <span class="ac-status">{{ compte.statutCompte }}</span>
           <span class="ac-arrow">→</span>
         </div>
       </div>
 
-      <!-- Empty state -->
-      <div class="no-accounts" *ngIf="comptes.length === 0">
-        <p class="no-ac-icon">🏦</p>
-        <p class="no-ac-text">No accounts yet</p>
-        <a routerLink="/compte-view" class="btn-open-first">Open your first account</a>
-      </div>
-
-    </div>
-
-    <!-- Skeleton loader -->
-    <div class="accounts-scroll" *ngIf="loading">
-      <div class="account-card skeleton" *ngFor="let i of [1,2]">
-        <div class="sk-line short"></div>
-        <div class="sk-line wide"></div>
-        <div class="sk-line tall"></div>
+      <div class="no-accounts" *ngIf="visibleComptes.length === 0">
+        <p>Aucun compte pour l'instant</p>
+        <a routerLink="/compte-view" [queryParams]="{open: 'true'}" class="btn-open-first">
+          Ouvrir un compte
+        </a>
       </div>
     </div>
 
-    <!-- Pending requests banner -->
+    <!-- Skeleton -->
+    <div class="accounts-row skeleton-pulse" *ngIf="loading">
+      <div class="account-card" *ngFor="let i of [1,2]" style="min-height:160px">
+        <div class="sk sk-h12" style="width:60%;margin-bottom:12px"></div>
+        <div class="sk sk-h28" style="width:80%;margin-bottom:8px"></div>
+        <div class="sk sk-h12" style="width:40%"></div>
+      </div>
+    </div>
+
     <div class="pending-banner" *ngIf="pendingDemandes.length > 0">
-      <span class="pb-icon">⏳</span>
-      <span>{{ pendingDemandes.length }} account request{{ pendingDemandes.length > 1 ? 's' : '' }} under review</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+      </svg>
+      {{ pendingDemandes.length }} demande{{ pendingDemandes.length > 1 ? 's' : '' }} en cours d'examen
     </div>
-
   </section>
 
-  <!-- ── QUICK ACTIONS ── -->
+  <!-- ACTIONS RAPIDES -->
   <section class="dash-section">
-    <h2>Quick Actions</h2>
+    <div class="section-hd"><h2>Actions rapides</h2></div>
     <div class="quick-actions">
-      <a routerLink="/virement-view" class="qa-card qa-send">
-        <div class="qa-icon">↑</div>
-        <span>Send Money</span>
+      <a routerLink="/virement-view" class="qa-card qa-send anim-fade-up delay-1">
+        <div class="qa-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
+        </div>
+        <span>Envoyer</span>
       </a>
-      <a routerLink="/receive" class="qa-card qa-receive">
-        <div class="qa-icon">↓</div>
-        <span>Receive</span>
+      <a routerLink="/receive" class="qa-card qa-receive anim-fade-up delay-2">
+        <div class="qa-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/>
+            <path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/>
+          </svg>
+        </div>
+        <span>Recevoir</span>
       </a>
-      <a routerLink="/support-view" class="qa-card qa-support">
-        <div class="qa-icon">💬</div>
+      <a routerLink="/support-view" class="qa-card qa-support anim-fade-up delay-3">
+        <div class="qa-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+        </div>
         <span>Support</span>
       </a>
-      <a routerLink="/actualite-view" class="qa-card qa-news">
-        <div class="qa-icon">📰</div>
-        <span>News</span>
+      <a routerLink="/actualite-view" class="qa-card qa-news anim-fade-up delay-4">
+        <div class="qa-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z"/>
+            <line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="10" x2="16" y2="10"/><line x1="8" y1="14" x2="12" y2="14"/>
+          </svg>
+        </div>
+        <span>Actualités</span>
       </a>
     </div>
   </section>
 
-  <!-- ── LATEST NEWS ── -->
+  <!-- ACTUALITÉS -->
   <section class="dash-section" *ngIf="actualites.length > 0">
-    <div class="section-header">
-      <h2>BTE News</h2>
-      <a routerLink="/actualite-view" class="section-link">See all →</a>
+    <div class="section-hd">
+      <h2>Actualités BTE</h2>
+      <a routerLink="/actualite-view" class="section-link">Tout voir →</a>
     </div>
     <div class="news-list">
       <div class="news-item" *ngFor="let act of actualites">
-        <div class="ni-dot"></div>
-        <div class="ni-body">
+        <div class="ni-bar"></div>
+        <div>
           <p class="ni-title">{{ act.titre }}</p>
-          <p class="ni-date">{{ act.dateCreationActualite | date:'MMM d, y' }}</p>
+          <p class="ni-date">{{ act.dateCreationActualite | date:'d MMM yyyy' }}</p>
         </div>
       </div>
     </div>

@@ -1,144 +1,154 @@
-<div class="comptes-page">
+<div class="page">
 
-  <!-- ── ACCOUNT LIST ── -->
+  <!-- ── LISTE DES COMPTES ── -->
   <ng-container *ngIf="step === 'list'">
 
-    <div class="page-header">
+    <div class="page-top">
       <div>
-        <h1>My Accounts</h1>
-        <p class="page-sub">{{ comptes.length }} account{{ comptes.length !== 1 ? 's' : '' }} linked to your profile</p>
+        <h1>Mes comptes</h1>
+        <p class="page-sub">{{ comptes.length }} compte{{ comptes.length !== 1 ? 's' : '' }} sur votre profil</p>
       </div>
-      <button class="btn-open-account" (click)="step = 'select-type'">
-        + Open New Account
+      <button class="btn-back" (click)="step = 'select-type'" *ngIf="availableAccountTypes.length > 0">
+        + Nouveau compte
       </button>
     </div>
 
-    <div class="success-banner" *ngIf="submitSuccess">
-      <i class="fas fa-check-circle"></i> {{ submitSuccess }}
+    <div class="success-bar" *ngIf="submitSuccess">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+      {{ submitSuccess }}
     </div>
 
-    <p class="loading-text" *ngIf="loading">Loading...</p>
-    <p class="error-text" *ngIf="error">{{ error }}</p>
+    <p style="font-size:0.83rem;color:var(--text-3)" *ngIf="loading">Chargement...</p>
+    <p style="font-size:0.83rem;color:var(--red)" *ngIf="error">{{ error }}</p>
 
-    <div class="accounts-container">
-      <div class="account-card" *ngFor="let compte of comptes">
-        <div class="ac-top">
-          <div class="ac-type-badge">{{ compte.typeCompte }}</div>
-          <span class="ac-status"
-            [class.active]="compte.statutCompte === 'ACTIVE'"
-            [class.blocked]="compte.statutCompte === 'BLOCKED'"
-            [class.closed]="compte.statutCompte === 'CLOSED'">
-            {{ compte.statutCompte }}
-          </span>
+    <div class="accounts-list">
+      <div class="account-item" *ngFor="let compte of comptes">
+        <div class="ai-top">
+          <span class="ai-type">{{ compte.typeCompte }}</span>
+          <span class="badge" [ngClass]="{
+            'badge-green': compte.statutCompte === 'ACTIVE',
+            'badge-amber': compte.statutCompte === 'BLOCKED',
+            'badge-red':   compte.statutCompte === 'CLOSED'
+          }">{{ compte.statutCompte }}</span>
         </div>
-        <div class="ac-id">Account #{{ compte.idCompte }}</div>
-        <div class="ac-balance">
-          {{ compte.solde | number:'1.2-2' }}
-          <span class="ac-currency">TND</span>
-        </div>
-
+        <p class="ai-id">Compte #{{ compte.idCompte }}</p>
+        <p class="ai-balance">{{ compte.solde | number:'1.3-3' }} <span style="font-size:0.7rem;color:var(--text-3);font-weight:400">TND</span></p>
       </div>
     </div>
 
-    <div class="empty-state" *ngIf="comptes.length === 0 && !loading">
-      <p>No accounts yet. Open your first account to get started.</p>
+    <p class="accounts-empty" *ngIf="comptes.length === 0 && !loading">
+      Aucun compte pour l'instant. Ouvrez votre premier compte pour commencer.
+    </p>
+
+    <div class="all-taken" *ngIf="availableAccountTypes.length === 0 && comptes.length > 0">
+      <p>Vous disposez déjà de tous les types de comptes disponibles.</p>
     </div>
 
-    <!-- Pending requests -->
-    <div class="demandes-section" *ngIf="pendingDemandes.length > 0">
-      <h2>Pending Requests</h2>
-      <div class="demande-card" *ngFor="let d of pendingDemandes">
-        <span class="demande-type">{{ d.typeCompte }}</span>
-        <span class="demande-status pending">Under review</span>
+    <div class="pending-section" *ngIf="pendingDemandes.length > 0" style="margin-top:24px">
+      <h2>Demandes en cours</h2>
+      <div class="demande-item" *ngFor="let d of pendingDemandes">
+        <span class="di-type">{{ d.typeCompte }}</span>
+        <span class="di-status">En cours d'examen</span>
       </div>
     </div>
 
   </ng-container>
 
 
-  <!-- ── SELECT ACCOUNT TYPE ── -->
+  <!-- ── CHOIX DU TYPE ── -->
   <ng-container *ngIf="step === 'select-type'">
 
-    <div class="page-header">
+    <div class="page-top">
       <div>
-        <h1>Open a New Account</h1>
-        <p class="page-sub">Choose the type that suits you</p>
+        <h1>Ouvrir un compte</h1>
+        <p class="page-sub">Choisissez le type qui vous convient</p>
       </div>
-      <button class="btn-back" (click)="step = 'list'">← Back</button>
+      <button class="btn-back" (click)="step = 'list'">← Retour</button>
     </div>
 
-    <div class="type-cards">
-      <div class="type-card" *ngFor="let t of availableAccountTypes" (click)="selectType(t.type)">
-        <div class="type-icon">{{ t.icon }}</div>
+    <div class="type-grid">
+      <div class="type-card delay-{{ i+1 }}" *ngFor="let t of availableAccountTypes; let i = index" (click)="selectType(t.type)">
+        <div class="tc-icon">
+          <svg *ngIf="t.type === 'COURANT'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+          </svg>
+          <svg *ngIf="t.type === 'EPARGNE'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+          </svg>
+          <svg *ngIf="t.type === 'PROFESSIONNEL'" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+          </svg>
+        </div>
         <h3>{{ t.label }}</h3>
-        <p class="type-desc">{{ t.desc }}</p>
-        <p class="type-needs"><strong>Required:</strong> {{ t.needs }}</p>
-        <button class="btn-select">Select →</button>
+        <p>{{ t.desc }}</p>
+        <p class="tc-needs"><strong>Requis :</strong> {{ t.needs }}</p>
       </div>
     </div>
 
   </ng-container>
 
 
-  <!-- ── KYC FORM ── -->
+  <!-- ── FORMULAIRE KYC ── -->
   <ng-container *ngIf="step === 'fill-kyc' && kycForm">
 
-    <div class="page-header">
+    <div class="page-top">
       <div>
-        <h1>Identity Verification</h1>
-        <p class="page-sub">Required to open your {{ selectedType }} account</p>
+        <h1>Vérification d'identité</h1>
+        <p class="page-sub">Requis pour ouvrir un compte {{ selectedType }}</p>
       </div>
-      <button class="btn-back" (click)="cancelRequest()">← Back</button>
+      <button class="btn-back" (click)="cancelRequest()">← Retour</button>
     </div>
 
     <div class="kyc-card" [formGroup]="kycForm">
 
       <div class="form-group">
-        <label>CIN (National ID) <span class="req">*</span></label>
-        <input class="form-input" type="text" formControlName="cin" placeholder="12345678" maxlength="8">
-        <div class="field-error" *ngIf="fieldInvalid('cin')">Must be exactly 8 digits.</div>
+        <label>CIN (Carte d'identité) <span class="req">*</span></label>
+        <input class="input" type="text" formControlName="cin" placeholder="12345678" maxlength="8">
+        <div class="field-error" *ngIf="fieldInvalid('cin')">Doit comporter exactement 8 chiffres.</div>
       </div>
 
       <div class="form-group">
-        <label>Date of Birth <span class="req">*</span></label>
-        <input class="form-input" type="date" formControlName="dateNaissance">
-        <div class="field-error" *ngIf="fieldInvalid('dateNaissance')">Required.</div>
+        <label>Date de naissance <span class="req">*</span></label>
+        <input class="input" type="date" formControlName="dateNaissance">
+        <div class="field-error" *ngIf="fieldInvalid('dateNaissance')">Requis.</div>
       </div>
 
       <ng-container *ngIf="selectedType === 'COURANT' || selectedType === 'PROFESSIONNEL'">
         <div class="form-group">
-          <label>Address <span class="req">*</span></label>
-          <input class="form-input" type="text" formControlName="adresse" placeholder="12 Rue de la République, Tunis">
-          <div class="field-error" *ngIf="fieldInvalid('adresse')">Required.</div>
+          <label>Adresse <span class="req">*</span></label>
+          <input class="input" type="text" formControlName="adresse" placeholder="12 Rue de la République, Tunis">
+          <div class="field-error" *ngIf="fieldInvalid('adresse')">Requis.</div>
         </div>
-
         <div class="form-group">
           <label>Profession <span class="req">*</span></label>
-          <input class="form-input" type="text" formControlName="job" placeholder="Engineer, Doctor, Freelancer...">
-          <div class="field-error" *ngIf="fieldInvalid('job')">Required.</div>
+          <input class="input" type="text" formControlName="job" placeholder="Ingénieur, Médecin, Freelance...">
+          <div class="field-error" *ngIf="fieldInvalid('job')">Requis.</div>
         </div>
       </ng-container>
 
       <ng-container *ngIf="selectedType === 'PROFESSIONNEL'">
         <div class="form-group">
-          <label>Company / Business Name <span class="req">*</span></label>
-          <input class="form-input" type="text" formControlName="nomEntreprise" placeholder="ACME Corp">
-          <div class="field-error" *ngIf="fieldInvalid('nomEntreprise')">Required.</div>
+          <label>Nom de l'entreprise <span class="req">*</span></label>
+          <input class="input" type="text" formControlName="nomEntreprise" placeholder="Ma Société SARL">
+          <div class="field-error" *ngIf="fieldInvalid('nomEntreprise')">Requis.</div>
         </div>
       </ng-container>
 
       <div class="form-group">
-        <label>Additional notes <span class="optional">(optional)</span></label>
-        <textarea class="form-input" formControlName="motif" rows="3"
-          placeholder="Any additional information for the bank..."></textarea>
+        <label>Informations complémentaires <span class="optional">(facultatif)</span></label>
+        <textarea class="input" formControlName="motif" rows="3"
+          placeholder="Tout renseignement supplémentaire pour la banque..."></textarea>
       </div>
 
-      <div class="field-error global-error" *ngIf="submitError">{{ submitError }}</div>
+      <div class="error-box" style="margin-bottom:14px" *ngIf="submitError">{{ submitError }}</div>
 
       <div class="kyc-actions">
-        <button class="btn-ghost" (click)="cancelRequest()">Cancel</button>
-        <button class="btn-primary" (click)="submitDemande()" [disabled]="submitting">
-          {{ submitting ? 'Submitting...' : 'Submit Request' }}
+        <button class="btn-cancel" (click)="cancelRequest()">Annuler</button>
+        <button class="btn-kyc-submit" (click)="submitDemande()" [disabled]="submitting">
+          <span *ngIf="submitting" class="spinner"></span>
+          <span>{{ submitting ? 'Envoi...' : 'Soumettre la demande' }}</span>
         </button>
       </div>
 

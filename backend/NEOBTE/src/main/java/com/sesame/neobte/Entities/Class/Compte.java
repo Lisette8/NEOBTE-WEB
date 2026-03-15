@@ -18,6 +18,7 @@ import java.util.*;
 @NoArgsConstructor
 @AllArgsConstructor
 public class Compte implements Serializable {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long idCompte;
@@ -30,8 +31,17 @@ public class Compte implements Serializable {
     @Enumerated(EnumType.STRING)
     private StatutCompte statutCompte;
 
+    // Used to determine primary account — earliest created COURANT, or overall earliest
     @Column(nullable = false, updatable = false)
     private Date dateCreation;
+
+    // Set when client submits closure request — auto-deleted after 48h if not cancelled
+    private java.time.LocalDateTime dateSuppressionPrevue;
+
+    @PrePersist
+    protected void onCreate() {
+        this.dateCreation = new Date();
+    }
 
     @ManyToOne
     private Utilisateur utilisateur;
@@ -43,10 +53,4 @@ public class Compte implements Serializable {
     @OneToMany(mappedBy = "compteA")
     @JsonIgnore
     private List<Virement> virementsEntrants = new ArrayList<>();
-
-
-
-
-    @PrePersist
-    protected void onCreate() { this.dateCreation = new Date(); }
 }

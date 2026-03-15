@@ -1,38 +1,84 @@
-<div class="support-container">
+<div class="page">
 
-    <h2>Contact Support</h2>
-  
-    <div class="ticket-form">
-      <input type="text" placeholder="Subject" [(ngModel)]="newTicket.sujet" />
-      <textarea placeholder="Describe your problem..." [(ngModel)]="newTicket.message"></textarea>
-  
-      <p class="msg success" *ngIf="successMessage">{{ successMessage }}</p>
-      <p class="msg error" *ngIf="error">{{ error }}</p>
-  
-      <button (click)="createTicket()" [disabled]="!newTicket.sujet || !newTicket.message || submitting">
-        {{ submitting ? 'Sending...' : 'Send Ticket' }}
-      </button>
+  <div class="page-top">
+    <div>
+      <h1>Support</h1>
+      <p class="page-sub">Notre équipe est disponible pour vous aider</p>
     </div>
-  
-    <hr>
-  
-    <h2>My Tickets</h2>
-  
-    <p *ngIf="loading">Loading...</p>
-  
-    <div class="ticket" *ngFor="let ticket of tickets">
-      <div class="ticket-header">
-        <strong>{{ ticket.sujet }}</strong>
-        <span class="status">{{ ticket.status }}</span>
-      </div>
-      <p>{{ ticket.message }}</p>
-      <div *ngIf="ticket.reponseAdmin" class="admin-response">
-        <strong>Admin Response:</strong>
-        <p>{{ ticket.reponseAdmin }}</p>
-      </div>
-      <small>{{ ticket.dateCreation | date:'MMM d, y · HH:mm' }}</small>
-    </div>
-  
-    <p *ngIf="!loading && tickets.length === 0">No tickets yet.</p>
-  
   </div>
+
+  <!-- New ticket form -->
+  <div class="support-card">
+    <h2>Nouveau ticket</h2>
+
+    <div class="form-group">
+      <label class="label">Sujet</label>
+      <input class="input" type="text" placeholder="Décrivez brièvement votre problème" [(ngModel)]="newTicket.sujet">
+    </div>
+
+    <div class="form-group">
+      <label class="label">Message</label>
+      <textarea class="input" rows="4" placeholder="Décrivez votre problème en détail..." [(ngModel)]="newTicket.message"></textarea>
+    </div>
+
+    <div class="success-bar" *ngIf="successMessage">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+      {{ successMessage }}
+    </div>
+    <div class="error-box" style="margin-bottom:14px" *ngIf="error">{{ error }}</div>
+
+    <button class="btn-submit" (click)="createTicket()"
+      [disabled]="!newTicket.sujet || !newTicket.message || submitting">
+      <span *ngIf="submitting" class="spinner"></span>
+      <span>{{ submitting ? 'Envoi en cours...' : 'Envoyer le ticket' }}</span>
+    </button>
+  </div>
+
+  <!-- Tickets list -->
+  <div class="tickets-section">
+    <p class="section-title">Mes tickets</p>
+
+    <p class="tickets-loading" *ngIf="loading">Chargement...</p>
+
+    <p class="tickets-empty" *ngIf="!loading && tickets.length === 0">
+      Aucun ticket pour l'instant.
+    </p>
+
+    <div class="ticket-list" *ngIf="tickets.length > 0">
+      <div class="ticket-item" *ngFor="let ticket of tickets">
+        <div class="ti-header">
+          <div class="ti-left">
+            <div class="ti-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+            </div>
+            <div>
+              <p class="ti-subject">{{ ticket.sujet }}</p>
+              <p class="ti-date">{{ ticket.dateCreation | date:'d MMM y · HH:mm' }}</p>
+            </div>
+          </div>
+          <span class="badge" [ngClass]="{
+            'badge-amber': ticket.status === 'OPEN',
+            'badge-blue':  ticket.status === 'IN_PROGRESS',
+            'badge-green': ticket.status === 'RESOLVED' || ticket.status === 'CLOSED',
+            'badge-gray':  ticket.status === 'CLOSED'
+          }">{{ getStatusLabel(ticket.status) }}</span>
+        </div>
+
+        <p class="ti-message">{{ ticket.message }}</p>
+
+        <div class="ti-response" *ngIf="ticket.reponseAdmin">
+          <div class="ti-response-label">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/>
+            </svg>
+            Réponse de l'administrateur
+          </div>
+          <p class="ti-response-text">{{ ticket.reponseAdmin }}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

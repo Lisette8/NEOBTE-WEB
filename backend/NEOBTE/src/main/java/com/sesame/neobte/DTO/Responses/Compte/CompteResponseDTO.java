@@ -4,6 +4,8 @@ import com.sesame.neobte.Entities.Enumeration.StatutCompte;
 import com.sesame.neobte.Entities.Enumeration.TypeCompte;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Data
 public class CompteResponseDTO {
     private Long idCompte;
@@ -11,4 +13,5 @@ public class CompteResponseDTO {
     private TypeCompte typeCompte;
     private StatutCompte statutCompte;
     private Long utilisateurId;
+    private LocalDateTime dateSuppressionPrevue;
 }

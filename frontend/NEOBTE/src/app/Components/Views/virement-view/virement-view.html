@@ -1,172 +1,189 @@
-<div class="virement-page">
-  <div class="virement-container">
+<div class="page">
 
-    <div class="virement-card glass-card">
+  <div class="transfer-card">
 
-      <!-- STEP 1: LOOKUP -->
-      <ng-container *ngIf="step === 'lookup'">
-        <div class="virement-header">
-          <h1>Send Money</h1>
-          <p class="subtitle">Transfer funds to any NEO BTE account holder</p>
-        </div>
+    <!-- ÉTAPE 1 : SAISIE -->
+    <ng-container *ngIf="step === 'lookup'">
+      <div class="card-head">
+        <h1>Envoyer de l'argent</h1>
+        <p>Transférez des fonds vers un autre utilisateur NEO BTE</p>
+      </div>
 
-        <div class="transfer-form" [formGroup]="transferForm">
-          <div class="form-group">
-            <label>Recipient</label>
-            <div class="input-wrapper">
-              <i class="fas fa-search input-icon"></i>
-              <input type="text" formControlName="recipientIdentifier"
-                placeholder="Email or phone number"
-                (input)="onIdentifierInput($event)">
-              <span class="resolving-spinner" *ngIf="resolving">⟳</span>
-            </div>
-            <p class="field-hint">Enter the recipient's email or phone number</p>
-            <p class="field-error" *ngIf="resolveError">{{ resolveError }}</p>
-          </div>
-
-          <div class="recipient-card" *ngIf="recipient">
-            <div class="recipient-avatar">{{ recipient.displayName.charAt(0).toUpperCase() }}</div>
-            <div class="recipient-info">
-              <div class="recipient-name">{{ recipient.displayName }}</div>
-              <div class="recipient-meta">
-                {{ recipient.maskedIdentifier }} ·
-                <span class="account-type-pill">{{ recipient.primaryCompteType }}</span>
-              </div>
-            </div>
-            <i class="fas fa-check-circle recipient-check"></i>
-          </div>
-
-          <div class="form-group" *ngIf="recipient">
-            <label>Amount</label>
-            <div class="input-wrapper">
-              <i class="fas fa-coins input-icon"></i>
-              <input type="number" min="1" formControlName="montant" placeholder="0.000">
-              <span class="currency-label">TND</span>
-            </div>
-            <div class="field-error" *ngIf="fieldInvalid('montant')">Amount must be at least 1 TND.</div>
-          </div>
-
-          <!-- Fee preview — shown once amount is entered -->
-          <div class="fee-preview" *ngIf="recipient && montant > 0">
-            <div class="fee-row">
-              <span>Amount</span>
-              <span>{{ montant | number:'1.3-3' }} TND</span>
-            </div>
-            <div class="fee-row fee-charge">
-              <span>Service fee ({{ recipient.feeRate * 100 | number:'1.1-1' }}%)</span>
-              <span>{{ estimatedFee | number:'1.3-3' }} TND</span>
-            </div>
-            <div class="fee-row fee-total">
-              <span>Total debited</span>
-              <span>{{ totalDebite | number:'1.3-3' }} TND</span>
-            </div>
-          </div>
-
-          <div class="field-error global-error" *ngIf="error">{{ error }}</div>
-
-          <button class="btn-primary" (click)="proceedToConfirm()"
-            [disabled]="!recipient || !montant || transferForm.get('montant')?.invalid">
-            Continue →
-            <div class="btn-glow"></div>
-          </button>
-        </div>
-      </ng-container>
-
-
-      <!-- STEP 2: CONFIRM -->
-      <ng-container *ngIf="step === 'confirm'">
-        <div class="virement-header">
-          <h1>Review Transfer</h1>
-          <p class="subtitle">Please confirm the details below</p>
-        </div>
-
-        <div class="confirm-summary">
-          <div class="summary-row">
-            <span class="summary-label">To</span>
-            <span class="summary-value">{{ recipient?.displayName }}</span>
-          </div>
-          <div class="summary-row">
-            <span class="summary-label">Account</span>
-            <span class="summary-value">
-              #{{ recipient?.primaryCompteId }}
-              <span class="account-type-pill">{{ recipient?.primaryCompteType }}</span>
+      <div [formGroup]="transferForm">
+        <div class="form-group">
+          <label class="label">Destinataire</label>
+          <div class="input-group">
+            <span class="input-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+            </span>
+            <input class="input" type="text" formControlName="recipientIdentifier"
+              placeholder="Adresse e-mail ou téléphone"
+              (input)="onIdentifierInput($event)">
+            <span class="input-spinner" *ngIf="resolving">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <path d="M21 12a9 9 0 1 1-18 0"/>
+              </svg>
             </span>
           </div>
-          <div class="summary-row">
-            <span class="summary-label">Amount sent</span>
-            <span class="summary-value">{{ montant | number:'1.3-3' }} TND</span>
-          </div>
-          <div class="summary-row">
-            <span class="summary-label">Service fee</span>
-            <span class="summary-value fee-value">+ {{ estimatedFee | number:'1.3-3' }} TND</span>
-          </div>
-          <div class="summary-row summary-amount">
-            <span class="summary-label">Total debited</span>
-            <span class="summary-value amount-highlight">{{ totalDebite | number:'1.3-3' }} TND</span>
-          </div>
-          <p class="summary-note">
-            <i class="fas fa-info-circle"></i>
-            Funds will be debited from your primary account.
-          </p>
+          <p class="hint">Entrez l'e-mail ou le téléphone du destinataire</p>
+          <div class="field-error" *ngIf="resolveError">{{ resolveError }}</div>
         </div>
 
-        <div class="field-error global-error" *ngIf="error">{{ error }}</div>
-
-        <div class="confirm-actions">
-          <button class="btn-ghost" (click)="step = 'lookup'" [disabled]="loading">← Edit</button>
-          <button class="btn-primary" (click)="confirmTransfer()" [disabled]="loading">
-            <span *ngIf="!loading">Send {{ montant | number:'1.3-3' }} TND</span>
-            <span *ngIf="loading" class="loader"></span>
-            <div class="btn-glow"></div>
-          </button>
+        <!-- Preview destinataire -->
+        <div class="recipient-preview" *ngIf="recipient">
+          <div class="rp-avatar">{{ recipient.displayName.charAt(0).toUpperCase() }}</div>
+          <div class="rp-info">
+            <p class="rp-name">{{ recipient.displayName }}</p>
+            <div class="rp-meta">
+              {{ recipient.maskedIdentifier }}
+              <span class="type-pill">{{ recipient.primaryCompteType }}</span>
+            </div>
+          </div>
+          <svg class="rp-check" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+            <polyline points="22 4 12 14.01 9 11.01"/>
+          </svg>
         </div>
-      </ng-container>
 
-
-      <!-- STEP 3: SUCCESS -->
-      <ng-container *ngIf="step === 'success'">
-        <div class="success-state">
-          <div class="success-icon">✓</div>
-          <h2>Transfer Sent!</h2>
-          <p class="success-desc">
-            <strong>{{ lastCompletedTransfer?.montant | number:'1.3-3' }} TND</strong>
-            sent to <strong>{{ lastCompletedTransfer?.recipientName }}</strong>
-          </p>
-          <p class="success-fee" *ngIf="lastCompletedTransfer?.frais">
-            Service fee: {{ lastCompletedTransfer?.frais | number:'1.3-3' }} TND
-          </p>
-          <button class="btn-primary" (click)="resetForm()">
-            New Transfer <div class="btn-glow"></div>
-          </button>
+        <!-- Montant -->
+        <div class="form-group" *ngIf="recipient">
+          <label class="label">Montant</label>
+          <div class="input-group">
+            <span class="input-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+            </span>
+            <input class="input" type="number" min="1" formControlName="montant" placeholder="0.000">
+            <span class="currency-suffix">TND</span>
+          </div>
+          <div class="field-error" *ngIf="fieldInvalid('montant')">Minimum 1 TND.</div>
         </div>
-      </ng-container>
+
+        <!-- Récap frais -->
+        <div class="fee-breakdown" *ngIf="recipient && montant > 0">
+          <div class="fee-row"><span>Montant envoyé</span><span>{{ montant | number:'1.3-3' }} TND</span></div>
+          <div class="fee-row fee-line">
+            <span>Frais de service ({{ recipient.feeRate * 100 | number:'1.1-1' }}%)</span>
+            <span>{{ estimatedFee | number:'1.3-3' }} TND</span>
+          </div>
+          <div class="fee-row total-line"><span>Total débité</span><span>{{ totalDebite | number:'1.3-3' }} TND</span></div>
+        </div>
+
+        <div class="error-box" style="margin-bottom:14px" *ngIf="error">{{ error }}</div>
+
+        <button class="btn-submit" (click)="proceedToConfirm()"
+          [disabled]="!recipient || !montant || transferForm.get('montant')?.invalid">
+          Continuer
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+      </div>
+    </ng-container>
+
+
+    <!-- ÉTAPE 2 : CONFIRMATION -->
+    <ng-container *ngIf="step === 'confirm'">
+      <div class="card-head">
+        <h1>Confirmer le virement</h1>
+        <p>Vérifiez les détails avant d'envoyer</p>
+      </div>
+
+      <div class="confirm-summary">
+        <div class="cs-row">
+          <span class="cs-label">Destinataire</span>
+          <span class="cs-value">{{ recipient?.displayName }}</span>
+        </div>
+        <div class="cs-row">
+          <span class="cs-label">Compte</span>
+          <span class="cs-value">#{{ recipient?.primaryCompteId }} <span class="type-pill">{{ recipient?.primaryCompteType }}</span></span>
+        </div>
+        <div class="cs-row">
+          <span class="cs-label">Montant reçu</span>
+          <span class="cs-value">{{ montant | number:'1.3-3' }} TND</span>
+        </div>
+        <div class="cs-row cs-fee">
+          <span class="cs-label">Frais de service</span>
+          <span class="cs-value">+ {{ estimatedFee | number:'1.3-3' }} TND</span>
+        </div>
+        <div class="cs-row cs-total">
+          <span class="cs-label">Total débité</span>
+          <span class="cs-value">{{ totalDebite | number:'1.3-3' }} TND</span>
+        </div>
+        <div class="cs-note">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          Les fonds seront débités de votre compte principal.
+        </div>
+      </div>
+
+      <div class="error-box" style="margin-bottom:14px" *ngIf="error">{{ error }}</div>
+
+      <div class="confirm-actions">
+        <button class="btn-edit" (click)="step = 'lookup'" [disabled]="loading">← Modifier</button>
+        <button class="btn-submit" (click)="confirmTransfer()" [disabled]="loading">
+          <span *ngIf="loading" class="spinner"></span>
+          <span *ngIf="!loading">Envoyer {{ montant | number:'1.3-3' }} TND</span>
+        </button>
+      </div>
+    </ng-container>
+
+
+    <!-- ÉTAPE 3 : SUCCÈS -->
+    <ng-container *ngIf="step === 'success'">
+      <div class="success-state">
+        <div class="success-circle">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <h2>Virement envoyé !</h2>
+        <p>
+          <strong>{{ lastCompletedTransfer?.montant | number:'1.3-3' }} TND</strong>
+          envoyés à <strong>{{ lastCompletedTransfer?.recipientName }}</strong>
+        </p>
+        <p class="success-fee" *ngIf="lastCompletedTransfer?.frais">
+          Frais prélevés : {{ lastCompletedTransfer?.frais | number:'1.3-3' }} TND
+        </p>
+        <button class="btn-submit" (click)="resetForm()">
+          Nouveau virement
+        </button>
+      </div>
+    </ng-container>
+
+  </div>
+
+
+  <!-- HISTORIQUE -->
+  <div class="history-card">
+    <div class="hc-head">
+      <h2>Historique</h2>
     </div>
 
+    <p class="hc-empty" *ngIf="historyLoading">Chargement...</p>
+    <p class="hc-empty" *ngIf="!historyLoading && history.length === 0">Aucun virement pour l'instant.</p>
 
-    <!-- HISTORY -->
-    <div class="history-card glass-card">
-      <div class="history-header"><h2>Transfer History</h2></div>
-      <div class="history-content">
-        <p *ngIf="historyLoading">Loading...</p>
-        <div *ngIf="!historyLoading && history.length === 0" class="no-history">
-          <p>No transfers yet.</p>
+    <div class="hc-list" *ngIf="history.length > 0">
+      <div class="hc-item" *ngFor="let v of history">
+        <div class="hc-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
         </div>
-        <div class="history-list" *ngIf="history.length > 0">
-          <div class="history-item" *ngFor="let v of history">
-            <div class="history-icon"><i class="fas fa-arrow-right"></i></div>
-            <div class="history-details">
-              <p class="history-target"><strong>{{ v.recipientName }}</strong></p>
-              <p class="history-sender muted">From: {{ v.senderName }}</p>
-              <p class="history-date">{{ v.dateDeVirement | date:'MMM d, y · HH:mm' }}</p>
-            </div>
-            <div class="history-amount-col">
-              <span class="history-amount">{{ v.montant | number:'1.3-3' }} TND</span>
-              <span class="history-fee" *ngIf="v.frais">fee: {{ v.frais | number:'1.3-3' }}</span>
-            </div>
-          </div>
+        <div class="hc-info">
+          <p class="hc-party">{{ v.recipientName }}</p>
+          <p class="hc-date">{{ v.dateDeVirement | date:'d MMM y · HH:mm' }}</p>
+        </div>
+        <div class="hc-right">
+          <p class="hc-amount">{{ v.montant | number:'1.3-3' }} TND</p>
+          <p class="hc-fee" *ngIf="v.frais">frais : {{ v.frais | number:'1.3-3' }}</p>
         </div>
       </div>
     </div>
-
   </div>
+
 </div>

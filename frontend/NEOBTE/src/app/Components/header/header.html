@@ -1,34 +1,46 @@
-<header class="glass-header">
-  <div class="header-content">
-    <div class="logo-wrapper">
-      <a routerLink="/" class="logo-link">
-        <img src="assets/bte-logo.png" alt="BTE Logo" class="logo-img">
-        <span class="logo-text">NEO <span class="accent">BTE</span></span>
-      </a>
-    </div>
+<header class="site-header">
+  <div class="header-inner">
+    <a routerLink="/home-view" class="header-brand">
+      <div class="brand-mark">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <rect width="18" height="18" rx="5" fill="#0000A0"/>
+          <path d="M5 9h8M9 5v8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <span class="brand-name">NEO BTE</span>
+    </a>
 
-    <nav class="nav-links" [class.open]="isMenuOpen">
-      <ul>
-        <li *ngIf="isLoggedIn()"><a routerLink="/home-view" routerLinkActive="active">Accueil</a></li>
-        <li><a href="#">Produits</a></li>
-        <li><a routerLink="/support-view" routerLinkActive="active">Support</a></li>
-      </ul>
+    <nav class="header-nav" *ngIf="isLoggedIn()">
+      <a routerLink="/home-view" routerLinkActive="active" class="nav-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+        Accueil
+      </a>
+      <a routerLink="/virement-view" routerLinkActive="active" class="nav-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+          <polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+        </svg>
+        Virements
+      </a>
+      <a routerLink="/support-view" routerLinkActive="active" class="nav-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        Support
+      </a>
     </nav>
 
-    <div class="header-actions">
-      <div class="auth-group" *ngIf="!isLoggedIn()">
-        <a routerLink="/auth-view" class="btn-login">Connexion</a>
-      </div>
-
-      <div class="auth-group" *ngIf="isLoggedIn()">
-        <button class="btn-logout" (click)="logout()">Déconnexion</button>
-      </div>
-      
-      <button class="mobile-toggle" (click)="toggleMenu()">
-        <div class="hamburger" [class.active]="isMenuOpen">
-          <span></span>
-          <span></span>
-        </div>
+    <div class="header-actions" *ngIf="isLoggedIn()">
+      <button class="btn-logout" (click)="logout()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        Déconnexion
       </button>
     </div>
   </div>

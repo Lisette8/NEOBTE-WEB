@@ -1,0 +1,219 @@
+<div class="page" *ngIf="!loading && compte">
+
+  <button class="back-btn" (click)="goBack()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+    Retour
+  </button>
+
+  <!-- Hero card -->
+  <div class="account-hero">
+    <div class="ah-top">
+      <div class="ah-icon">
+        <svg *ngIf="compte.typeCompte === 'COURANT'" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
+        </svg>
+        <svg *ngIf="compte.typeCompte === 'EPARGNE'" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+        </svg>
+        <svg *ngIf="compte.typeCompte === 'PROFESSIONNEL'" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+        </svg>
+      </div>
+      <span class="badge" [ngClass]="{
+        'badge-green': compte.statutCompte === 'ACTIVE',
+        'badge-amber': compte.statutCompte === 'SUSPENDU' || compte.statutCompte === 'BLOQUE',
+        'badge-red':   compte.statutCompte === 'CLOTURE'
+      }">{{ statutLabel }}</span>
+    </div>
+
+    <div class="ah-live-row">
+      <p class="ah-label">{{ accountLabel }}</p>
+      <span class="live-dot" title="Données en direct">
+        <span class="live-ring"></span>
+      </span>
+    </div>
+    <p class="ah-id">Compte #{{ compte.idCompte }}</p>
+    <p class="ah-balance">{{ compte.solde | number:'1.3-3' }}</p>
+    <p class="ah-currency">TND</p>
+  </div>
+
+  <!-- Feedback -->
+  <div class="success-bar" *ngIf="actionSuccess">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+    {{ actionSuccess }}
+  </div>
+  <div class="error-box" *ngIf="actionError">{{ actionError }}</div>
+
+  <!-- ══ ACTIVE ══ -->
+  <ng-container *ngIf="compte.statutCompte === 'ACTIVE'">
+    <div class="ad-actions">
+      <button class="action-btn send" (click)="sendMoney()">
+        <div class="action-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+          </svg>
+        </div>
+        <span>Envoyer</span>
+      </button>
+      <button class="action-btn receive" (click)="receiveMoney()">
+        <div class="action-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="8 17 12 21 16 17"/><line x1="12" y1="12" x2="12" y2="21"/>
+            <path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29"/>
+          </svg>
+        </div>
+        <span>Recevoir</span>
+      </button>
+      <a routerLink="/support-view" class="action-btn support">
+        <div class="action-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+          </svg>
+        </div>
+        <span>Support</span>
+      </a>
+    </div>
+
+    <!-- Manage section for ACTIVE -->
+    <div class="manage-strip">
+      <button class="strip-btn strip-pause" (click)="suspendre()" [disabled]="actionLoading">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><line x1="10" y1="15" x2="10" y2="9"/><line x1="14" y1="15" x2="14" y2="9"/>
+        </svg>
+        Mettre en pause
+      </button>
+      <button class="strip-btn strip-close" (click)="showClotureForm = !showClotureForm" [disabled]="actionLoading">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/>
+          <path d="M10 11v6"/><path d="M14 11v6"/>
+        </svg>
+        Demander la clôture
+      </button>
+    </div>
+
+    <!-- Closure form -->
+    <div class="cloture-form" *ngIf="showClotureForm">
+      <label class="label">Motif de clôture <span style="color:var(--red)">*</span></label>
+      <textarea class="input" rows="3" [(ngModel)]="clotureMotif"
+        placeholder="Expliquez pourquoi vous souhaitez clôturer ce compte..."></textarea>
+      <p class="cloture-note">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+        Votre compte sera suspendu pendant 48h. Vous pourrez annuler pendant cette période.
+      </p>
+      <div class="cloture-actions">
+        <button class="btn-ghost" (click)="showClotureForm = false; clotureMotif = ''">Annuler</button>
+        <button class="btn-danger-submit" (click)="submitCloture()" [disabled]="!clotureMotif.trim() || actionLoading">
+          <span *ngIf="actionLoading" class="spinner"></span>
+          Soumettre la demande
+        </button>
+      </div>
+    </div>
+  </ng-container>
+
+  <!-- ══ SUSPENDED (compte mis en pause par l'utilisateur) ══ -->
+  <ng-container *ngIf="compte.statutCompte === 'SUSPENDU' && !compte.dateSuppressionPrevue">
+    <div class="state-banner state-paused">
+      <div class="sb-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><line x1="10" y1="15" x2="10" y2="9"/><line x1="14" y1="15" x2="14" y2="9"/>
+        </svg>
+      </div>
+      <div class="sb-text">
+        <p class="sb-title">Compte en pause</p>
+        <p class="sb-desc">Les transferts sont désactivés. Réactivez votre compte pour recommencer à l'utiliser.</p>
+      </div>
+    </div>
+    <button class="btn-reactivate-big" (click)="reactiver()" [disabled]="actionLoading">
+      <span *ngIf="actionLoading" class="spinner"></span>
+      <svg *ngIf="!actionLoading" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+      </svg>
+      Réactiver le compte
+    </button>
+  </ng-container>
+
+  <!-- ══ SUSPENDED + dateSuppressionPrevue = en attente de clôture 48h ══ -->
+  <ng-container *ngIf="compte.statutCompte === 'SUSPENDU' && compte.dateSuppressionPrevue">
+    <div class="state-banner state-closing">
+      <div class="sb-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+        </svg>
+      </div>
+      <div class="sb-text">
+        <p class="sb-title">Clôture planifiée</p>
+        <p class="sb-desc">Ce compte sera définitivement clôturé le <strong>{{ compte.dateSuppressionPrevue | date:'d MMM y à HH:mm' }}</strong>. Vous pouvez annuler avant cette date.</p>
+      </div>
+    </div>
+    <button class="btn-cancel-cloture" (click)="annulerCloture()" [disabled]="actionLoading">
+      <span *ngIf="actionLoading" class="spinner spinner-dark"></span>
+      <svg *ngIf="!actionLoading" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+      Annuler la demande de clôture
+    </button>
+  </ng-container>
+
+  <!-- ══ BLOCKED ══ -->
+  <ng-container *ngIf="compte.statutCompte === 'BLOQUE'">
+    <div class="state-banner state-blocked">
+      <div class="sb-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+        </svg>
+      </div>
+      <div class="sb-text">
+        <p class="sb-title">Compte bloqué</p>
+        <p class="sb-desc">Ce compte a été bloqué. Contactez le support pour plus d'informations.</p>
+      </div>
+    </div>
+    <a routerLink="/support-view" class="btn-contact-support">Contacter le support</a>
+  </ng-container>
+
+  <!-- Balance Chart -->
+  <app-balance-chart
+    *ngIf="!historyLoading"
+    [history]="history"
+    [currentBalance]="compte?.solde ?? 0"
+    [compteId]="compte?.idCompte ?? 0">
+  </app-balance-chart>
+
+  <!-- Transactions -->
+  <section class="tx-section">
+    <h2>Transactions</h2>
+    <p style="font-size:0.82rem;color:var(--text-3);padding:24px 0;text-align:center" *ngIf="historyLoading">Chargement...</p>
+    <div class="tx-empty" *ngIf="!historyLoading && history.length === 0">Aucune transaction sur ce compte.</div>
+    <div class="tx-list" *ngIf="!historyLoading && history.length > 0">
+      <div class="tx-item" *ngFor="let v of history" [class.outgoing]="isOutgoing(v)" [class.incoming]="!isOutgoing(v)">
+        <div class="tx-icon">
+          <svg *ngIf="isOutgoing(v)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/>
+          </svg>
+          <svg *ngIf="!isOutgoing(v)" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="17" y1="7" x2="7" y2="17"/><polyline points="17 17 7 17 7 7"/>
+          </svg>
+        </div>
+        <div class="tx-info">
+          <p class="tx-party">
+            <span *ngIf="isOutgoing(v)">Vers {{ v.recipientName }}</span>
+            <span *ngIf="!isOutgoing(v)">De {{ v.senderName }}</span>
+          </p>
+          <p class="tx-fee" *ngIf="isOutgoing(v) && v.frais">Frais : {{ v.frais | number:'1.3-3' }} TND</p>
+          <p class="tx-date">{{ v.dateDeVirement | date:'d MMM y · HH:mm' }}</p>
+        </div>
+        <div class="tx-amount" [class.neg]="isOutgoing(v)" [class.pos]="!isOutgoing(v)">
+          {{ isOutgoing(v) ? '−' : '+' }}{{ v.montant | number:'1.3-3' }} TND
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>
+
+<div class="loading-page" *ngIf="loading">
+  <div class="sk-circle"></div>
+  <div class="sk-line" style="height:14px;width:60%;margin-bottom:10px"></div>
+  <div class="sk-line" style="height:32px;width:80%"></div>
+</div>

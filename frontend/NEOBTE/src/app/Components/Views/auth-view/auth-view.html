@@ -1,212 +1,248 @@
 <div class="auth-page">
-  <div class="auth-container">
+  <div class="auth-wrap">
+
+    <!-- Brand -->
+    <div class="auth-brand">
+      <div class="auth-brand-mark">
+        <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+          <rect width="18" height="18" rx="5" fill="white" fill-opacity="0.2"/>
+          <path d="M5 9h8M9 5v8" stroke="white" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <span class="auth-brand-name">NEO BTE</span>
+    </div>
+
     <div class="auth-card">
 
-      <!-- ── LOGIN / REGISTER ── -->
+      <!-- ── CONNEXION / INSCRIPTION ── -->
       <ng-container *ngIf="step === 'login' || step === 'register'">
-        <div class="auth-header">
-          <div class="logo-circle">
-            <img src="assets/bte-logo.png" alt="BTE Logo" class="auth-logo">
-          </div>
+        <div class="auth-head">
           <h1>{{ isLoginMode ? 'Bon retour' : 'Créer un compte' }}</h1>
-          <p class="subtitle">{{ isLoginMode ? 'Accédez à votre espace NEO BTE' : 'Rejoignez la banque digitale BTE' }}</p>
+          <p>{{ isLoginMode ? 'Connectez-vous à votre espace NEO BTE' : 'Rejoignez la banque digitale BTE' }}</p>
         </div>
 
-        <div class="auth-body" [formGroup]="authForm">
+        <div [formGroup]="authForm">
           <div class="form-group">
-            <label>Email <span class="req">*</span></label>
-            <div class="input-wrapper">
-              <i class="fas fa-envelope input-icon"></i>
-              <input type="email" formControlName="email" placeholder="name@example.com">
+            <label class="label">Adresse e-mail</label>
+            <div class="input-group">
+              <span class="input-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                  <polyline points="22,6 12,13 2,6"/>
+                </svg>
+              </span>
+              <input class="input" type="email" formControlName="email" placeholder="nom@exemple.com">
             </div>
-            <div class="field-error" *ngIf="fieldInvalid(authForm, 'email')">Enter a valid email address.</div>
+            <div class="field-error" *ngIf="fieldInvalid(authForm, 'email')">Adresse e-mail invalide.</div>
           </div>
 
           <div class="form-group">
-            <label>Password <span class="req">*</span></label>
-            <div class="input-wrapper">
-              <i class="fas fa-lock input-icon"></i>
-              <input [type]="showPassword ? 'text' : 'password'" formControlName="motDePasse" placeholder="••••••••">
+            <label class="label">Mot de passe</label>
+            <div class="input-group">
+              <span class="input-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+              </span>
+              <input class="input" [type]="showPassword ? 'text' : 'password'" formControlName="motDePasse" placeholder="••••••••">
               <button type="button" class="toggle-pw" (click)="showPassword = !showPassword">
-                <i class="fas" [class.fa-eye]="!showPassword" [class.fa-eye-slash]="showPassword"></i>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path *ngIf="!showPassword" d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle *ngIf="!showPassword" cx="12" cy="12" r="3"/>
+                  <path *ngIf="showPassword" d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/><line *ngIf="showPassword" x1="1" y1="1" x2="23" y2="23"/>
+                </svg>
               </button>
             </div>
             <div class="field-error" *ngIf="fieldInvalid(authForm, 'motDePasse') && !isLoginMode">
-              Password must be at least 8 characters.
+              Minimum 8 caractères requis.
             </div>
           </div>
 
           <ng-container *ngIf="!isLoginMode">
             <div class="form-row">
               <div class="form-group">
-                <label>First Name <span class="req">*</span></label>
-                <div class="input-wrapper">
-                  <input type="text" formControlName="prenom" placeholder="Mohamed">
-                </div>
-                <div class="field-error" *ngIf="fieldInvalid(authForm, 'prenom')">Required.</div>
+                <label class="label">Prénom</label>
+                <input class="input" type="text" formControlName="prenom" placeholder="Mohamed">
+                <div class="field-error" *ngIf="fieldInvalid(authForm, 'prenom')">Requis.</div>
               </div>
               <div class="form-group">
-                <label>Last Name <span class="req">*</span></label>
-                <div class="input-wrapper">
-                  <input type="text" formControlName="nom" placeholder="Ben Ali">
-                </div>
-                <div class="field-error" *ngIf="fieldInvalid(authForm, 'nom')">Required.</div>
+                <label class="label">Nom</label>
+                <input class="input" type="text" formControlName="nom" placeholder="Ben Ali">
+                <div class="field-error" *ngIf="fieldInvalid(authForm, 'nom')">Requis.</div>
               </div>
             </div>
             <div class="form-group">
-              <label>Phone <span class="req">*</span></label>
-              <div class="input-wrapper">
-                <i class="fas fa-phone input-icon"></i>
-                <input type="tel" formControlName="telephone" placeholder="+216 XX XXX XXX">
+              <label class="label">Téléphone</label>
+              <div class="input-group">
+                <span class="input-icon">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+                  </svg>
+                </span>
+                <input class="input" type="tel" formControlName="telephone" placeholder="+216 XX XXX XXX">
               </div>
-              <div class="field-error" *ngIf="fieldInvalid(authForm, 'telephone')">Enter a valid phone number.</div>
+              <div class="field-error" *ngIf="fieldInvalid(authForm, 'telephone')">Numéro invalide.</div>
             </div>
             <p class="kyc-note">
-              <i class="fas fa-info-circle"></i>
-              Identity documents (CIN, date of birth) will be collected when you open a bank account.
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px">
+                <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+              Les justificatifs d'identité (CIN, date de naissance) seront demandés lors de l'ouverture d'un compte bancaire.
             </p>
           </ng-container>
 
-          <div class="field-error global-error" *ngIf="error">{{ error }}</div>
+          <div class="error-box" style="margin-bottom:14px" *ngIf="error">{{ error }}</div>
 
-          <button class="btn-primary" (click)="onSubmitAuth()" [disabled]="loading">
-            <span *ngIf="!loading">{{ isLoginMode ? 'Sign In' : 'Create Account' }}</span>
-            <span *ngIf="loading" class="loader"></span>
-            <div class="btn-glow"></div>
+          <button class="btn-submit" (click)="onSubmitAuth()" [disabled]="loading">
+            <span *ngIf="loading" class="spinner"></span>
+            <span>{{ isLoginMode ? 'Se connecter' : 'Créer mon compte' }}</span>
           </button>
 
-          <div class="auth-footer">
-            <button class="btn-link" (click)="toggleMode()">
-              {{ isLoginMode ? "Don't have an account? Sign up" : 'Already have an account? Sign in' }}
+          <div class="auth-links">
+            <button class="link-btn link-btn-primary" (click)="toggleMode()">
+              {{ isLoginMode ? 'Pas encore de compte ? S\'inscrire' : 'Déjà inscrit ? Se connecter' }}
             </button>
-            <button class="btn-link forgot-link" *ngIf="isLoginMode" (click)="goToForgot()">
-              Forgot password?
+            <button class="link-btn" *ngIf="isLoginMode" (click)="goToForgot()">
+              Mot de passe oublié ?
             </button>
           </div>
         </div>
       </ng-container>
 
 
-      <!-- ── FORGOT PASSWORD — enter email ── -->
+      <!-- ── MOT DE PASSE OUBLIÉ ── -->
       <ng-container *ngIf="step === 'forgot'">
-        <div class="auth-header">
-          <div class="step-icon">🔐</div>
-          <h1>Forgot Password</h1>
-          <p class="subtitle">Enter your email and we'll send you a 6-digit verification code</p>
+        <div class="step-icon-wrap">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
         </div>
-        <div class="auth-body" [formGroup]="forgotForm">
+        <div class="auth-head">
+          <h1>Mot de passe oublié</h1>
+          <p>Entrez votre adresse e-mail. Nous vous enverrons un code de vérification à 6 chiffres.</p>
+        </div>
+        <div [formGroup]="forgotForm">
           <div class="form-group">
-            <label>Email <span class="req">*</span></label>
-            <div class="input-wrapper">
-              <i class="fas fa-envelope input-icon"></i>
-              <input type="email" formControlName="email" placeholder="name@example.com">
+            <label class="label">Adresse e-mail</label>
+            <div class="input-group">
+              <span class="input-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+                </svg>
+              </span>
+              <input class="input" type="email" formControlName="email" placeholder="nom@exemple.com">
             </div>
-            <div class="field-error" *ngIf="fieldInvalid(forgotForm, 'email')">Enter a valid email address.</div>
+            <div class="field-error" *ngIf="fieldInvalid(forgotForm, 'email')">Adresse e-mail invalide.</div>
           </div>
-          <div class="field-error global-error" *ngIf="error">{{ error }}</div>
-          <button class="btn-primary" (click)="submitForgot()" [disabled]="loading">
-            <span *ngIf="!loading">Send Verification Code</span>
-            <span *ngIf="loading" class="loader"></span>
-            <div class="btn-glow"></div>
+          <div class="error-box" style="margin-bottom:14px" *ngIf="error">{{ error }}</div>
+          <button class="btn-submit" (click)="submitForgot()" [disabled]="loading">
+            <span *ngIf="loading" class="spinner"></span>
+            <span>Envoyer le code</span>
           </button>
-          <div class="auth-footer">
-            <button class="btn-link" (click)="backToLogin()">← Back to Sign In</button>
+          <div class="auth-links">
+            <button class="link-btn" (click)="backToLogin()">← Retour à la connexion</button>
           </div>
         </div>
       </ng-container>
 
 
-      <!-- ── VERIFY CODE ── -->
+      <!-- ── VÉRIFICATION DU CODE ── -->
       <ng-container *ngIf="step === 'verify-code'">
-        <div class="auth-header">
-          <div class="step-icon">📩</div>
-          <h1>Check your email</h1>
-          <p class="subtitle">We sent a 6-digit code to <strong>{{ resetEmail }}</strong></p>
+        <div class="step-icon-wrap">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+          </svg>
         </div>
-        <div class="auth-body" [formGroup]="codeForm">
+        <div class="auth-head">
+          <h1>Vérifiez vos e-mails</h1>
+          <p>Nous avons envoyé un code à 6 chiffres à <strong>{{ resetEmail }}</strong>. Valable 15 minutes.</p>
+        </div>
+        <div [formGroup]="codeForm">
           <div class="form-group">
-            <label>Verification Code <span class="req">*</span></label>
-            <div class="input-wrapper">
-              <input type="text" formControlName="code" placeholder="000000"
-                maxlength="6" class="code-input">
-            </div>
-            <div class="field-error" *ngIf="fieldInvalid(codeForm, 'code')">Enter the 6-digit code.</div>
+            <input class="input code-input" type="text" formControlName="code"
+              placeholder="000000" maxlength="6">
+            <div class="field-error" *ngIf="fieldInvalid(codeForm, 'code')">Code à 6 chiffres requis.</div>
           </div>
-          <div class="field-error global-error" *ngIf="error">{{ error }}</div>
-          <button class="btn-primary" (click)="submitCode()" [disabled]="loading">
-            <span *ngIf="!loading">Verify Code</span>
-            <span *ngIf="loading" class="loader"></span>
-            <div class="btn-glow"></div>
+          <div class="error-box" style="margin-bottom:14px" *ngIf="error">{{ error }}</div>
+          <button class="btn-submit" (click)="submitCode()" [disabled]="loading">
+            <span *ngIf="loading" class="spinner"></span>
+            <span>Vérifier le code</span>
           </button>
-          <div class="auth-footer">
-            <button class="btn-link" (click)="resendCode()" [disabled]="loading">
-              Didn't receive it? Resend
+          <div class="auth-links">
+            <button class="link-btn link-btn-primary" (click)="resendCode()" [disabled]="loading">
+              Code non reçu ? Renvoyer
             </button>
-            <button class="btn-link" (click)="goToForgot()">← Change email</button>
+            <button class="link-btn" (click)="goToForgot()">← Changer l'adresse e-mail</button>
           </div>
         </div>
       </ng-container>
 
 
-      <!-- ── NEW PASSWORD ── -->
+      <!-- ── NOUVEAU MOT DE PASSE ── -->
       <ng-container *ngIf="step === 'new-password'">
-        <div class="auth-header">
-          <div class="step-icon">🔑</div>
-          <h1>New Password</h1>
-          <p class="subtitle">Choose a strong password for your account</p>
+        <div class="step-icon-wrap">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
+          </svg>
         </div>
-        <div class="auth-body" [formGroup]="newPasswordForm">
+        <div class="auth-head">
+          <h1>Nouveau mot de passe</h1>
+          <p>Choisissez un mot de passe sécurisé pour votre compte.</p>
+        </div>
+        <div [formGroup]="newPasswordForm">
           <div class="form-group">
-            <label>New Password <span class="req">*</span></label>
-            <div class="input-wrapper">
-              <i class="fas fa-lock input-icon"></i>
-              <input [type]="showPassword ? 'text' : 'password'" formControlName="newPassword" placeholder="••••••••">
+            <label class="label">Nouveau mot de passe</label>
+            <div class="input-group">
+              <span class="input-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+              </span>
+              <input class="input" [type]="showPassword ? 'text' : 'password'" formControlName="newPassword" placeholder="••••••••">
               <button type="button" class="toggle-pw" (click)="showPassword = !showPassword">
-                <i class="fas" [class.fa-eye]="!showPassword" [class.fa-eye-slash]="showPassword"></i>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                </svg>
               </button>
             </div>
-            <div class="field-error" *ngIf="fieldInvalid(newPasswordForm, 'newPassword')">
-              Must be at least 8 characters.
-            </div>
+            <div class="field-error" *ngIf="fieldInvalid(newPasswordForm, 'newPassword')">Minimum 8 caractères.</div>
           </div>
           <div class="form-group">
-            <label>Confirm Password <span class="req">*</span></label>
-            <div class="input-wrapper">
-              <i class="fas fa-lock input-icon"></i>
-              <input [type]="showPassword ? 'text' : 'password'" formControlName="confirmPassword" placeholder="••••••••">
+            <label class="label">Confirmer le mot de passe</label>
+            <div class="input-group">
+              <span class="input-icon">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+              </span>
+              <input class="input" [type]="showPassword ? 'text' : 'password'" formControlName="confirmPassword" placeholder="••••••••">
             </div>
-            <div class="field-error" *ngIf="fieldInvalid(newPasswordForm, 'confirmPassword')">Required.</div>
+            <div class="field-error" *ngIf="fieldInvalid(newPasswordForm, 'confirmPassword')">Requis.</div>
           </div>
-          <div class="field-error global-error" *ngIf="error">{{ error }}</div>
-          <button class="btn-primary" (click)="submitNewPassword()" [disabled]="loading">
-            <span *ngIf="!loading">Reset Password</span>
-            <span *ngIf="loading" class="loader"></span>
-            <div class="btn-glow"></div>
+          <div class="error-box" style="margin-bottom:14px" *ngIf="error">{{ error }}</div>
+          <button class="btn-submit" (click)="submitNewPassword()" [disabled]="loading">
+            <span *ngIf="loading" class="spinner"></span>
+            <span>Réinitialiser le mot de passe</span>
           </button>
         </div>
       </ng-container>
 
 
-      <!-- ── SUCCESS ── -->
+      <!-- ── SUCCÈS ── -->
       <ng-container *ngIf="step === 'done'">
-        <div class="auth-header">
-          <div class="step-icon success-icon-circle">✓</div>
-          <h1>Password Reset!</h1>
-          <p class="subtitle">Your password has been updated successfully.</p>
+        <div class="success-circle">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
         </div>
-        <div class="auth-body">
-          <button class="btn-primary" (click)="backToLogin()">
-            Sign In Now
-            <div class="btn-glow"></div>
-          </button>
+        <div class="success-head">
+          <h1>Mot de passe réinitialisé !</h1>
+          <p>Votre mot de passe a été mis à jour avec succès.</p>
         </div>
+        <button class="btn-submit" (click)="backToLogin()">Se connecter</button>
       </ng-container>
 
     </div>
-  </div>
-
-  <div class="background-elements">
-    <div class="orb blue"></div>
-    <div class="orb dark"></div>
   </div>
 </div>

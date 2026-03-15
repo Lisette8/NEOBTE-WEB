@@ -1,0 +1,92 @@
+<div class="panel">
+
+    <!-- Header + filter -->
+    <div class="panel-header">
+      <div>
+        <h3>Account Requests</h3>
+        <p class="panel-subtitle">Review and approve or reject client account opening requests</p>
+      </div>
+      <div class="filter-group">
+        <select [(ngModel)]="filter" (change)="onFilterChange()">
+          <option value="EN_ATTENTE">Pending</option>
+          <option value="APPROUVEE">Approved</option>
+          <option value="REJETEE">Rejected</option>
+          <option value="ALL">All</option>
+        </select>
+      </div>
+    </div>
+  
+    <!-- Loading -->
+    <div class="loading-state" *ngIf="loading">Loading requests...</div>
+  
+    <!-- Empty -->
+    <div class="empty-state" *ngIf="!loading && demandes.length === 0">
+      <p>No requests found for this filter.</p>
+    </div>
+  
+    <!-- Demandes list -->
+    <div class="demandes-list" *ngIf="!loading && demandes.length > 0">
+      <div class="demande-row" *ngFor="let d of demandes">
+  
+        <!-- Main info -->
+        <div class="demande-main">
+          <div class="demande-icon">{{ getTypeIcon(d.typeCompte) }}</div>
+          <div class="demande-info">
+            <div class="demande-title">
+              {{ d.utilisateurPrenom }} {{ d.utilisateurNom }}
+              <span class="badge" [ngClass]="getStatusClass(d.statutDemande)">
+                {{ getStatusLabel(d.statutDemande) }}
+              </span>
+            </div>
+            <div class="demande-meta">
+              <span>{{ d.typeCompte }}</span>
+              <span class="dot">·</span>
+              <span>{{ d.utilisateurEmail }}</span>
+              <span class="dot">·</span>
+              <span>CIN: {{ d.utilisateurCin || '—' }}</span>
+              <span class="dot">·</span>
+              <span>{{ d.dateDemande | date:'MMM d, y' }}</span>
+            </div>
+            <div class="demande-motif" *ngIf="d.motif">
+              "{{ d.motif }}"
+            </div>
+            <div class="demande-comment" *ngIf="d.commentaireAdmin">
+              Admin note: {{ d.commentaireAdmin }}
+            </div>
+            <div class="demande-approved" *ngIf="d.compteOuvertId">
+              ✓ Account #{{ d.compteOuvertId }} created
+            </div>
+          </div>
+        </div>
+  
+        <!-- Actions (only for pending) -->
+        <div class="demande-actions" *ngIf="d.statutDemande === 'EN_ATTENTE'">
+          <ng-container *ngIf="actionDemandeId !== d.idDemande">
+            <button class="btn-approve" (click)="openAction(d.idDemande, 'approve')">✓ Approve</button>
+            <button class="btn-reject"  (click)="openAction(d.idDemande, 'reject')">✕ Reject</button>
+          </ng-container>
+  
+          <!-- Inline decision form -->
+          <div class="decision-panel" *ngIf="actionDemandeId === d.idDemande">
+            <textarea
+              [(ngModel)]="commentaire"
+              placeholder="{{ actionType === 'approve' ? 'Optional note for the client...' : 'Reason for rejection (required)' }}"
+              rows="2">
+            </textarea>
+            <p class="action-error" *ngIf="actionError">{{ actionError }}</p>
+            <div class="decision-btns">
+              <button class="btn-cancel" (click)="cancelAction()">Cancel</button>
+              <button
+                [class]="actionType === 'approve' ? 'btn-approve' : 'btn-reject'"
+                (click)="submitAction()"
+                [disabled]="submitting">
+                {{ submitting ? 'Processing...' : (actionType === 'approve' ? '✓ Confirm Approve' : '✕ Confirm Reject') }}
+              </button>
+            </div>
+          </div>
+        </div>
+  
+      </div>
+    </div>
+  
+  </div>

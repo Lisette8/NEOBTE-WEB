@@ -1,0 +1,155 @@
+<div class="chart-shell">
+
+    <!-- Header row: period tabs + change badge -->
+    <div class="chart-header">
+      <div class="period-tabs">
+        <button
+          *ngFor="let p of periods"
+          class="period-tab"
+          [class.active]="period === p"
+          (click)="setPeriod(p)">
+          {{ formatPeriodLabel(p) }}
+        </button>
+      </div>
+      <div class="change-badge" [class.pos]="isPositive" [class.neg]="!isPositive" *ngIf="txCount > 0">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline *ngIf="isPositive" points="18 15 12 9 6 15"/>
+          <polyline *ngIf="!isPositive" points="6 9 12 15 18 9"/>
+        </svg>
+        {{ changePct | number:'1.1-1' }}%
+      </div>
+    </div>
+  
+    <!-- SVG Chart -->
+    <div #chartWrap class="chart-wrap" (mouseleave)="onMouseLeave()">
+      <svg
+        class="chart-svg"
+        [attr.viewBox]="'0 0 ' + svgWidth + ' 200'"
+        preserveAspectRatio="none"
+        (mousemove)="onMouseMove($event)">
+  
+        <defs>
+          <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" [attr.stop-color]="isPositive ? 'var(--chart-color)' : 'var(--chart-neg)'" stop-opacity="0.18"/>
+            <stop offset="100%" [attr.stop-color]="isPositive ? 'var(--chart-color)' : 'var(--chart-neg)'" stop-opacity="0"/>
+          </linearGradient>
+          <filter id="dotGlow">
+            <feGaussianBlur stdDeviation="2" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+  
+        <!-- Y-axis gridlines -->
+        <g class="grid-lines">
+          <line
+            *ngFor="let lbl of yLabels"
+            x1="0" [attr.y1]="lbl.y"
+            [attr.x2]="svgWidth"
+            [attr.y2]="lbl.y"
+            class="grid-line"/>
+        </g>
+  
+        <!-- Area fill -->
+        <path [attr.d]="svgAreaPath" fill="url(#areaGrad)" class="area-path"/>
+  
+        <!-- Line -->
+        <path [attr.d]="svgPath" fill="none"
+          [attr.stroke]="isPositive ? 'var(--chart-color)' : 'var(--chart-neg)'"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="line-path"/>
+  
+        <!-- Tooltip vertical line -->
+        <line *ngIf="activeTooltip"
+          [attr.x1]="tooltipSvgX"
+          [attr.y1]="20"
+          [attr.x2]="tooltipSvgX"
+          [attr.y2]="160"
+          class="tooltip-line"/>
+  
+        <!-- Transaction dots -->
+        <g *ngFor="let dot of svgDots">
+          <circle
+            [attr.cx]="dot.x" [attr.cy]="dot.y" r="3.5"
+            [attr.fill]="isPositive ? 'var(--chart-color)' : 'var(--chart-neg)'"
+            class="tx-dot"
+            filter="url(#dotGlow)"/>
+        </g>
+  
+        <!-- Active hover dot -->
+        <g *ngIf="activeTooltip">
+          <circle
+            [attr.cx]="tooltipSvgX"
+            [attr.cy]="tooltipSvgY"
+            r="5"
+            fill="var(--surface)"
+            [attr.stroke]="isPositive ? 'var(--chart-color)' : 'var(--chart-neg)'"
+            stroke-width="2.5"
+            class="hover-dot"/>
+        </g>
+  
+        <!-- X labels -->
+        <g class="x-labels">
+          <text
+            *ngFor="let lbl of xLabels"
+            [attr.x]="lbl.x"
+            [attr.y]="190"
+            class="x-label"
+            text-anchor="middle">
+            {{ lbl.label }}
+          </text>
+        </g>
+  
+      </svg>
+  
+      <!-- Floating tooltip bubble -->
+      <div class="tooltip-bubble"
+        *ngIf="activeTooltip"
+        [style.left.%]="activeTooltip.x"
+        [style.top.%]="activeTooltip.y">
+        <p class="tt-balance">{{ formatBalance(activeTooltip.point.balance) }} <span>TND</span></p>
+        <p class="tt-date">{{ formatDate(activeTooltip.point.date) }}</p>
+        <ng-container *ngIf="activeTooltip.point.transaction as tx">
+          <div class="tt-divider"></div>
+          <p class="tt-tx" [class.out]="tx.compteSourceId === compteId" [class.in]="tx.compteDestinationId === compteId">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line *ngIf="tx.compteSourceId === compteId" x1="7" y1="17" x2="17" y2="7"/>
+              <polyline *ngIf="tx.compteSourceId === compteId" points="7 7 17 7 17 17"/>
+              <line *ngIf="tx.compteDestinationId === compteId" x1="17" y1="7" x2="7" y2="17"/>
+              <polyline *ngIf="tx.compteDestinationId === compteId" points="17 17 7 17 7 7"/>
+            </svg>
+            {{ tx.compteSourceId === compteId ? '−' : '+' }}{{ formatBalance(tx.montant) }} TND
+          </p>
+        </ng-container>
+      </div>
+    </div>
+  
+    <!-- Stats row -->
+    <div class="stats-row" *ngIf="txCount > 0">
+      <div class="stat-card">
+        <p class="stat-label">Entrants</p>
+        <p class="stat-value pos">+{{ formatBalance(totalIn) }}</p>
+        <p class="stat-unit">TND</p>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-card">
+        <p class="stat-label">Sortants</p>
+        <p class="stat-value neg">−{{ formatBalance(totalOut) }}</p>
+        <p class="stat-unit">TND</p>
+      </div>
+      <div class="stat-divider"></div>
+      <div class="stat-card">
+        <p class="stat-label">Transactions</p>
+        <p class="stat-value neutral">{{ txCount }}</p>
+        <p class="stat-unit">opérations</p>
+      </div>
+    </div>
+  
+    <!-- Empty state -->
+    <div class="chart-empty" *ngIf="txCount === 0">
+      <div class="empty-line"></div>
+      <p>Aucune transaction sur cette période</p>
+    </div>
+  
+  </div>

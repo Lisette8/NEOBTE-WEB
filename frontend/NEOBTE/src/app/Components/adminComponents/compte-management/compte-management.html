@@ -1,46 +1,159 @@
 <div class="panel">
-  <div class="panel-header">
-    <div>
-      <h3>Accounts</h3>
-      <p class="panel-subtitle">View and manage all client bank accounts</p>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab" [class.active]="activeTab === 'comptes'" (click)="activeTab = 'comptes'">
+      Comptes
+    </button>
+    <button class="tab" [class.active]="activeTab === 'clotures'" (click)="activeTab = 'clotures'">
+      Demandes de clôture
+      <span class="tab-badge" *ngIf="pendingCloturesCount > 0">{{ pendingCloturesCount }}</span>
+    </button>
+  </div>
+
+  <!-- ── COMPTES TAB ── -->
+  <ng-container *ngIf="activeTab === 'comptes'">
+    <div class="panel-header">
+      <div>
+        <h3>Gestion des comptes</h3>
+        <p class="panel-subtitle">Modifier le statut de n'importe quel compte client</p>
+      </div>
     </div>
-  </div>
 
-  <div class="table-wrap">
-    <table>
-      <thead>
-        <tr>
-          <th>Account ID</th>
-          <th>Balance</th>
-          <th>Type</th>
-          <th>Status</th>
-          <th>Owner ID</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let compte of comptes">
-          <td><span class="mono">#{{ compte.idCompte }}</span></td>
-          <td class="amount">{{ compte.solde | number:'1.2-2' }} TND</td>
-          <td><span class="badge badge-blue">{{ compte.typeCompte }}</span></td>
-          <td>
-            <span class="badge"
-              [class.badge-green]="compte.statutCompte === 'ACTIVE'"
-              [class.badge-red]="compte.statutCompte === 'BLOCKED'"
-              [class.badge-gray]="compte.statutCompte === 'CLOSED'">
-              {{ compte.statutCompte }}
-            </span>
-          </td>
-          <td class="muted">#{{ compte.utilisateurId }}</td>
-          <td>
-            <button class="btn-icon btn-delete" (click)="deleteAccount(compte.idCompte)" title="Delete">🗑</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
+    <div class="loading-state" *ngIf="accountsLoading">Chargement...</div>
+    <div class="empty-state" *ngIf="!accountsLoading && comptes.length === 0"><p>Aucun compte trouvé.</p></div>
 
-  <div class="empty-state" *ngIf="comptes.length === 0">
-    <p>No accounts found.</p>
-  </div>
+    <div class="table-wrap" *ngIf="!accountsLoading && comptes.length > 0">
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Solde</th>
+            <th>Type</th>
+            <th>Statut</th>
+            <th>Client</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <ng-container *ngFor="let compte of comptes">
+            <tr>
+              <td><span class="mono">#{{ compte.idCompte }}</span></td>
+              <td class="amount">{{ compte.solde | number:'1.3-3' }} TND</td>
+              <td><span class="badge badge-blue">{{ compte.typeCompte }}</span></td>
+              <td>
+                <span class="badge" [ngClass]="getStatutClass(compte.statutCompte)">
+                  {{ compte.statutCompte }}
+                </span>
+              </td>
+              <td class="muted">#{{ compte.utilisateurId }}</td>
+              <td>
+                <button class="btn-action" (click)="openStatusAction(compte.idCompte, compte.statutCompte)"
+                  *ngIf="actionCompteId !== compte.idCompte">
+                  Modifier statut
+                </button>
+              </td>
+            </tr>
+
+            <!-- Inline status panel -->
+            <tr *ngIf="actionCompteId === compte.idCompte">
+              <td colspan="6">
+                <div class="inline-action-panel">
+                  <div class="iap-row">
+                    <div>
+                      <label class="iap-label">Nouveau statut</label>
+                      <select [(ngModel)]="selectedStatut" class="iap-select">
+                        <option *ngFor="let s of statuts" [value]="s">{{ s }}</option>
+                      </select>
+                    </div>
+                    <div style="flex:1">
+                      <label class="iap-label">Commentaire (facultatif)</label>
+                      <input type="text" [(ngModel)]="actionCommentaire" class="iap-input" placeholder="Raison du changement...">
+                    </div>
+                  </div>
+                  <p class="action-error" *ngIf="actionError">{{ actionError }}</p>
+                  <div class="iap-btns">
+                    <button class="btn-cancel-sm" (click)="cancelAction()">Annuler</button>
+                    <button class="btn-confirm-sm" (click)="submitStatusChange()" [disabled]="actionLoading">
+                      {{ actionLoading ? '...' : 'Confirmer' }}
+                    </button>
+                  </div>
+                </div>
+              </td>
+            </tr>
+          </ng-container>
+        </tbody>
+      </table>
+    </div>
+  </ng-container>
+
+  <!-- ── CLOTURES TAB ── -->
+  <ng-container *ngIf="activeTab === 'clotures'">
+    <div class="panel-header">
+      <div>
+        <h3>Demandes de clôture</h3>
+        <p class="panel-subtitle">Examinez et traitez les demandes de clôture des clients</p>
+      </div>
+      <select [(ngModel)]="clotureFilter" (change)="onClotureFilterChange()">
+        <option value="EN_ATTENTE">En attente</option>
+        <option value="APPROUVEE">Approuvées</option>
+        <option value="REJETEE">Rejetées</option>
+        <option value="ALL">Toutes</option>
+      </select>
+    </div>
+
+    <div class="loading-state" *ngIf="cloturesLoading">Chargement...</div>
+    <div class="empty-state" *ngIf="!cloturesLoading && demandes.length === 0"><p>Aucune demande pour ce filtre.</p></div>
+
+    <div class="demandes-list" *ngIf="!cloturesLoading && demandes.length > 0">
+      <div class="demande-row" *ngFor="let d of demandes">
+
+        <div class="demande-main">
+          <div class="demande-info">
+            <div class="demande-title">
+              {{ d.utilisateurPrenom }} {{ d.utilisateurNom }}
+              <span class="badge" [ngClass]="getDemandeStatutClass(d.statut)">
+                {{ d.statut === 'EN_ATTENTE' ? 'En attente' : d.statut === 'APPROUVEE' ? 'Approuvée' : 'Rejetée' }}
+              </span>
+            </div>
+            <div class="demande-meta">
+              <span>Compte #{{ d.compteId }}</span>
+              <span class="dot">·</span>
+              <span>{{ d.typeCompte }}</span>
+              <span class="dot">·</span>
+              <span>Solde : {{ d.soldeAtDemande | number:'1.3-3' }} TND</span>
+              <span class="dot">·</span>
+              <span>{{ d.dateDemande | date:'d MMM y' }}</span>
+            </div>
+            <div class="demande-motif">"{{ d.motif }}"</div>
+            <div class="demande-comment" *ngIf="d.commentaireAdmin">Note admin : {{ d.commentaireAdmin }}</div>
+          </div>
+        </div>
+
+        <!-- Actions pour les demandes en attente -->
+        <div class="demande-actions" *ngIf="d.statut === 'EN_ATTENTE'">
+          <ng-container *ngIf="clotureActionId !== d.id">
+            <button class="btn-approve" (click)="openClotureAction(d.id, 'approve')">✓ Approuver</button>
+            <button class="btn-reject"  (click)="openClotureAction(d.id, 'reject')">✕ Rejeter</button>
+          </ng-container>
+
+          <div class="decision-panel" *ngIf="clotureActionId === d.id">
+            <textarea [(ngModel)]="clotureCommentaire" rows="2"
+              [placeholder]="clotureActionType === 'approve' ? 'Note optionnelle...' : 'Motif du rejet (obligatoire)'">
+            </textarea>
+            <p class="action-error" *ngIf="clotureError">{{ clotureError }}</p>
+            <div class="decision-btns">
+              <button class="btn-cancel-sm" (click)="cancelClotureAction()">Annuler</button>
+              <button [class]="clotureActionType === 'approve' ? 'btn-approve' : 'btn-reject'"
+                (click)="submitClotureAction()" [disabled]="clotureSubmitting">
+                {{ clotureSubmitting ? '...' : (clotureActionType === 'approve' ? '✓ Confirmer' : '✕ Rejeter') }}
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </ng-container>
+
 </div>

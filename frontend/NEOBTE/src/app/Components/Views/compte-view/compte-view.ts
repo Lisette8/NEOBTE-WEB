@@ -33,23 +33,20 @@ export class CompteView implements OnInit {
     {
       type: 'COURANT' as const,
       label: 'Compte Chèque',
-      icon: '🏦',
-      desc: 'Everyday banking — deposits, withdrawals, transfers',
-      needs: 'CIN · Date of birth · Address · Profession'
+      desc: 'Opérations quotidiennes — dépôts, retraits, virements',
+      needs: 'CIN · Date de naissance · Adresse · Profession'
     },
     {
       type: 'EPARGNE' as const,
       label: 'Compte Épargne',
-      icon: '💰',
-      desc: 'Earn interest on your savings',
-      needs: 'CIN · Date of birth'
+      desc: 'Faites fructifier votre épargne avec des intérêts',
+      needs: 'CIN · Date de naissance'
     },
     {
       type: 'PROFESSIONNEL' as const,
       label: 'Compte Professionnel',
-      icon: '💼',
-      desc: 'Business banking for professionals and freelancers',
-      needs: 'CIN · Date of birth · Address · Profession · Company name'
+      desc: 'Banque d\'affaires pour professionnels et indépendants',
+      needs: 'CIN · Date de naissance · Adresse · Profession · Nom de l\'entreprise'
     }
   ];
  
@@ -63,9 +60,7 @@ export class CompteView implements OnInit {
  
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
-      if (params['open'] === 'true') {
-        this.step = 'select-type';
-      }
+      if (params['open'] === 'true') this.step = 'select-type';
     });
     this.loadData();
   }
@@ -77,7 +72,7 @@ export class CompteView implements OnInit {
     this.loading = true;
     this.compteService.getUserAccounts(userId).subscribe({
       next: (data) => { this.comptes = data; this.loading = false; },
-      error: () => { this.error = 'Failed to load accounts.'; this.loading = false; }
+      error: () => { this.error = 'Impossible de charger les comptes.'; this.loading = false; }
     });
  
     this.compteService.getMyDemandes().subscribe({
@@ -98,7 +93,6 @@ export class CompteView implements OnInit {
       dateNaissance: ['', Validators.required],
       motif:         [''],
     };
- 
     if (type === 'COURANT') {
       this.kycForm = this.fb.group({ ...base, adresse: ['', Validators.required], job: ['', Validators.required] });
     } else if (type === 'EPARGNE') {
@@ -128,13 +122,13 @@ export class CompteView implements OnInit {
     this.compteService.submitDemandeCompte(dto).subscribe({
       next: () => {
         this.submitting = false;
-        this.submitSuccess = 'Your request has been submitted! An admin will review it shortly.';
+        this.submitSuccess = 'Votre demande a été soumise ! Un administrateur l\'examinera prochainement.';
         this.step = 'list';
         this.loadData();
       },
       error: (err) => {
         this.submitting = false;
-        this.submitError = err?.error?.message || 'Failed to submit request.';
+        this.submitError = err?.error?.message || 'Échec de la soumission.';
       }
     });
   }
@@ -161,9 +155,7 @@ export class CompteView implements OnInit {
  
   get availableAccountTypes() {
     const ownedTypes = this.comptes.map(c => c.typeCompte);
-    const pendingTypes = this.demandes
-      .filter(d => d.statutDemande === 'EN_ATTENTE')
-      .map(d => d.typeCompte);
+    const pendingTypes = this.demandes.filter(d => d.statutDemande === 'EN_ATTENTE').map(d => d.typeCompte);
     const takenTypes = new Set([...ownedTypes, ...pendingTypes]);
     return this.accountTypes.filter(t => !takenTypes.has(t.type));
   }

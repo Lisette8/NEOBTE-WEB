@@ -1,0 +1,81 @@
+.panel { display: flex; flex-direction: column; height: 100%; }
+
+.panel-header {
+  display: flex; justify-content: space-between; align-items: flex-start;
+  padding: 0 0 20px; border-bottom: 1px solid #f0f2f7; margin-bottom: 20px;
+  flex-wrap: wrap; gap: 12px;
+}
+.panel-header h3 { font-size: 1rem; font-weight: 700; color: #0f172a; margin: 0 0 4px; }
+.panel-subtitle   { font-size: 0.78rem; color: #64748b; margin: 0; }
+
+.fee-rate-badge {
+  background: #eff6ff; color: #1d4ed8;
+  padding: 6px 12px; border-radius: 8px;
+  font-size: 0.75rem; font-weight: 700;
+  border: 1px solid #bfdbfe;
+}
+
+.loading-state, .error-state { padding: 40px; text-align: center; color: #64748b; font-size: 0.85rem; }
+.error-state { color: #e11d48; }
+
+/* ── HERO ── */
+.treasury-hero {
+  background: #080c18;
+  border-radius: 18px;
+  padding: 28px 24px;
+  margin-bottom: 24px;
+  position: relative;
+  overflow: hidden;
+}
+.treasury-hero::before {
+  content: '';
+  position: absolute;
+  width: 250px; height: 250px;
+  background: radial-gradient(circle, rgba(0,0,180,0.45) 0%, transparent 70%);
+  top: -80px; right: -60px;
+}
+
+.th-label {
+  font-size: 0.7rem; color: rgba(255,255,255,0.4);
+  margin: 0 0 8px; text-transform: uppercase;
+  letter-spacing: 0.06em; position: relative;
+}
+.th-amount {
+  font-family: 'Sora', sans-serif;
+  font-size: 2.2rem; font-weight: 700;
+  color: #fff; margin: 0 0 6px;
+  letter-spacing: -0.04em; position: relative;
+}
+.th-currency { font-size: 0.9rem; font-weight: 400; opacity: 0.45; }
+.th-sub { font-size: 0.72rem; color: rgba(255,255,255,0.3); margin: 0; position: relative; }
+
+/* ── TABLE ── */
+.table-wrap { overflow-x: auto; }
+
+table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+
+th {
+  text-align: left; padding: 10px 12px;
+  font-size: 0.7rem; font-weight: 600;
+  color: #64748b; text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border-bottom: 1px solid #f0f2f7;
+  white-space: nowrap;
+}
+
+td {
+  padding: 12px 12px;
+  border-bottom: 1px solid #f8f9fc;
+  color: #0f172a;
+  white-space: nowrap;
+}
+
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #fafbff; }
+
+.muted  { color: #94a3b8; }
+.mono   { font-family: monospace; font-size: 0.8rem; color: #475569; }
+.amount { font-weight: 600; text-align: right; }
+.fee-amount { color: #16a34a; }
+
+.empty-state { padding: 60px; text-align: center; color: #94a3b8; font-size: 0.85rem; }

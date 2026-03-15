@@ -34,7 +34,6 @@ export class HomeView implements OnInit {
     const userId = this.authService.getUserId();
     if (!userId) return;
  
-    // Load user profile for the greeting
     this.authService.getCurrentUser().subscribe({
       next: (user) => this.userName = user.prenom || '',
       error: () => {}
@@ -56,14 +55,22 @@ export class HomeView implements OnInit {
     });
   }
  
+  // Accounts shown on dashboard — hide CLOSED and accounts pending deletion
+  get visibleComptes(): Compte[] {
+    return this.comptes.filter(c =>
+      c.statutCompte !== 'CLOSED' &&
+      !(c.statutCompte === 'SUSPENDED' && c.dateSuppressionPrevue)
+    );
+  }
+ 
   get totalBalance(): number {
-    return this.comptes
+    return this.visibleComptes
       .filter(c => c.statutCompte === 'ACTIVE')
       .reduce((sum, c) => sum + (c.solde ?? 0), 0);
   }
  
   get activeComptes(): Compte[] {
-    return this.comptes.filter(c => c.statutCompte === 'ACTIVE');
+    return this.visibleComptes.filter(c => c.statutCompte === 'ACTIVE');
   }
  
   get pendingDemandes(): DemandeCompte[] {
@@ -72,15 +79,6 @@ export class HomeView implements OnInit {
  
   openAccount(compteId: number) {
     this.router.navigate(['/account', compteId]);
-  }
- 
-  getAccountIcon(type: string): string {
-    switch (type) {
-      case 'COURANT':       return '🏦';
-      case 'EPARGNE':       return '💰';
-      case 'PROFESSIONNEL': return '💼';
-      default:              return '💳';
-    }
   }
  
   getAccountLabel(type: string): string {
@@ -94,8 +92,8 @@ export class HomeView implements OnInit {
  
   getTimeOfDay(): string {
     const h = new Date().getHours();
-    if (h < 12) return 'morning';
-    if (h < 18) return 'afternoon';
-    return 'evening';
+    if (h < 12) return 'Bonjour';
+    if (h < 18) return 'Bon après-midi';
+    return 'Bonsoir';
   }
 }

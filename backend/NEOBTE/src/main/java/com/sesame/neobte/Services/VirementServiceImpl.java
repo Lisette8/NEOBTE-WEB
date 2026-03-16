@@ -4,19 +4,24 @@ import com.sesame.neobte.DTO.Requests.Virement.VirementCreateDTO;
 import com.sesame.neobte.DTO.Responses.Virement.RecipientPreviewDTO;
 import com.sesame.neobte.DTO.Responses.Virement.VirementResponseDTO;
 import com.sesame.neobte.Entities.Class.*;
+
+import com.sesame.neobte.Entities.Class.Fraude.FraudeConfig;
 import com.sesame.neobte.Entities.Enumeration.StatutCompte;
 import com.sesame.neobte.Entities.Enumeration.TypeCompte;
 import com.sesame.neobte.Exceptions.customExceptions.BadRequestException;
 import com.sesame.neobte.Exceptions.customExceptions.ResourceNotFoundException;
 import com.sesame.neobte.Repositories.*;
-import jakarta.transaction.Transactional;
-import lombok.AllArgsConstructor;
+import org.springframework.transaction.annotation.Transactional;
+import com.sesame.neobte.Security.Services.Fraude.FraudeService;
+
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
 
 @Service
+@Slf4j
 public class VirementServiceImpl implements VirementService {
 
     private final IVirementRepository virementRepository;
@@ -24,6 +29,7 @@ public class VirementServiceImpl implements VirementService {
     private final IUtilisateurRepository utilisateurRepository;
     private final ICompteInterneRepository compteInterneRepository;
     private final IFraisTransactionRepository fraisTransactionRepository;
+    private final FraudeService fraudeService;
 
     @Value("${neobte.transfer.fee-rate:0.005}")
     private double feeRate;
@@ -36,22 +42,30 @@ public class VirementServiceImpl implements VirementService {
             ICompteRepository compteRepository,
             IUtilisateurRepository utilisateurRepository,
             ICompteInterneRepository compteInterneRepository,
-            IFraisTransactionRepository fraisTransactionRepository) {
+            IFraisTransactionRepository fraisTransactionRepository,
+            FraudeService fraudeService) {
         this.virementRepository = virementRepository;
         this.compteRepository = compteRepository;
         this.utilisateurRepository = utilisateurRepository;
         this.compteInterneRepository = compteInterneRepository;
         this.fraisTransactionRepository = fraisTransactionRepository;
+        this.fraudeService = fraudeService;
     }
 
 
     @Override
     public RecipientPreviewDTO resolveRecipient(String identifier) {
+        FraudeConfig cfg = fraudeService.getConfigEntity();
+
         Utilisateur recipient = findByIdentifier(identifier);
-        if (recipient == null) return new RecipientPreviewDTO(null, null, null, null, false, feeRate, null);
+        if (recipient == null) return new RecipientPreviewDTO(
+                null, null, null, null, false, feeRate, null,
+                cfg.getLargeTransferThreshold(), cfg.getDailyAmountLimit(), cfg.getDailyCountLimit());
 
         Compte primary = getPrimaryAccount(recipient.getIdUtilisateur());
-        if (primary == null) return new RecipientPreviewDTO(null, null, null, null, false, feeRate, null);
+        if (primary == null) return new RecipientPreviewDTO(
+                null, null, null, null, false, feeRate, null,
+                cfg.getLargeTransferThreshold(), cfg.getDailyAmountLimit(), cfg.getDailyCountLimit());
 
         return new RecipientPreviewDTO(
                 recipient.getPrenom() + " " + recipient.getNom(),
@@ -60,7 +74,10 @@ public class VirementServiceImpl implements VirementService {
                 primary.getTypeCompte().name(),
                 true,
                 feeRate,
-                null  // estimated fee calculated on frontend from feeRate
+                null,  // estimated fee calculated on frontend from feeRate
+                cfg.getLargeTransferThreshold(),
+                cfg.getDailyAmountLimit(),
+                cfg.getDailyCountLimit()
         );
     }
 
@@ -69,11 +86,16 @@ public class VirementServiceImpl implements VirementService {
     @Transactional
     public VirementResponseDTO effectuerVirement(VirementCreateDTO dto, Long senderUserId) {
 
+        if (dto.getMontant() <= 0) throw new BadRequestException("Amount must be greater than 0");
+
+        // Hard fraud limits — enforceHardLimits runs via the FraudeService proxy
+        // so it uses its own @Transactional(readOnly=true) and releases its connection
+        // before this write transaction acquires its locks.
+        fraudeService.enforceHardLimits(senderUserId, dto.getMontant());
+
         // Idempotency check
         Optional<Virement> existing = virementRepository.findByIdempotencyKey(dto.getIdempotencyKey());
         if (existing.isPresent()) return mapToResponseDTO(existing.get());
-
-        if (dto.getMontant() <= 0) throw new BadRequestException("Amount must be greater than 0");
 
         utilisateurRepository.findById(senderUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("Sender not found"));
@@ -142,6 +164,10 @@ public class VirementServiceImpl implements VirementService {
         fraisTransaction.setMontantFrais(frais);
         fraisTransaction.setTauxApplique(feeRate);
         fraisTransactionRepository.save(fraisTransaction);
+
+        // Async fraud monitoring — fires in a separate thread after commit.
+        // Uses IDs only to avoid detached-entity issues across thread boundaries.
+        fraudeService.analyzeTransferAsync(saved.getIdVirement(), senderUserId);
 
         return mapToResponseDTO(saved);
     }
@@ -220,4 +246,3 @@ public class VirementServiceImpl implements VirementService {
         );
     }
 }
-

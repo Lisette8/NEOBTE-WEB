@@ -176,8 +176,8 @@
   <app-balance-chart
     *ngIf="!historyLoading"
     [history]="history"
-    [currentBalance]="compte?.solde ?? 0"
-    [compteId]="compte?.idCompte ?? 0">
+    [currentBalance]="compte!.solde"
+    [compteId]="compte!.idCompte">
   </app-balance-chart>
 
   <!-- Transactions -->

@@ -31,6 +31,7 @@ export class VirementView implements OnInit {
  
   loading = false;
   error = '';
+  limitWarning = '';  // shown inline before submit, not after
   history: Virement[] = [];
   historyLoading = false;
  
@@ -65,11 +66,24 @@ export class VirementView implements OnInit {
     ).subscribe({
       next: (preview) => {
         this.resolving = false;
-        if (preview.found) { this.recipient = preview; this.resolveError = ''; }
-        else { this.recipient = null; this.resolveError = 'No account found with that email or phone number.'; }
+        if (preview.found) {
+          this.recipient = preview;
+          this.resolveError = '';
+          this.checkLimitWarning();
+        } else {
+          this.recipient = null;
+          this.resolveError = 'Aucun compte trouvé avec cet e-mail ou ce numéro de téléphone.';
+        }
       },
-      error: () => { this.resolving = false; this.recipient = null; this.resolveError = 'Could not look up recipient.'; }
+      error: () => {
+        this.resolving = false;
+        this.recipient = null;
+        this.resolveError = 'Impossible de rechercher le destinataire. Réessayez.';
+      }
     });
+ 
+    // Re-check limit warning whenever the amount changes
+    this.transferForm.get('montant')?.valueChanges.subscribe(() => this.checkLimitWarning());
   }
  
   onIdentifierInput(event: Event) {
@@ -83,30 +97,60 @@ export class VirementView implements OnInit {
  
   get montant(): number { return this.transferForm.get('montant')?.value ?? 0; }
  
-  // Compute fee from recipient's feeRate (provided by backend on resolve)
   get estimatedFee(): number {
     if (!this.recipient || !this.montant) return 0;
-    const rate = this.recipient.feeRate ?? 0.005;
-    return Math.round(this.montant * rate * 1000) / 1000;
+    return Math.round(this.montant * (this.recipient.feeRate ?? 0.005) * 1000) / 1000;
   }
  
   get totalDebite(): number { return this.montant + this.estimatedFee; }
  
+  /** Check limits and set a warning message — does NOT block the UI, just informs */
+  checkLimitWarning() {
+    this.limitWarning = '';
+    if (!this.recipient || !this.montant) return;
+ 
+    const threshold = this.recipient.largeTransferThreshold;
+    const dailyAmount = this.recipient.dailyAmountLimit;
+    const dailyCount = this.recipient.dailyCountLimit;
+ 
+    if (threshold && this.montant > threshold) {
+      this.limitWarning = `Ce montant dépasse la limite par virement de ${this.formatNum(threshold)} TND fixée par votre banque.`;
+      return;
+    }
+    if (dailyAmount && this.montant > dailyAmount) {
+      this.limitWarning = `Ce montant dépasse votre limite journalière de ${this.formatNum(dailyAmount)} TND.`;
+      return;
+    }
+    if (dailyCount) {
+      this.limitWarning = `Limite journalière : ${dailyCount} virements maximum.`;
+    }
+  }
+ 
+  get hasLimitError(): boolean {
+    if (!this.recipient || !this.montant) return false;
+    const threshold = this.recipient.largeTransferThreshold;
+    return !!(threshold && this.montant > threshold);
+  }
+ 
   proceedToConfirm() {
     this.error = '';
-    if (!this.recipient) { this.resolveError = 'Please enter a valid recipient.'; return; }
+    if (!this.recipient) { this.resolveError = 'Veuillez saisir un destinataire valide.'; return; }
     if (!this.montant || this.transferForm.get('montant')?.invalid) {
       this.transferForm.get('montant')?.markAsTouched(); return;
+    }
+    if (this.hasLimitError) {
+      this.error = this.limitWarning;
+      return;
     }
     this.step = 'confirm';
   }
  
   async confirmTransfer() {
     const confirmed = await this.modalService.confirm({
-      title: 'Confirm Transfer',
-      message: `Send ${this.montant} TND to ${this.recipient!.displayName}? Total debited: ${this.totalDebite} TND (includes ${this.estimatedFee} TND fee).`,
-      confirmText: 'Send',
-      cancelText: 'Cancel',
+      title: 'Confirmer le virement',
+      message: `Envoyer ${this.montant} TND à ${this.recipient!.displayName} ? Total débité : ${this.totalDebite} TND (dont ${this.estimatedFee} TND de frais).`,
+      confirmText: 'Envoyer',
+      cancelText: 'Annuler',
       type: 'warning'
     });
  
@@ -120,8 +164,18 @@ export class VirementView implements OnInit {
       montant: this.montant,
       idempotencyKey: crypto.randomUUID(),
     }).subscribe({
-      next: (result) => { this.loading = false; this.lastCompletedTransfer = result; this.step = 'success'; this.loadHistory(); },
-      error: (err) => { this.loading = false; this.error = err?.error?.message || 'Transfer failed.'; this.step = 'lookup'; }
+      next: (result) => {
+        this.loading = false;
+        this.lastCompletedTransfer = result;
+        this.step = 'success';
+        this.loadHistory();
+      },
+      error: (err) => {
+        this.loading = false;
+        // Backend sends a clear message — show it directly, no generic fallback
+        this.error = err?.error?.message || 'Virement échoué. Veuillez réessayer.';
+        this.step = 'confirm'; // stay on confirm so user can see the error
+      }
     });
   }
  
@@ -130,6 +184,7 @@ export class VirementView implements OnInit {
     this.recipient = null;
     this.resolveError = '';
     this.error = '';
+    this.limitWarning = '';
     this.lastCompletedTransfer = null;
     this.transferForm.reset();
   }
@@ -140,5 +195,9 @@ export class VirementView implements OnInit {
       next: (data) => { this.history = data; this.historyLoading = false; },
       error: () => { this.historyLoading = false; }
     });
+  }
+ 
+  private formatNum(n: number): string {
+    return n.toLocaleString('fr-TN', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
   }
 }

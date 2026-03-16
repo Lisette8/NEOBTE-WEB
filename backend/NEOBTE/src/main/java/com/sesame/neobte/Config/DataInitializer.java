@@ -1,9 +1,11 @@
 package com.sesame.neobte.Config;
 
 import com.sesame.neobte.Entities.Class.CompteInterne;
+import com.sesame.neobte.Entities.Class.Fraude.FraudeConfig;
 import com.sesame.neobte.Entities.Class.Utilisateur;
 import com.sesame.neobte.Entities.Enumeration.Genre;
 import com.sesame.neobte.Entities.Enumeration.Role;
+import com.sesame.neobte.Repositories.Fraude.IFraudeConfigRepository;
 import com.sesame.neobte.Repositories.ICompteInterneRepository;
 import com.sesame.neobte.Repositories.IUtilisateurRepository;
 import lombok.AllArgsConstructor;
@@ -23,6 +25,7 @@ public class DataInitializer implements CommandLineRunner {
 
     private IUtilisateurRepository utilisateurRepository;
     private ICompteInterneRepository compteInterneRepository;
+    private IFraudeConfigRepository fraudeConfigRepository;
     private PasswordEncoder passwordEncoder;
 
     @Override
@@ -33,7 +36,7 @@ public class DataInitializer implements CommandLineRunner {
             Utilisateur admin = new Utilisateur();
             admin.setEmail("admin@gmail.com");
             admin.setUsername("admin");
-            admin.setMotDePasse(passwordEncoder.encode("Admin123"));
+            admin.setMotDePasse(passwordEncoder.encode("admin123"));
             admin.setNom("Admin");
             admin.setPrenom("NEO BTE");
             admin.setCin("00000000");
@@ -57,6 +60,14 @@ public class DataInitializer implements CommandLineRunner {
             fees.setSolde(0.0);
             compteInterneRepository.save(fees);
             System.out.println(">>> Internal fee account (NEOBTE_FEES) initialized");
+        }
+
+        // Seed default fraud config
+        if (fraudeConfigRepository.findById(1L).isEmpty()) {
+            FraudeConfig cfg = new FraudeConfig();
+            cfg.setId(1L);
+            fraudeConfigRepository.save(cfg);
+            System.out.println(">>> Default fraud config initialized");
         }
     }
 }

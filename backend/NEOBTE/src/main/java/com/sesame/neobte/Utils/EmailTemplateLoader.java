@@ -53,6 +53,19 @@ public class EmailTemplateLoader {
         });
     }
 
+    public static String loadFraudeAlertTemplate(String adminPrenom, String clientName,
+                                                 String clientEmail, String alertType,
+                                                 String severity, String description) {
+        return loadTemplate("fraude-alert.html", new String[][]{
+                {"adminPrenom", adminPrenom},
+                {"clientName", clientName},
+                {"clientEmail", clientEmail},
+                {"alertType", alertType},
+                {"severity", severity},
+                {"description", description}
+        });
+    }
+
     private static String formatTypeCompte(String typeCompte) {
         if (typeCompte == null) return "";
         return switch (typeCompte) {

@@ -52,4 +52,12 @@ public class EmailService {
         send(to, "NEO BTE — Your password reset code",
                 EmailTemplateLoader.loadPasswordResetTemplate(prenom, code));
     }
+
+    public void sendFraudeAlertEmail(String to, String adminPrenom, String clientName,
+                                     String clientEmail, String alertType,
+                                     String severity, String description) {
+        send(to, "[FRAUDE ALERT] " + alertType + " — " + clientName,
+                EmailTemplateLoader.loadFraudeAlertTemplate(
+                        adminPrenom, clientName, clientEmail, alertType, severity, description));
+    }
 }

@@ -83,6 +83,18 @@
         <span class="nav-label">Treasury</span>
       </button>
 
+      <p class="nav-section-label" style="margin-top: 16px;">Security</p>
+
+      <button class="nav-item nav-item-security" [class.active]="selectedTab === 'security'" (click)="selectedTab = 'security'">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </span>
+        <span class="nav-label">Security</span>
+        <span class="nav-alert-badge" *ngIf="openAlertCount > 0">{{ openAlertCount }}</span>
+      </button>
+
     </nav>
 
     <div class="sidebar-footer">
@@ -113,6 +125,7 @@
       <app-admin-support        *ngIf="selectedTab === 'support'"></app-admin-support>
       <app-actualite-management *ngIf="selectedTab === 'news'"></app-actualite-management>
       <app-treasury-component   *ngIf="selectedTab === 'treasury'"></app-treasury-component>
+      <app-fraude-management      *ngIf="selectedTab === 'security'"></app-fraude-management>
     </div>
   </main>
 

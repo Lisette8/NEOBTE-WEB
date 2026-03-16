@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { UserManagement } from '../user-management/user-management';
 import { AdminSupport } from '../admin-support/admin-support';
 import { ActualiteManagement } from '../actualite-management/actualite-management';
@@ -7,20 +7,33 @@ import { CompteManagement } from '../compte-management/compte-management';
 import { VirementManagement } from '../virement-management/virement-management';
 import { DemandeManagement } from '../demande-management/demande-management';
 import { TreasuryComponent } from '../treasury-component/treasury-component';
+import { FraudeManagement } from '../fraude-management/fraude-management';
+import { FraudeService } from '../../../Security/Services/FraudeService';
 
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
   imports: [CommonModule, UserManagement, AdminSupport, ActualiteManagement,
-            CompteManagement, VirementManagement, DemandeManagement, TreasuryComponent],
+            CompteManagement, VirementManagement, DemandeManagement, TreasuryComponent,
+            FraudeManagement],
   templateUrl: './admin-dashboard.html',
   styleUrl: './admin-dashboard.css',
 })
-export class AdminDashboard {
+export class AdminDashboard implements OnInit {
   selectedTab = 'demandes';
   today = new Date();
-
+  openAlertCount = 0;
+ 
+  constructor(private fraudeService: FraudeService) {}
+ 
+  ngOnInit() {
+    this.fraudeService.countOpen().subscribe({
+      next: (res) => this.openAlertCount = res.count,
+      error: () => {}
+    });
+  }
+ 
   tabTitles: Record<string, string> = {
     demandes:  'Account Requests',
     users:     'User Management',
@@ -29,8 +42,9 @@ export class AdminDashboard {
     support:   'Support Tickets',
     news:      'Actualités',
     treasury:  'Treasury',
+    security:  'Security & Fraud Detection',
   };
-
+ 
   tabSubtitles: Record<string, string> = {
     demandes:  'Review and approve or reject client account opening requests',
     users:     'Manage registered users and their roles',
@@ -39,5 +53,6 @@ export class AdminDashboard {
     support:   'Handle client support requests and inquiries',
     news:      'Publish and manage news articles for clients',
     treasury:  'View collected service fees and transaction audit trail',
+    security:  'Monitor fraud alerts, review suspicious activity and configure detection rules',
   };
 }

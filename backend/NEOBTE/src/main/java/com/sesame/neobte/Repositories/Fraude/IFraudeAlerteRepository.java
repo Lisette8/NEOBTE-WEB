@@ -39,4 +39,32 @@ public interface IFraudeAlerteRepository extends JpaRepository<FraudeAlerte, Lon
             "WHERE v.compteDe.utilisateur.idUtilisateur = :userId " +
             "AND v.dateDeVirement >= :since")
     Number sumAmountSinceAsNumber(@Param("userId") Long userId, @Param("since") Date since);
+
+    // ── Analytics queries ──────────────────────────────────────────────────────
+
+    @Query("SELECT a.type, COUNT(a) FROM FraudeAlerte a GROUP BY a.type")
+    List<Object[]> countByType();
+
+    @Query("SELECT a.severity, COUNT(a) FROM FraudeAlerte a GROUP BY a.severity")
+    List<Object[]> countBySeverity();
+
+    /** Daily fraud alert trend (Oracle TRUNC) */
+    @Query(value = "SELECT TRUNC(date_alerte) AS day, COUNT(*) AS cnt " +
+            "FROM fraude_alerte " +
+            "WHERE date_alerte >= :since " +
+            "GROUP BY TRUNC(date_alerte) " +
+            "ORDER BY TRUNC(date_alerte)", nativeQuery = true)
+    List<Object[]> dailyAlertTrend(@Param("since") Date since);
+
+    /**
+     * Per-user open alert summary for risk scoring.
+     * Returns: [userId, prenom, nom, email, totalAlerts, highSeverityAlerts]
+     */
+    @Query("SELECT a.utilisateur.idUtilisateur, a.utilisateur.prenom, a.utilisateur.nom, " +
+            "a.utilisateur.email, COUNT(a), " +
+            "SUM(CASE WHEN a.severity = com.sesame.neobte.Entities.Enumeration.Fraude.FraudeSeverity.HIGH THEN 1 ELSE 0 END) " +
+            "FROM FraudeAlerte a WHERE a.statut = com.sesame.neobte.Entities.Enumeration.Fraude.FraudeStatut.OPEN " +
+            "GROUP BY a.utilisateur.idUtilisateur, a.utilisateur.prenom, a.utilisateur.nom, a.utilisateur.email " +
+            "ORDER BY COUNT(a) DESC")
+    List<Object[]> userRiskSummary();
 }

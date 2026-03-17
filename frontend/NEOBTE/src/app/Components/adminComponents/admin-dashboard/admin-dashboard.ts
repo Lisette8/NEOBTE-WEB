@@ -9,6 +9,7 @@ import { DemandeManagement } from '../demande-management/demande-management';
 import { TreasuryComponent } from '../treasury-component/treasury-component';
 import { FraudeManagement } from '../fraude-management/fraude-management';
 import { FraudeService } from '../../../Security/Services/FraudeService';
+import { AiAnalytics } from '../ai-analytics/ai-analytics';
 
 
 @Component({
@@ -16,7 +17,7 @@ import { FraudeService } from '../../../Security/Services/FraudeService';
   standalone: true,
   imports: [CommonModule, UserManagement, AdminSupport, ActualiteManagement,
             CompteManagement, VirementManagement, DemandeManagement, TreasuryComponent,
-            FraudeManagement],
+            FraudeManagement, AiAnalytics],
   templateUrl: './admin-dashboard.html',
   styleUrl: './admin-dashboard.css',
 })
@@ -43,6 +44,7 @@ export class AdminDashboard implements OnInit {
     news:      'Actualités',
     treasury:  'Treasury',
     security:  'Security & Fraud Detection',
+    ai:        'AI Analytics',
   };
  
   tabSubtitles: Record<string, string> = {
@@ -54,5 +56,6 @@ export class AdminDashboard implements OnInit {
     news:      'Publish and manage news articles for clients',
     treasury:  'View collected service fees and transaction audit trail',
     security:  'Monitor fraud alerts, review suspicious activity and configure detection rules',
+    ai:        'AI-powered fraud intelligence, financial forecasts, and risk insights — powered by Groq',
   };
 }

@@ -308,3 +308,11 @@
 .nav-item-security.active {
   background: rgba(220, 38, 38, 0.15) !important;
 }
+
+.nav-item-ai.active {
+  background: rgba(99, 102, 241, 0.22) !important;
+}
+
+.nav-item-ai .nav-icon svg {
+  stroke: #818cf8;
+}

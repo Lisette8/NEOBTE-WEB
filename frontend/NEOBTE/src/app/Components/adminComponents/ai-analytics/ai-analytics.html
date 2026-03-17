@@ -1,0 +1,414 @@
+<div class="ai-root">
+
+  <!-- ── Page header ─────────────────────────────────────────────────── -->
+  <div class="ai-header">
+    <div class="ai-header-left">
+      <div class="ai-header-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+      </div>
+      <div>
+        <h2 class="ai-header-title">AI Intelligence Center</h2>
+        <p class="ai-header-sub">Powered by Groq &mdash; Llama 3.3 · 70B</p>
+      </div>
+    </div>
+    <button class="btn-refresh" (click)="loadAnalytics()" title="Refresh data">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="23 4 23 10 17 10"/>
+        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+      </svg>
+      Refresh
+    </button>
+  </div>
+
+  <!-- ── Tab navigation ──────────────────────────────────────────────── -->
+  <div class="ai-tabs-wrap">
+    <div class="ai-tabs">
+      <button class="ai-tab" [class.active]="activeTab === 'analytics'" (click)="switchTab('analytics')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+        </svg>
+        Analytics
+      </button>
+      <button class="ai-tab" [class.active]="activeTab === 'fraud'" (click)="switchTab('fraud')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        </svg>
+        Fraud Intel
+        <span class="tab-badge" *ngIf="analytics && analytics.openFraudAlerts > 0">
+          {{ analytics.openFraudAlerts }}
+        </span>
+      </button>
+      <button class="ai-tab" [class.active]="activeTab === 'chat'" (click)="switchTab('chat')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        Assistant
+      </button>
+    </div>
+  </div>
+
+  <!-- ── Global loading / error ──────────────────────────────────────── -->
+  <div class="state-loading" *ngIf="loadingAnalytics">
+    <div class="sk-row"></div>
+    <div class="sk-row sk-short"></div>
+    <div class="sk-row"></div>
+  </div>
+  <div class="state-error" *ngIf="analyticsError">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/>
+      <line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    <span>{{ analyticsError }}</span>
+    <button (click)="loadAnalytics()">Retry</button>
+  </div>
+
+  <ng-container *ngIf="!loadingAnalytics && !analyticsError && analytics">
+
+    <!-- ════════════════════════════════════════════════════════════════
+         TAB: ANALYTICS
+         ════════════════════════════════════════════════════════════════ -->
+    <div *ngIf="activeTab === 'analytics'" class="tab-pane">
+
+      <!-- KPI cards -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <div class="kpi-icon kpi-indigo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+              <polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+            </svg>
+          </div>
+          <div class="kpi-body">
+            <span class="kpi-value">{{ analytics.totalTransfers | number }}</span>
+            <span class="kpi-label">Total Transfers</span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-icon kpi-green">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="12" y1="1" x2="12" y2="23"/>
+              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+            </svg>
+          </div>
+          <div class="kpi-body">
+            <span class="kpi-value">{{ fmtAmount(analytics.totalVolume) }}</span>
+            <span class="kpi-label">Total Volume (TND)</span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-icon kpi-amber">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/>
+            </svg>
+          </div>
+          <div class="kpi-body">
+            <span class="kpi-value">{{ fmtAmount(analytics.avgTransfer) }}</span>
+            <span class="kpi-label">Avg Transfer (TND)</span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-icon kpi-blue">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"/>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+            </svg>
+          </div>
+          <div class="kpi-body">
+            <span class="kpi-value">{{ analytics.totalClients | number }}</span>
+            <span class="kpi-label">Total Clients</span>
+          </div>
+        </div>
+
+        <div class="kpi-card" [class.kpi-alert-active]="analytics.openFraudAlerts > 0">
+          <div class="kpi-icon kpi-red">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+          <div class="kpi-body">
+            <span class="kpi-value">{{ analytics.openFraudAlerts | number }}</span>
+            <span class="kpi-label">Open Fraud Alerts</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="charts-row-main">
+        <div class="chart-card">
+          <div class="chart-card-hd">
+            <span class="chart-card-title">Daily Transfer Volume</span>
+            <span class="chip chip-indigo">30d + 7d forecast</span>
+          </div>
+          <div class="chart-wrap">
+            <canvas #transferChart></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-card-hd">
+            <span class="chart-card-title">Client Growth</span>
+            <span class="chip chip-green">12 months</span>
+          </div>
+          <div class="chart-wrap">
+            <canvas #userGrowthChart></canvas>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /analytics tab -->
+
+    <!-- ════════════════════════════════════════════════════════════════
+         TAB: FRAUD INTEL
+         ════════════════════════════════════════════════════════════════ -->
+    <div *ngIf="activeTab === 'fraud'" class="tab-pane">
+
+      <!-- Fraud charts -->
+      <div class="charts-row-3">
+        <div class="chart-card">
+          <div class="chart-card-hd">
+            <span class="chart-card-title">Alerts by Type</span>
+          </div>
+          <div class="chart-wrap">
+            <canvas #fraudTypeChart></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-card-hd">
+            <span class="chart-card-title">Alerts by Severity</span>
+          </div>
+          <div class="chart-wrap">
+            <canvas #fraudSevChart></canvas>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-card-hd">
+            <span class="chart-card-title">Fraud Trend</span>
+            <span class="chip chip-red">30 days</span>
+          </div>
+          <div class="chart-wrap">
+            <canvas #fraudTrendChart></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- High-risk users table -->
+      <div class="panel" *ngIf="analytics.highRiskUsers.length > 0">
+        <div class="panel-hd">
+          <div class="panel-hd-left">
+            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+            High-Risk Users
+          </div>
+          <span class="chip chip-red">{{ analytics.highRiskUsers.length }} flagged</span>
+        </div>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>User</th><th>Email</th>
+                <th class="tc">Alerts</th><th class="tc">HIGH Sev.</th><th class="tc">Risk</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let u of analytics.highRiskUsers">
+                <td class="td-name">{{ u.nom }}</td>
+                <td class="td-email">{{ u.email }}</td>
+                <td class="tc">{{ u.alertCount }}</td>
+                <td class="tc">{{ u.highSeverityCount }}</td>
+                <td class="tc">
+                  <span class="risk-badge" [ngClass]="riskClass(u.riskLevel)">{{ u.riskLevel }}</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- AI Report panel -->
+      <div class="report-panel">
+        <div class="report-panel-hd">
+          <div>
+            <div class="groq-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+              </svg>
+              Groq AI
+            </div>
+            <h4 class="report-title">AI Intelligence Report</h4>
+            <p class="report-sub">On-demand deep analysis of fraud patterns and financial health.</p>
+          </div>
+          <button class="btn-primary" (click)="fetchInsights()" [disabled]="loadingInsights">
+            <span *ngIf="!loadingInsights" class="btn-inner">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+              </svg>
+              Generate Report
+            </span>
+            <span *ngIf="loadingInsights" class="btn-inner">
+              <span class="spinner-sm"></span> Analysing…
+            </span>
+          </button>
+        </div>
+
+        <div class="inline-error" *ngIf="insightsError">{{ insightsError }}</div>
+
+        <div class="report-grid" *ngIf="insights">
+          <div class="report-card rc-fraud">
+            <div class="rc-label">
+              <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+              </svg>
+              Fraud Summary
+            </div>
+            <p class="rc-text">{{ insights.fraudSummary }}</p>
+          </div>
+
+          <div class="report-card rc-finance">
+            <div class="rc-label">
+              <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <line x1="12" y1="1" x2="12" y2="23"/>
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+              Financial Health
+            </div>
+            <p class="rc-text">{{ insights.financialInsights }}</p>
+          </div>
+
+          <div class="report-card rc-recs">
+            <div class="rc-label">
+              <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="9 11 12 14 22 4"/>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+              </svg>
+              Recommendations
+            </div>
+            <ul class="rec-list">
+              <li *ngFor="let r of insights.topRecommendations">
+                <span class="rec-dot"></span>{{ r }}
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /fraud tab -->
+
+    <!-- ════════════════════════════════════════════════════════════════
+         TAB: ASSISTANT (CHATBOT)
+         ════════════════════════════════════════════════════════════════ -->
+    <div *ngIf="activeTab === 'chat'" class="tab-pane chat-pane">
+
+      <div class="chat-shell">
+
+        <!-- Chat header -->
+        <div class="chat-header">
+          <div class="chat-avatar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+            </svg>
+          </div>
+          <div class="chat-header-info">
+            <span class="chat-name">NeoBTE Assistant</span>
+            <span class="chat-status">
+              <span class="online-dot"></span>Powered by Groq · Llama 3.3
+            </span>
+          </div>
+          <button class="btn-clear" *ngIf="messages.length > 0" (click)="clearChat()" title="Clear conversation">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
+              <path d="M10 11v6"/><path d="M14 11v6"/>
+              <path d="M9 6V4h6v2"/>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Messages area -->
+        <div class="chat-messages" #chatScroll>
+
+          <!-- Empty state -->
+          <div class="chat-empty" *ngIf="messages.length === 0 && !chatLoading">
+            <div class="chat-empty-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+              </svg>
+            </div>
+            <p class="chat-empty-title">Ask me anything about NeoBTE</p>
+            <p class="chat-empty-sub">I have access to live bank data — transfers, clients, fraud alerts, and forecasts.</p>
+            <div class="suggestions">
+              <button
+                *ngFor="let q of suggestedQuestions"
+                class="suggestion-chip"
+                (click)="useSuggestion(q)"
+                [disabled]="chatLoading">
+                {{ q }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Message bubbles -->
+          <div
+            *ngFor="let msg of messages"
+            class="msg-row"
+            [class.msg-user]="msg.role === 'user'"
+            [class.msg-ai]="msg.role === 'assistant'">
+
+            <div class="msg-avatar" *ngIf="msg.role === 'assistant'">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+              </svg>
+            </div>
+
+            <div class="msg-bubble">{{ msg.content }}</div>
+          </div>
+
+          <!-- Typing indicator -->
+          <div class="msg-row msg-ai" *ngIf="chatLoading">
+            <div class="msg-avatar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+              </svg>
+            </div>
+            <div class="msg-bubble typing-indicator">
+              <span></span><span></span><span></span>
+            </div>
+          </div>
+
+        </div><!-- /chat-messages -->
+
+        <!-- Error bar -->
+        <div class="chat-error" *ngIf="chatError">{{ chatError }}</div>
+
+        <!-- Input bar -->
+        <div class="chat-input-bar">
+          <textarea
+            class="chat-input"
+            [(ngModel)]="inputMessage"
+            (keydown)="onInputKeydown($event)"
+            placeholder="Ask about fraud, transfers, users…"
+            rows="1"
+            [disabled]="chatLoading">
+          </textarea>
+          <button class="btn-send" (click)="sendMessage()" [disabled]="!inputMessage.trim() || chatLoading">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="22" y1="2" x2="11" y2="13"/>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+            </svg>
+          </button>
+        </div>
+
+      </div><!-- /chat-shell -->
+    </div><!-- /chat tab -->
+
+  </ng-container>
+</div>

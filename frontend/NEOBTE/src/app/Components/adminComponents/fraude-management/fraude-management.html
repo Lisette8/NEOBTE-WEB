@@ -1,0 +1,348 @@
+<div class="fm-shell">
+
+    <!-- Sub-tab switcher -->
+    <div class="fm-tabs">
+      <button class="fm-tab" [class.active]="secTab === 'alerts'" (click)="secTab = 'alerts'">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        Fraud Alerts
+        <span class="tab-badge" *ngIf="openCount > 0">{{ openCount }}</span>
+      </button>
+      <button class="fm-tab" [class.active]="secTab === 'config'" (click)="secTab = 'config'">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+        Detection Rules
+      </button>
+    </div>
+  
+    <!-- ══ ALERTS TAB ══ -->
+    <ng-container *ngIf="secTab === 'alerts'">
+  
+      <!-- Stats bar -->
+      <div class="stats-bar" *ngIf="!alertesLoading">
+        <div class="stat-pill" [class.highlight]="alertFilter === 'ALL'" (click)="alertFilter = 'ALL'">
+          <span class="sp-num">{{ alertes.length }}</span>
+          <span class="sp-lbl">Total</span>
+        </div>
+        <div class="stat-pill open" [class.highlight]="alertFilter === 'OPEN'" (click)="alertFilter = 'OPEN'">
+          <span class="sp-num">{{ alertes | filterStatut:'OPEN' }}</span>
+          <span class="sp-lbl">Open</span>
+        </div>
+        <div class="stat-pill reviewed" [class.highlight]="alertFilter === 'REVIEWED'" (click)="alertFilter = 'REVIEWED'">
+          <span class="sp-num">{{ alertes | filterStatut:'REVIEWED' }}</span>
+          <span class="sp-lbl">Reviewed</span>
+        </div>
+        <div class="stat-pill dismissed" [class.highlight]="alertFilter === 'DISMISSED'" (click)="alertFilter = 'DISMISSED'">
+          <span class="sp-num">{{ alertes | filterStatut:'DISMISSED' }}</span>
+          <span class="sp-lbl">Dismissed</span>
+        </div>
+      </div>
+  
+      <!-- Error -->
+      <div class="error-box" *ngIf="alertesError">{{ alertesError }}</div>
+  
+      <!-- Loading skeleton -->
+      <div class="skeleton-list" *ngIf="alertesLoading">
+        <div class="sk-row" *ngFor="let i of [1,2,3]"></div>
+      </div>
+  
+      <!-- Empty -->
+      <div class="empty-state" *ngIf="!alertesLoading && filteredAlertes.length === 0">
+        <div class="empty-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          </svg>
+        </div>
+        <p class="empty-title">No alerts in this category</p>
+        <p class="empty-sub">All clear — no {{ alertFilter === 'ALL' ? '' : alertFilter.toLowerCase() + ' ' }}fraud alerts.</p>
+      </div>
+  
+      <!-- Alert list -->
+      <div class="alert-list" *ngIf="!alertesLoading && filteredAlertes.length > 0">
+        <div class="alert-card" *ngFor="let a of filteredAlertes"
+             [class.is-open]="a.statut === 'OPEN'"
+             [class.is-reviewed]="a.statut === 'REVIEWED'"
+             [class.is-dismissed]="a.statut === 'DISMISSED'">
+  
+          <!-- Left: severity bar -->
+          <div class="alert-bar" [class]="severityClass(a.severity)"></div>
+  
+          <div class="alert-body">
+            <!-- Top row -->
+            <div class="alert-top">
+              <div class="alert-type-row">
+                <!-- Type icon -->
+                <div class="type-icon" [class]="severityClass(a.severity)">
+                  <!-- clock -->
+                  <svg *ngIf="typeIcon(a.type) === 'clock'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                  </svg>
+                  <!-- repeat -->
+                  <svg *ngIf="typeIcon(a.type) === 'repeat'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+                    <polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+                  </svg>
+                  <!-- trending-up -->
+                  <svg *ngIf="typeIcon(a.type) === 'trending-up'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/>
+                  </svg>
+                  <!-- zap -->
+                  <svg *ngIf="typeIcon(a.type) === 'zap'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                  </svg>
+                  <!-- alert-triangle -->
+                  <svg *ngIf="typeIcon(a.type) === 'alert-triangle'" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                    <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+                  </svg>
+                </div>
+                <span class="alert-type-label">{{ typeLabel(a.type) }}</span>
+                <span class="sev-badge" [class]="severityClass(a.severity)">{{ a.severity }}</span>
+                <span class="statut-badge" [class]="statutClass(a.statut)">{{ a.statut }}</span>
+              </div>
+              <span class="alert-date">{{ a.dateAlerte | date:'d MMM y · HH:mm' }}</span>
+            </div>
+  
+            <!-- Description -->
+            <p class="alert-desc">{{ a.description }}</p>
+  
+            <!-- User + Transfer row -->
+            <div class="alert-meta">
+              <div class="meta-item">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                </svg>
+                <span>{{ a.utilisateurNom }}</span>
+                <span class="meta-email">{{ a.utilisateurEmail }}</span>
+              </div>
+              <div class="meta-item" *ngIf="a.virementId">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                </svg>
+                <span>Transfer #{{ a.virementId }} — {{ a.virementMontant | number:'1.3-3' }} TND</span>
+              </div>
+            </div>
+  
+            <!-- Admin note (if reviewed/dismissed) -->
+            <div class="admin-note" *ngIf="a.adminNote">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+              </svg>
+              {{ a.adminNote }}
+            </div>
+  
+            <!-- Review panel (inline) -->
+            <div class="review-panel" *ngIf="reviewingId === a.id">
+              <textarea class="review-input" rows="2" [(ngModel)]="reviewNote"
+                placeholder="Optional admin note..."></textarea>
+              <div class="review-actions">
+                <button class="rev-btn cancel" (click)="cancelReview()" [disabled]="reviewSubmitting">Cancel</button>
+                <button class="rev-btn dismiss" (click)="submitReview('DISMISSED')" [disabled]="reviewSubmitting">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+                  </svg>
+                  Dismiss
+                </button>
+                <button class="rev-btn confirm" (click)="submitReview('REVIEWED')" [disabled]="reviewSubmitting">
+                  <svg *ngIf="!reviewSubmitting" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                  <span *ngIf="reviewSubmitting" class="spinner-sm"></span>
+                  Mark Reviewed
+                </button>
+              </div>
+              <p class="review-error" *ngIf="reviewError">{{ reviewError }}</p>
+            </div>
+  
+            <!-- Action button (only for OPEN alerts) -->
+            <div class="alert-actions" *ngIf="a.statut === 'OPEN' && reviewingId !== a.id">
+              <button class="action-btn" (click)="openReview(a.id)">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                </svg>
+                Review Alert
+              </button>
+            </div>
+  
+          </div>
+        </div>
+      </div>
+  
+    </ng-container>
+  
+    <!-- ══ CONFIG TAB ══ -->
+    <ng-container *ngIf="secTab === 'config'">
+  
+      <div class="config-loading" *ngIf="configLoading">Loading configuration...</div>
+  
+      <div class="config-shell" *ngIf="!configLoading && configForm">
+  
+        <div class="config-success" *ngIf="configSuccess">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+          {{ configSuccess }}
+        </div>
+        <div class="config-error" *ngIf="configError">{{ configError }}</div>
+  
+        <!-- Daily limits -->
+        <div class="config-panel">
+          <div class="config-panel-hd">
+            <div class="cp-icon cp-blue">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/>
+              </svg>
+            </div>
+            <div>
+              <p class="cp-title">Daily Limits</p>
+              <p class="cp-sub">Thresholds reset every 24 hours per user</p>
+            </div>
+          </div>
+          <div class="config-grid">
+            <div class="config-field">
+              <label class="cf-label">Max transfers per day</label>
+              <div class="cf-input-wrap">
+                <input type="number" class="cf-input" [(ngModel)]="configForm.dailyCountLimit" min="1">
+                <span class="cf-unit">transfers</span>
+              </div>
+            </div>
+            <div class="config-field">
+              <label class="cf-label">Max total amount per day</label>
+              <div class="cf-input-wrap">
+                <input type="number" class="cf-input" [(ngModel)]="configForm.dailyAmountLimit" min="100">
+                <span class="cf-unit">TND</span>
+              </div>
+            </div>
+          </div>
+        </div>
+  
+        <!-- Single transfer -->
+        <div class="config-panel">
+          <div class="config-panel-hd">
+            <div class="cp-icon cp-amber">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+            </div>
+            <div>
+              <p class="cp-title">Large Transfer Threshold</p>
+              <p class="cp-sub">Single transfers above this amount trigger an alert</p>
+            </div>
+          </div>
+          <div class="config-grid">
+            <div class="config-field">
+              <label class="cf-label">Threshold amount</label>
+              <div class="cf-input-wrap">
+                <input type="number" class="cf-input" [(ngModel)]="configForm.largeTransferThreshold" min="100">
+                <span class="cf-unit">TND</span>
+              </div>
+            </div>
+          </div>
+        </div>
+  
+        <!-- Rapid succession -->
+        <div class="config-panel">
+          <div class="config-panel-hd">
+            <div class="cp-icon cp-red">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+              </svg>
+            </div>
+            <div>
+              <p class="cp-title">Rapid Succession Detection</p>
+              <p class="cp-sub">Detects potential bot activity — multiple transfers in a short window</p>
+            </div>
+          </div>
+          <div class="config-grid">
+            <div class="config-field">
+              <label class="cf-label">Number of transfers</label>
+              <div class="cf-input-wrap">
+                <input type="number" class="cf-input" [(ngModel)]="configForm.rapidSuccessionCount" min="2" max="20">
+                <span class="cf-unit">transfers</span>
+              </div>
+            </div>
+            <div class="config-field">
+              <label class="cf-label">Within time window</label>
+              <div class="cf-input-wrap">
+                <input type="number" class="cf-input" [(ngModel)]="configForm.rapidSuccessionMinutes" min="1" max="60">
+                <span class="cf-unit">minutes</span>
+              </div>
+            </div>
+          </div>
+        </div>
+  
+        <!-- Suspicious hour -->
+        <div class="config-panel">
+          <div class="config-panel-hd">
+            <div class="cp-icon cp-purple">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+              </svg>
+            </div>
+            <div>
+              <p class="cp-title">Suspicious Hour Window</p>
+              <p class="cp-sub">Transfers during this period are flagged as suspicious</p>
+            </div>
+          </div>
+          <div class="config-grid">
+            <div class="config-field">
+              <label class="cf-label">Start hour (24h)</label>
+              <div class="cf-input-wrap">
+                <input type="number" class="cf-input" [(ngModel)]="configForm.suspiciousHourStart" min="0" max="23">
+                <span class="cf-unit">:00</span>
+              </div>
+            </div>
+            <div class="config-field">
+              <label class="cf-label">End hour (24h)</label>
+              <div class="cf-input-wrap">
+                <input type="number" class="cf-input" [(ngModel)]="configForm.suspiciousHourEnd" min="0" max="23">
+                <span class="cf-unit">:00</span>
+              </div>
+            </div>
+          </div>
+        </div>
+  
+        <!-- Notifications -->
+        <div class="config-panel">
+          <div class="config-panel-hd">
+            <div class="cp-icon cp-green">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                <polyline points="22,6 12,13 2,6"/>
+              </svg>
+            </div>
+            <div>
+              <p class="cp-title">Admin Email Notifications</p>
+              <p class="cp-sub">Send an email to all admins when a new fraud alert is raised</p>
+            </div>
+          </div>
+          <div class="toggle-row">
+            <span class="toggle-label">{{ configForm.emailAlertsEnabled ? 'Enabled' : 'Disabled' }}</span>
+            <button class="toggle-btn" [class.on]="configForm.emailAlertsEnabled"
+              (click)="configForm.emailAlertsEnabled = !configForm.emailAlertsEnabled">
+              <span class="toggle-knob"></span>
+            </button>
+          </div>
+        </div>
+  
+        <!-- Save bar -->
+        <div class="save-bar">
+          <button class="save-btn-ghost" (click)="resetConfigForm()" [disabled]="configSaving">Reset</button>
+          <button class="save-btn-primary" (click)="saveConfig()" [disabled]="configSaving">
+            <span *ngIf="configSaving" class="spinner-sm"></span>
+            <svg *ngIf="!configSaving" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            Save Configuration
+          </button>
+        </div>
+  
+      </div>
+    </ng-container>
+  
+  </div>

@@ -83,6 +83,17 @@
         <span class="nav-label">Treasury</span>
       </button>
 
+      <p class="nav-section-label" style="margin-top: 16px;">Intelligence</p>
+
+      <button class="nav-item nav-item-ai" [class.active]="selectedTab === 'ai'" (click)="selectedTab = 'ai'">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+        </span>
+        <span class="nav-label">AI Analytics</span>
+      </button>
+
       <p class="nav-section-label" style="margin-top: 16px;">Security</p>
 
       <button class="nav-item nav-item-security" [class.active]="selectedTab === 'security'" (click)="selectedTab = 'security'">
@@ -126,6 +137,7 @@
       <app-actualite-management *ngIf="selectedTab === 'news'"></app-actualite-management>
       <app-treasury-component   *ngIf="selectedTab === 'treasury'"></app-treasury-component>
       <app-fraude-management      *ngIf="selectedTab === 'security'"></app-fraude-management>
+      <app-ai-analytics            *ngIf="selectedTab === 'ai'"></app-ai-analytics>
     </div>
   </main>
 

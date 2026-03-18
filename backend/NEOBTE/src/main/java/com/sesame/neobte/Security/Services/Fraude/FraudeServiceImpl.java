@@ -172,9 +172,10 @@ public class FraudeServiceImpl implements FraudeService {
                         sender, virement));
             }
 
-            // 3. Rapid succession — count transfers in last N minutes (count only, no object loading)
+            // 3. Rapid succession — count transfers in last N minutes.
+            // Safe to query directly: afterCommit() guarantees the transfer is visible in DB.
             Date sinceWindow = since(cfg.getRapidSuccessionMinutes());
-            long recentCount = alerteRepository.countTransfersSince(senderUserId, sinceWindow);
+            long recentCount = virementRepository.countOutgoingSince(senderUserId, sinceWindow);
             if (recentCount >= cfg.getRapidSuccessionCount()) {
                 raised.add(buildAlerte(
                         FraudeAlertType.RAPID_SUCCESSION, FraudeSeverity.HIGH,

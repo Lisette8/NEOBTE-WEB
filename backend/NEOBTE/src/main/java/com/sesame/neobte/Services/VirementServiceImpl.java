@@ -20,6 +20,8 @@ import com.sesame.neobte.Security.Services.Fraude.FraudeService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import java.time.LocalDate;
 import java.time.ZoneId;
@@ -211,7 +213,15 @@ public class VirementServiceImpl implements VirementService {
 
         // Async fraud monitoring — fires in a separate thread after commit.
         // Uses IDs only to avoid detached-entity issues across thread boundaries.
-        fraudeService.analyzeTransferAsync(saved.getIdVirement(), senderUserId);
+        // Async fraud monitoring — must fire AFTER the transaction commits so the
+        // new Virement is visible in the async thread's own DB session.
+        final Long savedId1 = saved.getIdVirement();
+        final Long senderId1 = senderUserId;
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override public void afterCommit() {
+                fraudeService.analyzeTransferAsync(savedId1, senderId1);
+            }
+        });
 
         // Notifications (after commit via NotificationService)
         notificationService.notifyUser(
@@ -300,7 +310,14 @@ public class VirementServiceImpl implements VirementService {
         virement.setIdempotencyKey(dto.getIdempotencyKey());
         Virement saved = virementRepository.save(virement);
 
-        fraudeService.analyzeTransferAsync(saved.getIdVirement(), senderUserId);
+        // Async fraud monitoring — must fire AFTER the transaction commits
+        final Long savedId2 = saved.getIdVirement();
+        final Long senderId2 = senderUserId;
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override public void afterCommit() {
+                fraudeService.analyzeTransferAsync(savedId2, senderId2);
+            }
+        });
 
         notificationService.notifyUser(
                 senderUserId,

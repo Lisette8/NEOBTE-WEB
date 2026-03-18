@@ -7,11 +7,12 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { DemandeCompte } from '../../../Entities/Interfaces/demande-compte';
 import { DemandeCompteCreateDTO } from '../../../Entities/DTO/demande-compte-create-dto';
+import { AccountPhysicalCard } from '../../account-physical-card/account-physical-card';
 
 @Component({
   selector: 'app-compte-view',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, AccountPhysicalCard],
   templateUrl: './compte-view.html',
   styleUrl: './compte-view.css',
 })

@@ -30,4 +30,5 @@ public class AdminUserResponse {
     private Role role;
     private Date dateCreationCompte;
     private Double totalSolde; //l'utilisateur peut avoir plusieurs comptes bancaires de plusieurs type, donc faut calculer la somme des soldes de chaque compte...
+    private boolean premium;
 }

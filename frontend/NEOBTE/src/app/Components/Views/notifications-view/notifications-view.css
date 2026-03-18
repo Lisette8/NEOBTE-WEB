@@ -1,0 +1,89 @@
+.wrap {
+  padding: 90px 24px 120px;
+  max-width: 980px;
+  margin: 0 auto;
+}
+
+.top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+h1 {
+  margin: 0 0 6px;
+  font-size: 1.6rem;
+  font-weight: 850;
+  color: var(--text-1);
+  letter-spacing: -0.03em;
+}
+.top p { margin: 0; color: var(--text-3); }
+
+.actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.btn {
+  padding: 10px 14px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  background: #fff;
+  cursor: pointer;
+  font-weight: 850;
+}
+.btn.primary { background: var(--blue); border-color: var(--blue); color: #fff; }
+.btn:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.status { margin: 14px 0; font-size: 0.92rem; }
+.status.loading { color: var(--text-2); }
+.status.error { color: #b91c1c; }
+
+.list { margin-top: 18px; display: flex; flex-direction: column; gap: 10px; }
+.item {
+  width: 100%;
+  text-align: left;
+  display: flex;
+  gap: 10px;
+  padding: 12px;
+  border-radius: var(--r-xl);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  cursor: pointer;
+}
+.item:hover { background: var(--bg); }
+.item.unread { border-color: rgba(0,0,160,0.25); box-shadow: var(--shadow-sm); }
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--blue);
+  margin-top: 6px;
+  flex-shrink: 0;
+}
+.txt { min-width: 0; flex: 1; }
+.row { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.t { margin: 0 0 3px; font-weight: 950; color: var(--text-1); }
+.d { color: var(--text-3); font-size: 0.78rem; font-weight: 650; }
+.m { margin: 0; color: var(--text-2); line-height: 1.45; }
+.empty { text-align: center; padding: 28px 12px; color: var(--text-3); }
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
+}
+.pg-btn {
+  padding: 9px 14px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #fff;
+  cursor: pointer;
+  font-weight: 800;
+}
+.pg-btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.pg-label { color: var(--text-3); font-weight: 700; }
+
+@media (max-width: 700px) {
+  .top { flex-direction: column; }
+}
+

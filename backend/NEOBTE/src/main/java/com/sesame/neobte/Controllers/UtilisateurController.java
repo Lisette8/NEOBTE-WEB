@@ -11,10 +11,13 @@ import com.sesame.neobte.Entities.Enumeration.TypeCompte;
 import com.sesame.neobte.Repositories.ICompteRepository;
 import com.sesame.neobte.Services.UtilisateurService;
 import com.sesame.neobte.Services.UtilisateurServiceImpl;
+import com.sesame.neobte.Services.Other.MediaStorageService;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -26,11 +29,13 @@ public class UtilisateurController {
 
     UtilisateurServiceImpl utilisateurService;
     ICompteRepository compteRepository;
+    MediaStorageService mediaStorageService;
 
     @GetMapping("/current")
-    public Utilisateur getMyProfile(Authentication authentication) {
+    public ClientResponse getMyProfile(Authentication authentication) {
         Long userId = (Long) authentication.getPrincipal();
-        return utilisateurService.getUtilisateurById(userId);
+        Utilisateur user = utilisateurService.getUtilisateurById(userId);
+        return utilisateurService.mapToClientResponse(user);
     }
 
     @GetMapping("/rib")
@@ -74,6 +79,19 @@ public class UtilisateurController {
         return utilisateurService.mapToClientResponse(updated);
     }
 
+    @PutMapping(value = "/photo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ClientResponse updatePhoto(
+            @RequestPart("image") MultipartFile image,
+            Authentication authentication
+    ) {
+        Long userId = (Long) authentication.getPrincipal();
+        Utilisateur user = utilisateurService.getUtilisateurById(userId);
+        String url = mediaStorageService.storeProfileImage(image);
+        user.setPhotoUrl(url);
+        Utilisateur saved = utilisateurService.saveUtilisateur(user);
+        return utilisateurService.mapToClientResponse(saved);
+    }
+
     @PutMapping("/change-password")
     public String changePassword(@Valid @RequestBody ChangePasswordRequest request,
                                  Authentication authentication) {
@@ -88,7 +106,6 @@ public class UtilisateurController {
         utilisateurService.deleteUtilisateur(userId);
     }
 
-    // Format: NEO-XXXX-XXXXXXXX (zero-padded account id)
     private String formatRib(Long id) {
         return String.format("NEO-%04d-%08d", id / 10000, id);
     }

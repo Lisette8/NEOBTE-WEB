@@ -1,7 +1,9 @@
 package com.sesame.neobte.Entities.Class.Fraude;
 
+import com.sesame.neobte.Entities.Converters.BooleanToIntegerConverter;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
+import jakarta.persistence.Convert;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -37,5 +39,6 @@ public class FraudeConfig implements Serializable {
     private int suspiciousHourEnd   = 4;  // 04:00
 
     /** Send email to admin on every new alert */
+    @Convert(converter = BooleanToIntegerConverter.class)
     private boolean emailAlertsEnabled = true;
 }

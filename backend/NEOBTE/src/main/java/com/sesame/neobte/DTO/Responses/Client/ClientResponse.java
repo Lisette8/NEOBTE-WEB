@@ -18,6 +18,7 @@ public class ClientResponse {
     private String username;
     private String nom;
     private String prenom;
+    private String photoUrl;
     private String cin;
     private String telephone;
     private String adresse;

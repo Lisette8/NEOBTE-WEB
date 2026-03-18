@@ -1,0 +1,50 @@
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1>Notifications</h1>
+      <p>Tout ce qui concerne votre compte, en temps réel</p>
+    </div>
+    <div class="actions">
+      <button class="btn" type="button" (click)="toggleUnreadOnly()">
+        {{ unreadOnly ? 'Afficher tout' : 'Afficher non lues' }}
+      </button>
+      <button class="btn primary" type="button" (click)="markAllRead()" [disabled]="notifications.length===0">
+        Tout marquer comme lu
+      </button>
+    </div>
+  </div>
+
+  <p class="status loading" *ngIf="loading">Chargement…</p>
+  <p class="status error" *ngIf="error">{{ error }}</p>
+
+  <div class="list" *ngIf="!loading && !error">
+    <button
+      class="item"
+      *ngFor="let n of notifications"
+      type="button"
+      [class.unread]="!n.lu"
+      (click)="markRead(n)"
+      [routerLink]="n.lien || null"
+    >
+      <div class="dot" *ngIf="!n.lu"></div>
+      <div class="txt">
+        <div class="row">
+          <p class="t">{{ n.titre }}</p>
+          <span class="d">{{ n.dateCreation | date:'d MMM y, HH:mm' }}</span>
+        </div>
+        <p class="m">{{ n.message }}</p>
+      </div>
+    </button>
+
+    <div class="empty" *ngIf="notifications.length===0">
+      Aucune notification.
+    </div>
+  </div>
+
+  <div class="pagination" *ngIf="totalPages > 1">
+    <button class="pg-btn" (click)="previousPage()" [disabled]="page === 0 || loading">← Précédent</button>
+    <span class="pg-label">Page {{ page + 1 }} / {{ totalPages }}</span>
+    <button class="pg-btn" (click)="nextPage()" [disabled]="page === totalPages - 1 || loading">Suivant →</button>
+  </div>
+</div>
+

@@ -1,24 +1,56 @@
-<h2>Actualités</h2>
-
-<p *ngIf="loading">Chargement...</p>
-<p class="error" *ngIf="error">{{ error }}</p>
-
-<div class="news-container" *ngIf="!loading">
-
-  <div class="news-card" *ngFor="let act of actualites">
-    <h3>{{ act.titre }}</h3>
-    <p class="date">{{ act.dateCreationActualite | date:'mediumDate' }}</p>
-    <p class="description">{{ act.description }}</p>
+<div class="news-shell">
+  <div class="news-top">
+    <div>
+      <h1 class="news-title">Actualités</h1>
+      <p class="news-sub">Les dernières publications de la BTE</p>
+    </div>
   </div>
 
-  <div class="empty-state" *ngIf="actualites.length === 0 && !error">
-    <p>Aucune actualité disponible pour le moment.</p>
+  <p class="status loading" *ngIf="loading">Chargement…</p>
+  <p class="status error" *ngIf="error">{{ error }}</p>
+
+  <div class="feed" *ngIf="!loading">
+    <article class="post" *ngFor="let act of actualites">
+      <div class="post-media" *ngIf="act.imageUrl">
+        <img [src]="mediaUrl(act.imageUrl)" [alt]="act.titre" loading="lazy" />
+      </div>
+
+      <div class="post-body">
+        <div class="post-meta">
+          <span class="pill" *ngIf="act.categorie">{{ act.categorie }}</span>
+          <span class="date">{{ act.dateCreationActualite | date:'d MMM y' }}</span>
+        </div>
+
+        <h2 class="post-title">{{ act.titre }}</h2>
+        <p class="post-subtitle" *ngIf="act.sousTitre">{{ act.sousTitre }}</p>
+
+        <p class="post-excerpt" *ngIf="act.description">{{ act.description }}</p>
+        <p class="post-content" *ngIf="act.contenu">{{ act.contenu }}</p>
+
+        <div class="reactions">
+          <button
+            class="rx"
+            *ngFor="let r of reactions"
+            (click)="react(act, r.key)"
+            [class.active]="act.myReaction === r.key"
+            type="button"
+          >
+            <span class="emoji" aria-hidden="true">{{ r.emoji }}</span>
+            <span class="rx-label">{{ r.label }}</span>
+            <span class="count" *ngIf="reactionCount(act, r.key) > 0">{{ reactionCount(act, r.key) }}</span>
+          </button>
+        </div>
+      </div>
+    </article>
+
+    <div class="empty-state" *ngIf="actualites.length === 0 && !error">
+      <p>Aucune actualité disponible pour le moment.</p>
+    </div>
   </div>
 
-</div>
-
-<div class="pagination">
-  <button (click)="previousPage()" [disabled]="page === 0 || loading">Previous</button>
-  <span>Page {{ page + 1 }} / {{ totalPages }}</span>
-  <button (click)="nextPage()" [disabled]="page === totalPages - 1 || loading">Next</button>
+  <div class="pagination">
+    <button class="pg-btn" (click)="previousPage()" [disabled]="page === 0 || loading">← Précédent</button>
+    <span class="pg-label">Page {{ page + 1 }} / {{ totalPages }}</span>
+    <button class="pg-btn" (click)="nextPage()" [disabled]="page === totalPages - 1 || loading">Suivant →</button>
+  </div>
 </div>

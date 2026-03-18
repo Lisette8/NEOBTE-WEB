@@ -17,6 +17,10 @@ export class CompteService {
   constructor(private http: HttpClient) {}
  
   // ── Client — accounts ──
+  getMyAccounts(): Observable<Compte[]> {
+    return this.http.get<Compte[]>(`${this.apiClient}/me`);
+  }
+
   getUserAccounts(userId: number): Observable<Compte[]> {
     return this.http.get<Compte[]>(`${this.apiClient}/utilisateur/${userId}`);
   }

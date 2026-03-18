@@ -41,6 +41,8 @@ import java.util.List;
 @Slf4j
 public class FraudeServiceImpl implements FraudeService {
 
+    private static final int PREMIUM_DAILY_COUNT_LIMIT = 50;
+
     private final IFraudeAlerteRepository alerteRepository;
     private final IFraudeConfigRepository configRepository;
     private final IUtilisateurRepository utilisateurRepository;
@@ -53,12 +55,27 @@ public class FraudeServiceImpl implements FraudeService {
     // Uses its own short read-only queries — no connection held by caller.
     // ─────────────────────────────────────────────────────────────────────────
     @Override
-    @Transactional(readOnly = true)
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void enforceHardLimits(Long senderUserId, double montant) {
         FraudeConfig cfg = getOrCreateConfig();
+        Utilisateur sender = utilisateurRepository.findById(senderUserId).orElse(null);
+        int effectiveDailyCountLimit = (sender != null && sender.isPremium())
+                ? PREMIUM_DAILY_COUNT_LIMIT
+                : cfg.getDailyCountLimit();
 
         // 1. Single transfer hard cap
         if (montant > cfg.getLargeTransferThreshold()) {
+            if (sender != null) {
+                alerteRepository.save(buildAlerte(
+                        FraudeAlertType.LARGE_SINGLE_TRANSFER,
+                        FraudeSeverity.HIGH,
+                        String.format(
+                                "Tentative de virement de %.3f TND au-dessus du seuil autorisé (%.3f TND).",
+                                montant, cfg.getLargeTransferThreshold()),
+                        sender,
+                        null
+                ));
+            }
             throw new BadRequestException(String.format(
                     "Montant de %.3f TND dépasse la limite par virement de %.3f TND. " +
                             "Contactez le support pour envoyer des montants plus importants.",
@@ -68,11 +85,22 @@ public class FraudeServiceImpl implements FraudeService {
         // 2. Daily count
         Date since24h = since(24 * 60);
         long countToday = alerteRepository.countTransfersSince(senderUserId, since24h);
-        if (countToday >= cfg.getDailyCountLimit()) {
+        if (countToday >= effectiveDailyCountLimit) {
+            if (sender != null) {
+                alerteRepository.save(buildAlerte(
+                        FraudeAlertType.DAILY_COUNT_EXCEEDED,
+                        FraudeSeverity.HIGH,
+                        String.format(
+                                "Limite de nombre de virements sur 24h dépassée (%d/%d).",
+                                countToday, effectiveDailyCountLimit),
+                        sender,
+                        null
+                ));
+            }
             throw new BadRequestException(String.format(
                     "Limite journalière atteinte : %d virements maximum par 24h. " +
                             "Votre limite sera réinitialisée dans les prochaines heures.",
-                    cfg.getDailyCountLimit()));
+                    effectiveDailyCountLimit));
         }
 
         // 3. Daily amount
@@ -80,6 +108,17 @@ public class FraudeServiceImpl implements FraudeService {
         double sentToday = rawSum != null ? rawSum.doubleValue() : 0.0;
         if (sentToday + montant > cfg.getDailyAmountLimit()) {
             double remaining = Math.max(0.0, cfg.getDailyAmountLimit() - sentToday);
+            if (sender != null) {
+                alerteRepository.save(buildAlerte(
+                        FraudeAlertType.DAILY_AMOUNT_EXCEEDED,
+                        FraudeSeverity.HIGH,
+                        String.format(
+                                "Limite de montant sur 24h dépassée (%.3f/%.3f TND). Tentative: %.3f TND.",
+                                sentToday, cfg.getDailyAmountLimit(), montant),
+                        sender,
+                        null
+                ));
+            }
             throw new BadRequestException(String.format(
                     "Ce virement dépasserait votre limite journalière de %.3f TND. " +
                             "Solde disponible aujourd'hui : %.3f TND.",

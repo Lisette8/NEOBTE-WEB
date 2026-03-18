@@ -1,30 +1,53 @@
 <div class="panel form-panel">
   <div class="panel-header">
     <div>
-      <h3>Publish Actualité</h3>
-      <p class="panel-subtitle">Create a new news article for clients</p>
+      <h3>{{ editingId ? 'Modifier une publication' : 'Créer une publication' }}</h3>
+      <p class="panel-subtitle">Publiez une actualité complète (image, contenu, catégorie) pour les clients</p>
     </div>
   </div>
   <div class="form-grid">
     <div class="field field-full">
-      <label>Title</label>
-      <input class="input" type="text" placeholder="Article title..." [(ngModel)]="titre">
+      <label>Titre</label>
+      <input class="input" type="text" placeholder="Titre de la publication…" [(ngModel)]="form.titre">
     </div>
     <div class="field field-full">
-      <label>Content</label>
-      <textarea class="input textarea" placeholder="Write your article content here..." [(ngModel)]="description"></textarea>
+      <label>Sous-titre (optionnel)</label>
+      <input class="input" type="text" placeholder="Un sous-titre court…" [(ngModel)]="form.sousTitre">
+    </div>
+    <div class="field">
+      <label>Catégorie</label>
+      <input class="input" type="text" placeholder="Ex: Banque, Sécurité, Produit…" [(ngModel)]="form.categorie">
+    </div>
+    <div class="field">
+      <label>Image (optionnel)</label>
+      <input class="input" type="file" accept="image/*" (change)="onImageSelected($event)">
+    </div>
+    <div class="field field-full" *ngIf="imagePreviewUrl">
+      <label>Aperçu</label>
+      <div class="image-preview">
+        <img [src]="imagePreviewUrl" alt="Aperçu image" />
+      </div>
+    </div>
+    <div class="field field-full">
+      <label>Résumé (extrait)</label>
+      <textarea class="input textarea" placeholder="Résumé court pour l'affichage dans le fil…" [(ngModel)]="form.description"></textarea>
+    </div>
+    <div class="field field-full">
+      <label>Contenu (optionnel)</label>
+      <textarea class="input textarea" style="height:160px" placeholder="Contenu complet de la publication…" [(ngModel)]="form.contenu"></textarea>
     </div>
   </div>
   <div class="form-footer">
-    <button class="btn btn-primary" (click)="createActualite()">Publish Article</button>
+    <button class="btn btn-ghost" *ngIf="editingId" (click)="cancelEdit()">Annuler</button>
+    <button class="btn btn-primary" (click)="submit()">{{ editingId ? 'Enregistrer' : 'Publier' }}</button>
   </div>
 </div>
 
 <div class="panel">
   <div class="panel-header">
     <div>
-      <h3>Published Articles</h3>
-      <p class="panel-subtitle">Manage existing news</p>
+      <h3>Publications</h3>
+      <p class="panel-subtitle">Gérer les publications existantes</p>
     </div>
     <div class="pagination-info">Page {{ page + 1 }} / {{ totalPages }}</div>
   </div>
@@ -32,43 +55,35 @@
   <div class="news-grid">
     <div class="news-card" *ngFor="let act of actualites">
 
-      <!-- View Mode -->
-      <ng-container *ngIf="editingId !== act.idActualite">
-        <div class="news-card-body">
-          <h4>{{ act.titre }}</h4>
-          <p>{{ act.description }}</p>
+      <div class="news-thumb" *ngIf="act.imageUrl">
+        <img [src]="mediaUrl(act.imageUrl)" [alt]="act.titre" />
+      </div>
+      <div class="news-card-body">
+        <div class="news-meta">
+          <span class="badge badge-blue" *ngIf="act.categorie">{{ act.categorie }}</span>
+          <span class="news-date">{{ act.dateCreationActualite | date:'d MMM y' }}</span>
         </div>
-        <div class="news-card-footer">
-          <span class="news-date">{{ act.dateCreationActualite | date:'MMM d, y' }}</span>
-          <div class="action-group">
-            <button class="btn-icon btn-edit" (click)="startEdit(act)" title="Edit">✏</button>
-            <button class="btn-icon btn-delete" (click)="deleteActualite(act.idActualite)" title="Delete">🗑</button>
-          </div>
+        <h4>{{ act.titre }}</h4>
+        <p class="news-sub" *ngIf="act.sousTitre">{{ act.sousTitre }}</p>
+        <p class="news-desc">{{ act.description }}</p>
+      </div>
+      <div class="news-card-footer">
+        <div class="action-group">
+          <button class="btn-icon btn-edit" (click)="startEdit(act)" title="Modifier">✏</button>
+          <button class="btn-icon btn-delete" (click)="deleteActualite(act.idActualite)" title="Supprimer">🗑</button>
         </div>
-      </ng-container>
-
-      <!-- Edit Mode -->
-      <ng-container *ngIf="editingId === act.idActualite">
-        <div class="edit-form">
-          <input class="input" type="text" [(ngModel)]="editTitre" placeholder="Title">
-          <textarea class="input textarea" [(ngModel)]="editDescription" placeholder="Content"></textarea>
-          <div class="edit-actions">
-            <button class="btn btn-ghost" (click)="cancelEdit()">Cancel</button>
-            <button class="btn btn-primary" (click)="updateActualite(act.idActualite)">Save</button>
-          </div>
-        </div>
-      </ng-container>
+      </div>
 
     </div>
   </div>
 
   <div class="empty-state" *ngIf="actualites.length === 0">
-    <p>No articles published yet.</p>
+    <p>Aucune publication pour l'instant.</p>
   </div>
 
   <div class="pagination">
-    <button class="btn btn-ghost" (click)="previousPage()" [disabled]="page === 0">← Previous</button>
+    <button class="btn btn-ghost" (click)="previousPage()" [disabled]="page === 0">← Précédent</button>
     <span class="page-indicator">{{ page + 1 }} / {{ totalPages }}</span>
-    <button class="btn btn-ghost" (click)="nextPage()" [disabled]="page === totalPages - 1">Next →</button>
+    <button class="btn btn-ghost" (click)="nextPage()" [disabled]="page === totalPages - 1">Suivant →</button>
   </div>
 </div>

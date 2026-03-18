@@ -10,6 +10,6 @@ public class ResetPasswordRequest {
     private String resetToken;
 
     @NotBlank
-    @Size(min = 8, message = "Password must be at least 8 characters")
+    @Size(min = 8, message = "Le mot de passe doit contenir au moins 8 caractères")
     private String newPassword;
 }

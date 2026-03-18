@@ -15,4 +15,5 @@ export interface UserListDTO {
   role: 'ADMIN' | 'CLIENT';
   dateCreationCompte?: string;
   totalSolde?: number;
+  premium?: boolean;
 }

@@ -1,0 +1,54 @@
+<div class="insights-card">
+  <div class="insights-header">
+    <span class="insights-badge" [class.locked]="!isPremium">
+      <svg *ngIf="isPremium" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="3 17 9 11 13 15 21 7" />
+        <polyline points="14 7 21 7 21 14" />
+      </svg>
+      <svg *ngIf="!isPremium" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="11" width="18" height="11" rx="2" />
+        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+      </svg>
+      Graphiques personnels
+    </span>
+    <a routerLink="/pricing-view" class="insights-upgrade" *ngIf="!isPremium">Voir Premium →</a>
+  </div>
+
+  <div class="locked-upsell" *ngIf="!isPremium">
+    <p class="lu-title">Premium requis</p>
+    <p class="lu-body">Accédez à vos statistiques de virements et à la tendance de votre solde.</p>
+    <a routerLink="/pricing-view" class="lu-btn">Voir les offres</a>
+  </div>
+
+  <ng-container *ngIf="isPremium">
+    <div class="insights-stats" *ngIf="insights">
+      <div class="stat">
+        <p class="k">Envoyé (mois)</p>
+        <p class="v">{{ insights.summary.sentThisMonth | number:'1.2-2' }} TND</p>
+      </div>
+      <div class="stat">
+        <p class="k">Reçu (mois)</p>
+        <p class="v">{{ insights.summary.receivedThisMonth | number:'1.2-2' }} TND</p>
+      </div>
+      <div class="stat">
+        <p class="k">Virements</p>
+        <p class="v">{{ insights.summary.txCountThisMonth }}</p>
+      </div>
+    </div>
+
+    <p class="status-msg loading" *ngIf="loading">Chargement des statistiques…</p>
+    <p class="status-msg error" *ngIf="!loading && error">{{ error }}</p>
+
+    <div class="charts" *ngIf="!loading && insights">
+      <div class="chart-block">
+        <p class="chart-title">Envoyé / reçu par mois</p>
+        <div class="chart-wrap"><canvas #monthlyChart></canvas></div>
+      </div>
+
+      <div class="chart-block">
+        <p class="chart-title">Tendance du solde ({{ insights.dailyBalance.labels.length }} jours)</p>
+        <div class="chart-wrap"><canvas #balanceChart></canvas></div>
+      </div>
+    </div>
+  </ng-container>
+</div>

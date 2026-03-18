@@ -4,6 +4,8 @@ import { Observable } from 'rxjs';
 import { Virement } from '../Entities/Interfaces/virement';
 import { VirementCreateDTO } from '../Entities/DTO/virement-create-dto';
 import { RecipientPreview } from '../Entities/Interfaces/recipient-preview';
+import { InternalTransferCreateDTO } from '../Entities/DTO/internal-transfer-create-dto';
+import { TransferConstraints } from '../Entities/Interfaces/transfer-constraints';
 
 @Injectable({
   providedIn: 'root'
@@ -21,9 +23,17 @@ export class VirementService {
       `${this.apiClient}/resolve-recipient?identifier=${encodeURIComponent(identifier)}`
     );
   }
+
+  getConstraints(internal = false): Observable<TransferConstraints> {
+    return this.http.get<TransferConstraints>(`${this.apiClient}/constraints?internal=${internal}`);
+  }
  
   transfer(data: VirementCreateDTO): Observable<Virement> {
     return this.http.post<Virement>(`${this.apiClient}/transfer`, data);
+  }
+
+  transferInterne(data: InternalTransferCreateDTO): Observable<Virement> {
+    return this.http.post<Virement>(`${this.apiClient}/transfer-interne`, data);
   }
  
   // History for the logged-in user (all their accounts)

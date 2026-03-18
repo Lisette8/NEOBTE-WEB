@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.*;
 import java.security.*;
 import java.util.*;
 import java.util.function.Function;
+import jakarta.annotation.PostConstruct;
 
 @Service
 public class JwtService {
@@ -17,6 +18,17 @@ public class JwtService {
 
     @Value("${jwt.expiration}")
     private long jwtExpiration;
+
+    @PostConstruct
+    void validateSecret() {
+        if (secret == null || secret.isBlank()) {
+            throw new IllegalStateException("La clé JWT (jwt.secret) est manquante. Définissez la variable d'environnement JWT_SECRET.");
+        }
+        // HS256 requires >= 256 bits (32 bytes) key length.
+        if (secret.getBytes().length < 32) {
+            throw new IllegalStateException("La clé JWT est trop courte. Utilisez au moins 32 caractères pour JWT_SECRET.");
+        }
+    }
 
 
     //token generation
@@ -80,4 +92,3 @@ public class JwtService {
     }
 
 }
-

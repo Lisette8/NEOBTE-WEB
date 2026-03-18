@@ -42,4 +42,11 @@ export class AdminService {
     return this.http.delete(`${this.api}/users/${id}`);
   }
 
+  setPremium(userId: number, premium: boolean): Observable<{ userId: number; premium: boolean }> {
+    return this.http.put<{ userId: number; premium: boolean }>(
+      `${this.api}/users/${userId}/premium`,
+      { premium }
+    );
+  }
+
 }

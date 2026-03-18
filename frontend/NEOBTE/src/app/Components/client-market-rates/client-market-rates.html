@@ -1,0 +1,49 @@
+<section class="card">
+  <div class="hd">
+    <div>
+      <h3>Marchés en temps réel</h3>
+      <p>Mise à jour automatique (≈ 60 secondes)</p>
+    </div>
+    <button class="btn" type="button" (click)="refresh()" [disabled]="!isPremium || loading">
+      {{ loading ? 'Actualisation…' : 'Actualiser' }}
+    </button>
+  </div>
+
+  <div class="locked" *ngIf="!isPremium">
+    <div class="lock">Premium</div>
+    <p>Accédez aux taux de change et aux prix crypto en quasi temps réel.</p>
+    <p class="hint">Passez à Premium pour débloquer cette fonctionnalité.</p>
+  </div>
+
+  <p class="status error" *ngIf="isPremium && error">{{ error }}</p>
+
+  <div class="meta" *ngIf="isPremium && data">
+    <span>Dernière mise à jour : {{ updatedLabel }}</span>
+    <span class="pill" *ngIf="data.stale">Données en cache</span>
+  </div>
+
+  <div class="grid" *ngIf="isPremium && data">
+    <div class="block">
+      <h4>Devises (TND)</h4>
+      <div class="row" *ngFor="let r of data.fx">
+        <span class="k">1 {{ r.pair.split('/')[0] }}</span>
+        <span class="v">{{ r.rate | number:'1.4-4' }} {{ r.pair.split('/')[1] }}</span>
+      </div>
+      <p class="note">Indicatif — peut différer du taux bancaire.</p>
+    </div>
+
+    <div class="block">
+      <h4>Crypto</h4>
+      <div class="row" *ngFor="let c of data.crypto">
+        <span class="k">{{ c.symbol }}</span>
+        <span class="v">
+          <span *ngIf="c.priceUsd != null">${{ c.priceUsd | number:'1.2-2' }}</span>
+          <span class="sep">·</span>
+          <span *ngIf="c.priceTnd != null">{{ c.priceTnd | number:'1.2-2' }} TND</span>
+        </span>
+      </div>
+      <p class="note">Les prix crypto sont volatils. NeoBTE ne fournit pas de conseil en investissement.</p>
+    </div>
+  </div>
+</section>
+

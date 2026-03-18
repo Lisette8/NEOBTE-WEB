@@ -28,6 +28,10 @@ public interface IVirementRepository extends JpaRepository<Virement, Long> {
             "ORDER BY TRUNC(date_de_virement)", nativeQuery = true)
     List<Object[]> dailyTransferStats(@Param("since") Date since);
 
+    /** Count outgoing transfers made by a user since a given date (used for monthly plan limits). */
+    @Query("SELECT COUNT(v) FROM Virement v WHERE v.compteDe.utilisateur.idUtilisateur = :userId AND v.dateDeVirement >= :since")
+    long countOutgoingSince(@Param("userId") Long userId, @Param("since") Date since);
+
     @Query("SELECT COUNT(v) FROM Virement v")
     long countTotal();
 

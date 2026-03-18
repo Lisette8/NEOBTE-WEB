@@ -21,6 +21,8 @@ public interface IUtilisateurRepository extends JpaRepository<Utilisateur, Long>
 
     long countByRole(Role role);
 
+    List<Utilisateur> findByRole(Role role);
+
     /** Monthly user registration counts (YYYY-MM, count) — Oracle TO_CHAR */
     @Query(value = "SELECT TO_CHAR(date_creation_compte, 'YYYY-MM') AS month, COUNT(*) AS cnt " +
             "FROM utilisateur " +

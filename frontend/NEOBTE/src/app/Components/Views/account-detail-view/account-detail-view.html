@@ -5,36 +5,12 @@
     Retour
   </button>
 
-  <!-- Hero card -->
-  <div class="account-hero">
-    <div class="ah-top">
-      <div class="ah-icon">
-        <svg *ngIf="compte.typeCompte === 'COURANT'" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
-        </svg>
-        <svg *ngIf="compte.typeCompte === 'EPARGNE'" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
-        </svg>
-        <svg *ngIf="compte.typeCompte === 'PROFESSIONNEL'" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
-        </svg>
-      </div>
-      <span class="badge" [ngClass]="{
-        'badge-green': compte.statutCompte === 'ACTIVE',
-        'badge-amber': compte.statutCompte === 'SUSPENDU' || compte.statutCompte === 'BLOQUE',
-        'badge-red':   compte.statutCompte === 'CLOTURE'
-      }">{{ statutLabel }}</span>
-    </div>
-
-    <div class="ah-live-row">
-      <p class="ah-label">{{ accountLabel }}</p>
-      <span class="live-dot" title="Données en direct">
-        <span class="live-ring"></span>
-      </span>
-    </div>
-    <p class="ah-id">Compte #{{ compte.idCompte }}</p>
-    <p class="ah-balance">{{ compte.solde | number:'1.3-3' }}</p>
-    <p class="ah-currency">TND</p>
+  <div class="account-card-wrap">
+    <app-account-physical-card
+      [compte]="compte"
+      [linkEnabled]="false"
+      [showCta]="false"
+    ></app-account-physical-card>
   </div>
 
   <!-- Feedback -->

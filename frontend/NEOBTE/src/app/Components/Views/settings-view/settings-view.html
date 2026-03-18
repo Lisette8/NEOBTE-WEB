@@ -1,0 +1,345 @@
+<div class="settings">
+  <div class="top">
+    <div>
+      <h1>Paramètres</h1>
+      <p>Gérez votre compte et vos préférences</p>
+    </div>
+    <button class="btn ghost" *ngIf="!loading && !error" type="button" (click)="logout()" [disabled]="loggingOut">
+      {{ loggingOut ? 'Déconnexion…' : 'Se déconnecter' }}
+    </button>
+  </div>
+
+  <p class="status loading" *ngIf="loading">Chargement…</p>
+  <p class="status error" *ngIf="error">{{ error }}</p>
+  <p class="hint error" *ngIf="logoutError">{{ logoutError }}</p>
+
+  <div class="layout" *ngIf="!loading && !error">
+    <nav class="menu" aria-label="Sections des paramètres">
+      <button class="menu-item" type="button" [class.active]="section==='profil'" (click)="setSection('profil')">
+        Profil
+      </button>
+      <button class="menu-item" type="button" [class.active]="section==='securite'" (click)="setSection('securite')">
+        Sécurité
+      </button>
+      <button class="menu-item" type="button" [class.active]="section==='abonnement'" (click)="setSection('abonnement')">
+        Abonnement
+      </button>
+      <button class="menu-item" type="button" [class.active]="section==='notifications'" (click)="setSection('notifications')">
+        Notifications
+      </button>
+      <button class="menu-item" type="button" [class.active]="section==='assistance'" (click)="setSection('assistance')">
+        Assistance
+      </button>
+      <button class="menu-item" type="button" [class.active]="section==='bte'" (click)="setSection('bte')">
+        BTE
+      </button>
+      <button class="menu-item" type="button" [class.active]="section==='a-propos'" (click)="setSection('a-propos')">
+        À propos
+      </button>
+    </nav>
+
+    <div class="content">
+      <!-- Profil -->
+      <section class="card" *ngIf="section==='profil'">
+        <div class="card-hd">
+          <h2>Profil</h2>
+          <p>Vos informations personnelles et votre photo</p>
+        </div>
+
+        <div class="photo-row">
+          <div class="avatar" [class.has]="photoPreviewUrl">
+            <img *ngIf="photoPreviewUrl" [src]="photoPreviewUrl" alt="Photo de profil" />
+            <span *ngIf="!photoPreviewUrl">{{ (profile?.prenom?.[0] || 'U') }}</span>
+          </div>
+          <div class="photo-actions">
+            <input type="file" accept="image/*" (change)="onSelectPhoto($event)" />
+            <button class="btn" type="button" (click)="uploadPhoto()" [disabled]="!photoFile || uploadingPhoto">
+              {{ uploadingPhoto ? 'Envoi…' : 'Enregistrer la photo' }}
+            </button>
+            <p class="hint error" *ngIf="photoError">{{ photoError }}</p>
+          </div>
+        </div>
+
+        <div class="form">
+          <div class="field">
+            <label>Nom</label>
+            <input [(ngModel)]="form.nom" />
+          </div>
+          <div class="field">
+            <label>Prénom</label>
+            <input [(ngModel)]="form.prenom" />
+          </div>
+          <div class="field">
+            <label>Téléphone</label>
+            <input [(ngModel)]="form.telephone" placeholder="Ex: 20123456" />
+          </div>
+          <div class="field">
+            <label>Profession</label>
+            <input [(ngModel)]="form.job" />
+          </div>
+          <div class="field">
+            <label>Genre</label>
+            <select [(ngModel)]="form.genre">
+              <option [ngValue]="null">—</option>
+              <option [ngValue]="'HOMME'">Homme</option>
+              <option [ngValue]="'FEMME'">Femme</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Pays</label>
+            <input [(ngModel)]="form.pays" />
+          </div>
+          <div class="field wide">
+            <label>Adresse</label>
+            <input [(ngModel)]="form.adresse" />
+          </div>
+          <div class="field">
+            <label>Code postal</label>
+            <input [(ngModel)]="form.codePostal" />
+          </div>
+        </div>
+
+        <p class="hint ok" *ngIf="profileSuccess">{{ profileSuccess }}</p>
+        <p class="hint error" *ngIf="profileError">{{ profileError }}</p>
+
+        <div class="actions">
+          <button class="btn primary" type="button" (click)="saveProfile()" [disabled]="savingProfile">
+            {{ savingProfile ? 'Enregistrement…' : 'Enregistrer' }}
+          </button>
+        </div>
+      </section>
+
+      <!-- Sécurité -->
+      <section class="card" *ngIf="section==='securite'">
+        <div class="card-hd">
+          <h2>Sécurité</h2>
+          <p>Mot de passe et récupération du compte</p>
+        </div>
+
+        <div class="callout">
+          <p class="callout-title">Bon à savoir</p>
+          <p class="callout-body">
+            Pour votre sécurité, la modification du mot de passe est limitée à une fois tous les 7 jours.
+          </p>
+        </div>
+
+        <div class="form">
+          <div class="field wide">
+            <label>Ancien mot de passe</label>
+            <input type="password" [(ngModel)]="oldPassword" />
+            <p class="hint error" *ngIf="passwordFieldError.old">{{ passwordFieldError.old }}</p>
+          </div>
+          <div class="field">
+            <label>Nouveau mot de passe</label>
+            <input type="password" [(ngModel)]="newPassword" />
+            <p class="hint error" *ngIf="passwordFieldError.n1">{{ passwordFieldError.n1 }}</p>
+          </div>
+          <div class="field">
+            <label>Confirmer</label>
+            <input type="password" [(ngModel)]="confirmPassword" />
+            <p class="hint error" *ngIf="passwordFieldError.n2">{{ passwordFieldError.n2 }}</p>
+          </div>
+        </div>
+
+        <p class="hint ok" *ngIf="passwordSuccess">{{ passwordSuccess }}</p>
+        <p class="hint error" *ngIf="passwordError">{{ passwordError }}</p>
+
+        <div class="actions">
+          <button class="btn primary" type="button" (click)="savePassword()" [disabled]="savingPassword">
+            {{ savingPassword ? 'Mise à jour…' : 'Mettre à jour' }}
+          </button>
+        </div>
+
+        <div class="divider"></div>
+
+        <button class="link" type="button" (click)="toggleForgotPassword()">
+          Mot de passe oublié ?
+        </button>
+
+        <div class="forgot" *ngIf="showForgotPassword">
+          <p class="hint">
+            Réinitialisez votre mot de passe par e-mail. Cette option utilise la même procédure que la page de connexion.
+          </p>
+
+          <p class="hint ok" *ngIf="fpSuccess">{{ fpSuccess }}</p>
+          <p class="hint error" *ngIf="fpError">{{ fpError }}</p>
+
+          <ng-container [ngSwitch]="fpStep">
+            <div *ngSwitchCase="'email'" class="form">
+              <div class="field wide">
+                <label>E-mail</label>
+                <input [(ngModel)]="fpEmail" placeholder="ex: client@email.com" />
+              </div>
+              <div class="actions">
+                <button class="btn" type="button" (click)="sendResetCode()" [disabled]="fpLoading">
+                  {{ fpLoading ? 'Envoi…' : 'Envoyer un code' }}
+                </button>
+              </div>
+            </div>
+
+            <div *ngSwitchCase="'code'" class="form">
+              <div class="field wide">
+                <label>Code de vérification</label>
+                <input [(ngModel)]="fpCode" placeholder="6 chiffres" inputmode="numeric" />
+              </div>
+              <div class="actions">
+                <button class="btn primary" type="button" (click)="verifyResetCode()" [disabled]="fpLoading">
+                  {{ fpLoading ? 'Vérification…' : 'Vérifier' }}
+                </button>
+                <button class="btn" type="button" (click)="resendResetCode()" [disabled]="fpLoading">
+                  Renvoyer le code
+                </button>
+              </div>
+            </div>
+
+            <div *ngSwitchCase="'new'" class="form">
+              <div class="field wide">
+                <label>Nouveau mot de passe</label>
+                <input type="password" [(ngModel)]="fpNewPassword" placeholder="Au moins 8 caractères" />
+              </div>
+              <div class="field wide">
+                <label>Confirmer</label>
+                <input type="password" [(ngModel)]="fpConfirmPassword" />
+              </div>
+              <div class="actions">
+                <button class="btn primary" type="button" (click)="resetPassword()" [disabled]="fpLoading">
+                  {{ fpLoading ? 'Mise à jour…' : 'Réinitialiser' }}
+                </button>
+              </div>
+            </div>
+
+            <div *ngSwitchCase="'done'" class="done">
+              <p class="done-title">Mot de passe mis à jour</p>
+              <p class="done-body">Votre mot de passe a été réinitialisé avec succès.</p>
+            </div>
+          </ng-container>
+        </div>
+      </section>
+
+      <!-- Abonnement -->
+      <section class="card" *ngIf="section==='abonnement'">
+        <div class="card-hd">
+          <h2>Abonnement</h2>
+          <p>Découvrez les avantages de Premium</p>
+        </div>
+
+        <div class="callout">
+          <p class="callout-title">Premium</p>
+          <p class="callout-body">
+            Accédez à l’assistant IA, aux graphiques personnels et à des limites de virements plus élevées.
+          </p>
+        </div>
+
+        <div class="actions">
+          <a class="btn primary" routerLink="/pricing-view">Voir les offres</a>
+        </div>
+      </section>
+
+      <!-- Notifications -->
+      <section class="card" *ngIf="section==='notifications'">
+        <div class="card-hd">
+          <h2>Notifications</h2>
+          <p>Gérez vos alertes et préférences</p>
+        </div>
+
+        <p class="hint">
+          Consultez vos notifications (virements, sécurité, actualités) et marquez-les comme lues.
+        </p>
+
+        <div class="actions">
+          <a class="btn primary" routerLink="/notifications-view">Ouvrir</a>
+        </div>
+      </section>
+
+      <!-- Assistance -->
+      <section class="card" *ngIf="section==='assistance'">
+        <div class="card-hd">
+          <h2>Assistance</h2>
+          <p>Besoin d’aide ? Contactez-nous</p>
+        </div>
+
+        <div class="stack">
+          <div class="row">
+            <div>
+              <p class="row-title">Support dans l’application</p>
+              <p class="row-body">Ouvrez une demande et suivez son traitement.</p>
+            </div>
+            <a class="btn" routerLink="/support-view">Accéder</a>
+          </div>
+
+          <div class="row">
+            <div>
+              <p class="row-title">Site officiel BTE</p>
+              <p class="row-body">Informations, agences, contact et actualités.</p>
+            </div>
+            <a class="btn" href="https://www.bte.com.tn/fr/" target="_blank" rel="noopener noreferrer">
+              Ouvrir
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- BTE -->
+      <section class="card" *ngIf="section==='bte'">
+        <div class="card-hd">
+          <h2>BTE</h2>
+          <p>Informations utiles et contact</p>
+        </div>
+
+        <div class="stack">
+          <div class="row">
+            <div>
+              <p class="row-title">Centre de relation client</p>
+              <p class="row-body">Tél. : (+216) 71 112 000</p>
+            </div>
+            <a class="btn" href="tel:+21671112000">Appeler</a>
+          </div>
+          <div class="row">
+            <div>
+              <p class="row-title">Adresse</p>
+              <p class="row-body">Centre Urbain Nord — Tunis</p>
+            </div>
+            <a class="btn" href="https://www.bte.com.tn/fr/" target="_blank" rel="noopener noreferrer">Détails</a>
+          </div>
+          <div class="row">
+            <div>
+              <p class="row-title">Cours des devises</p>
+              <p class="row-body">Consultez les cours indicatifs (site BTE).</p>
+            </div>
+            <a class="btn" href="https://www.bte.com.tn/fr/" target="_blank" rel="noopener noreferrer">Ouvrir</a>
+          </div>
+          <div class="row">
+            <div>
+              <p class="row-title">Réclamations</p>
+              <p class="row-body">Envoyer une réclamation via le site officiel.</p>
+            </div>
+            <a class="btn" href="https://www.bte.com.tn/fr/" target="_blank" rel="noopener noreferrer">Ouvrir</a>
+          </div>
+        </div>
+      </section>
+
+      <!-- À propos -->
+      <section class="card" *ngIf="section==='a-propos'">
+        <div class="card-hd">
+          <h2>À propos</h2>
+          <p>Informations sur l’application</p>
+        </div>
+
+        <div class="stack">
+          <div class="row">
+            <div>
+              <p class="row-title">Confidentialité</p>
+              <p class="row-body">Vos données sont utilisées uniquement pour fournir le service.</p>
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <p class="row-title">Mentions</p>
+              <p class="row-body">Banque de Tunisie et des Emirats — BTE</p>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>

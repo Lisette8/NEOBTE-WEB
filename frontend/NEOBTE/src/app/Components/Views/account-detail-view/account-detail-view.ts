@@ -11,11 +11,12 @@ import { FormsModule } from '@angular/forms';
 import { Subscription, interval} from 'rxjs';
 import { switchMap, startWith } from 'rxjs/operators';
 import { BalanceChart } from '../../balance-chart/balance-chart';
+import { AccountPhysicalCard } from '../../account-physical-card/account-physical-card';
 
 @Component({
   selector: 'app-account-detail-view',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, BalanceChart],
+  imports: [CommonModule, RouterLink, FormsModule, BalanceChart, AccountPhysicalCard],
   templateUrl: './account-detail-view.html',
   styleUrl: './account-detail-view.css',
 })

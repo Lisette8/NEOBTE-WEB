@@ -1,7 +1,7 @@
 import { Routes } from '@angular/router';
 import { HomeView } from './Components/Views/home-view/home-view';
 import { AuthView } from './Components/Views/auth-view/auth-view';
-import { AdminDashboard } from './Components/adminComponents/admin-dashboard/admin-dashboard'; 
+import { AdminDashboard } from './Components/adminComponents/admin-dashboard/admin-dashboard';
 import { UserManagement } from './Components/adminComponents/user-management/user-management';
 import { LandingView } from './Components/Views/landing-view/landing-view';
 import { adminGuard } from './Security/Guards/AdminGuard';
@@ -17,6 +17,9 @@ import { CompteManagement } from './Components/adminComponents/compte-management
 import { AccountDetailView } from './Components/Views/account-detail-view/account-detail-view';
 import { ReceiveView } from './Components/Views/receive-view/receive-view';
 import { TreasuryComponent } from './Components/adminComponents/treasury-component/treasury-component';
+import { PricingView } from './Components/Views/pricing-view/pricing-view';
+import { SettingsView } from './Components/Views/settings-view/settings-view';
+import { NotificationsView } from './Components/Views/notifications-view/notifications-view';
 
 export const routes: Routes = [
   {
@@ -29,9 +32,10 @@ export const routes: Routes = [
     component: AccountDetailView,
     canActivate: [authGuard],
   },
-  { path: 'receive',        
-    component: ReceiveView,        
-    canActivate: [authGuard] 
+  {
+    path: 'receive',
+    component: ReceiveView,
+    canActivate: [authGuard]
   },
   {
     path: 'auth-view',
@@ -51,6 +55,21 @@ export const routes: Routes = [
   {
     path: 'landing-view',
     component: LandingView,
+  },
+  {
+    path: 'pricing-view',
+    component: PricingView,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'settings-view',
+    component: SettingsView,
+    canActivate: [authGuard],
+  },
+  {
+    path: 'notifications-view',
+    component: NotificationsView,
+    canActivate: [authGuard],
   },
   {
     path: 'support-view',

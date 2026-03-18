@@ -16,6 +16,28 @@
 .card-head h1 { font-size: 1.2rem; font-weight: 700; color: var(--text-1); letter-spacing: -0.03em; margin-bottom: 4px; }
 .card-head p  { font-size: 0.83rem; color: var(--text-2); }
 
+.mode-tabs {
+  display: flex;
+  gap: 10px;
+  margin: 0 0 18px;
+}
+.tab {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: var(--r-md);
+  border: 1px solid var(--border);
+  background: #fff;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 0.84rem;
+  color: var(--text-2);
+}
+.tab.active {
+  background: var(--blue-light);
+  border-color: #bfdbfe;
+  color: var(--blue);
+}
+
 /* Form */
 .form-group { margin-bottom: 18px; }
 
@@ -46,6 +68,13 @@
   display: flex; align-items: center; justify-content: center;
   font-size: 0.85rem; font-weight: 700;
   flex-shrink: 0;
+}
+.rp-avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
 }
 
 .rp-name { font-size: 0.88rem; font-weight: 600; color: var(--text-1); margin-bottom: 2px; }

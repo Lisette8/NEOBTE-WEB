@@ -4,6 +4,7 @@ export interface RecipientPreview {
     primaryCompteId: number;
     primaryCompteType: string;
     found: boolean;
+    photoUrl?: string | null;
     feeRate: number;
     estimatedFee: number | null;
  

@@ -11,17 +11,15 @@ import lombok.Setter;
 @AllArgsConstructor
 public class UpdateProfileRequest {
 
-    @NotBlank(message = "Last name is required")
+    @NotBlank(message = "Le nom est obligatoire")
     private String nom;
 
-    @NotBlank(message = "First name is required")
+    @NotBlank(message = "Le prénom est obligatoire")
     private String prenom;
 
-    @NotBlank(message = "Phone number is required")
-    @Pattern(regexp = "^[+]?[0-9]{8,15}$", message = "Invalid phone number")
+    @Pattern(regexp = "^$|^[+]?[0-9]{8,15}$", message = "Numéro de téléphone invalide")
     private String telephone;
 
-    @NotBlank(message = "Job is required")
     private String job;
 
     private Genre genre;

@@ -6,10 +6,19 @@
     <ng-container *ngIf="step === 'lookup'">
       <div class="card-head">
         <h1>Envoyer de l'argent</h1>
-        <p>Transférez des fonds vers un autre utilisateur NEO BTE</p>
+        <p *ngIf="mode === 'externe'">Transférez des fonds vers un autre utilisateur NEO BTE</p>
+        <p *ngIf="mode === 'interne'">Transférez des fonds entre vos propres comptes</p>
       </div>
 
-      <div [formGroup]="transferForm">
+      <div class="mode-tabs">
+        <button class="tab" type="button" [class.active]="mode==='externe'" (click)="setMode('externe')">Vers un utilisateur</button>
+        <button class="tab" type="button" [class.active]="mode==='interne'" (click)="setMode('interne')" *ngIf="comptes.length > 1">
+          Entre mes comptes
+        </button>
+      </div>
+
+      <!-- EXTERNE -->
+      <div *ngIf="mode === 'externe'" [formGroup]="transferForm">
         <div class="form-group">
           <label class="label">Destinataire</label>
           <div class="input-group">
@@ -33,7 +42,10 @@
 
         <!-- Preview destinataire -->
         <div class="recipient-preview" *ngIf="recipient">
-          <div class="rp-avatar">{{ recipient.displayName.charAt(0).toUpperCase() }}</div>
+          <div class="rp-avatar">
+            <img *ngIf="recipient.photoUrl" [src]="mediaUrl(recipient.photoUrl)" [alt]="recipient.displayName" />
+            <span *ngIf="!recipient.photoUrl">{{ recipient.displayName.charAt(0).toUpperCase() }}</span>
+          </div>
           <div class="rp-info">
             <p class="rp-name">{{ recipient.displayName }}</p>
             <div class="rp-meta">
@@ -91,27 +103,105 @@
           </svg>
         </button>
       </div>
+
+      <!-- INTERNE -->
+      <div *ngIf="mode === 'interne'" [formGroup]="internalForm">
+        <div class="form-group">
+          <label class="label">Compte source</label>
+          <select class="input" formControlName="compteSourceId">
+            <option [ngValue]="null">Sélectionner…</option>
+            <option *ngFor="let c of comptes" [ngValue]="c.idCompte">
+              #{{ c.idCompte }} · {{ c.typeCompte }} · {{ c.solde | number:'1.3-3' }} TND
+            </option>
+          </select>
+          <div class="field-error" *ngIf="fieldInvalid('compteSourceId')">Veuillez choisir un compte source.</div>
+        </div>
+
+        <div class="form-group">
+          <label class="label">Compte destination</label>
+          <select class="input" formControlName="compteDestinationId">
+            <option [ngValue]="null">Sélectionner…</option>
+            <option *ngFor="let c of comptes" [ngValue]="c.idCompte" [disabled]="c.idCompte === compteSourceId">
+              #{{ c.idCompte }} · {{ c.typeCompte }} · {{ c.solde | number:'1.3-3' }} TND
+            </option>
+          </select>
+          <div class="field-error" *ngIf="fieldInvalid('compteDestinationId')">Veuillez choisir un compte destination.</div>
+        </div>
+
+        <div class="form-group">
+          <label class="label">Montant</label>
+          <div class="input-group">
+            <span class="input-icon">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/>
+              </svg>
+            </span>
+            <input class="input" type="number" min="1" formControlName="montant" placeholder="0.000">
+            <span class="currency-suffix">TND</span>
+          </div>
+          <div class="field-error" *ngIf="fieldInvalid('montant')">Minimum 1 TND.</div>
+        </div>
+
+        <div class="fee-breakdown" *ngIf="montant > 0">
+          <div class="fee-row"><span>Montant transféré</span><span>{{ montant | number:'1.3-3' }} TND</span></div>
+          <div class="fee-row fee-line"><span>Frais</span><span>{{ estimatedFee | number:'1.3-3' }} TND</span></div>
+          <div class="fee-row total-line"><span>Total débité</span><span>{{ totalDebite | number:'1.3-3' }} TND</span></div>
+        </div>
+
+        <div class="limit-warning" *ngIf="limitWarning && montant > 0">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+          </svg>
+          {{ limitWarning }}
+        </div>
+
+        <div class="error-box" style="margin-bottom:14px" *ngIf="error">{{ error }}</div>
+
+        <button class="btn-submit" (click)="proceedToConfirm()"
+          [disabled]="internalForm.invalid || !montant || hasLimitError">
+          Continuer
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="9 18 15 12 9 6"/>
+          </svg>
+        </button>
+      </div>
     </ng-container>
 
 
     <!-- ÉTAPE 2 : CONFIRMATION -->
     <ng-container *ngIf="step === 'confirm'">
       <div class="card-head">
-        <h1>Confirmer le virement</h1>
-        <p>Vérifiez les détails avant d'envoyer</p>
+        <h1 *ngIf="mode === 'externe'">Confirmer le virement</h1>
+        <h1 *ngIf="mode === 'interne'">Confirmer le transfert interne</h1>
+        <p>Vérifiez les détails avant de valider</p>
       </div>
 
       <div class="confirm-summary">
+        <ng-container *ngIf="mode === 'externe'">
+          <div class="cs-row">
+            <span class="cs-label">Destinataire</span>
+            <span class="cs-value">{{ recipient!.displayName }}</span>
+          </div>
+          <div class="cs-row">
+            <span class="cs-label">Compte</span>
+            <span class="cs-value">#{{ recipient!.primaryCompteId }} <span class="type-pill">{{ recipient!.primaryCompteType }}</span></span>
+          </div>
+        </ng-container>
+
+        <ng-container *ngIf="mode === 'interne'">
+          <div class="cs-row">
+            <span class="cs-label">Compte source</span>
+            <span class="cs-value">#{{ compteSourceId }}</span>
+          </div>
+          <div class="cs-row">
+            <span class="cs-label">Compte destination</span>
+            <span class="cs-value">#{{ compteDestinationId }}</span>
+          </div>
+        </ng-container>
+
         <div class="cs-row">
-          <span class="cs-label">Destinataire</span>
-          <span class="cs-value">{{ recipient!.displayName }}</span>
-        </div>
-        <div class="cs-row">
-          <span class="cs-label">Compte</span>
-          <span class="cs-value">#{{ recipient!.primaryCompteId }} <span class="type-pill">{{ recipient!.primaryCompteType }}</span></span>
-        </div>
-        <div class="cs-row">
-          <span class="cs-label">Montant reçu</span>
+          <span class="cs-label">Montant</span>
           <span class="cs-value">{{ montant | number:'1.3-3' }} TND</span>
         </div>
         <div class="cs-row cs-fee">
@@ -126,7 +216,8 @@
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;margin-top:1px">
             <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
           </svg>
-          Les fonds seront débités de votre compte principal.
+          <span *ngIf="mode === 'externe'">Les fonds seront débités de votre compte principal.</span>
+          <span *ngIf="mode === 'interne'">Les fonds seront débités du compte source sélectionné.</span>
         </div>
       </div>
 
@@ -150,10 +241,12 @@
             <polyline points="20 6 9 17 4 12"/>
           </svg>
         </div>
-        <h2>Virement envoyé !</h2>
+        <h2 *ngIf="mode === 'externe'">Virement envoyé !</h2>
+        <h2 *ngIf="mode === 'interne'">Transfert interne effectué !</h2>
         <p>
           <strong>{{ lastCompletedTransfer!.montant | number:'1.3-3' }} TND</strong>
-          envoyés à <strong>{{ lastCompletedTransfer!.recipientName }}</strong>
+          <span *ngIf="mode === 'externe'">envoyés à <strong>{{ lastCompletedTransfer!.recipientName }}</strong></span>
+          <span *ngIf="mode === 'interne'">transférés vers le compte <strong>#{{ lastCompletedTransfer!.compteDestinationId }}</strong></span>
         </p>
         <p class="success-fee" *ngIf="lastCompletedTransfer!.frais">
           Frais prélevés : {{ lastCompletedTransfer!.frais | number:'1.3-3' }} TND
@@ -184,7 +277,8 @@
           </svg>
         </div>
         <div class="hc-info">
-          <p class="hc-party">{{ v.recipientName }}</p>
+          <p class="hc-party" *ngIf="v.senderName !== v.recipientName">{{ v.recipientName }}</p>
+          <p class="hc-party" *ngIf="v.senderName === v.recipientName">Transfert interne · #{{ v.compteSourceId }} → #{{ v.compteDestinationId }}</p>
           <p class="hc-date">{{ v.dateDeVirement | date:'d MMM y · HH:mm' }}</p>
         </div>
         <div class="hc-right">

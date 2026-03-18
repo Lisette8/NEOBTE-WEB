@@ -73,6 +73,62 @@
   position: relative;
 }
 
+/* ── Premium usage ── */
+.usage {
+  margin-top: 16px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 16px;
+  padding: 12px 14px;
+  position: relative;
+}
+.usage-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+.usage-label {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.7);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.usage-value {
+  font-size: 0.8rem;
+  color: #fff;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.usage-bar {
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.14);
+  overflow: hidden;
+}
+.usage-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.9);
+  width: 0%;
+  transition: width 0.25s var(--ease);
+}
+.usage-upgrade {
+  margin-top: 10px;
+  background: rgba(255,255,255,0.14);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: #fff;
+  border-radius: 12px;
+  padding: 8px 12px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background var(--t-fast), transform var(--t-fast);
+}
+.usage-upgrade:hover { background: rgba(255,255,255,0.18); transform: translateY(-1px); }
+
 /* ── SECTIONS ── */
 .dash-section { margin-bottom: 28px; }
 
@@ -100,6 +156,19 @@
   scrollbar-width: none;
 }
 .accounts-row::-webkit-scrollbar { display: none; }
+
+.phys-row {
+  display: flex;
+  gap: 14px;
+  min-width: 100%;
+  padding-bottom: 2px;
+  scroll-snap-type: x mandatory;
+}
+.phys-item {
+  min-width: 260px;
+  flex: 0 0 auto;
+  scroll-snap-align: start;
+}
 
 .account-card {
   background: var(--surface);
@@ -183,7 +252,9 @@
 
 /* ── QUICK ACTIONS ── */
 .quick-actions {
-  display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 10px;
 }
 
 .qa-card {
@@ -211,6 +282,28 @@
 .qa-receive .qa-icon { background: var(--green-light); } .qa-receive .qa-icon svg { color: var(--green); }
 .qa-support .qa-icon { background: #fdf4ff; }           .qa-support .qa-icon svg { color: #9333ea; }
 .qa-news    .qa-icon { background: #fff7ed; }           .qa-news    .qa-icon svg { color: var(--amber); }
+.qa-ai      .qa-icon { background: #eef2ff; }           .qa-ai      .qa-icon svg { color: var(--blue); }
+
+.qa-lock {
+  margin-top: 4px;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-3);
+}
+
+/* ── Premium grid ── */
+.premium-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  align-items: stretch;
+}
+
+@media (max-width: 900px) {
+  .premium-grid { grid-template-columns: 1fr; }
+}
 
 /* ── NEWS ── */
 .news-list {

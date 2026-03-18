@@ -34,7 +34,7 @@ public class AuthController {
     @PostMapping("/logout")
     public String logout(HttpServletRequest request) {
         authService.logout(request);
-        return "Logged out successfully";
+        return "Déconnexion réussie.";
     }
 
 
@@ -43,8 +43,7 @@ public class AuthController {
     @ResponseStatus(HttpStatus.OK)
     public Map<String, String> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
         passwordResetService.sendResetCode(request.getEmail());
-        // Always return success to prevent user enumeration
-        return Map.of("message", "If an account exists with that email, a verification code has been sent.");
+        return Map.of("message", "Un code de vérification a été envoyé à votre adresse e-mail.");
     }
 
     // Step 2: verify code → get reset token
@@ -58,7 +57,6 @@ public class AuthController {
     @PostMapping("/reset-password")
     public Map<String, String> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         passwordResetService.resetPassword(request.getResetToken(), request.getNewPassword());
-        return Map.of("message", "Password updated successfully. You can now log in.");
+        return Map.of("message", "Mot de passe mis à jour. Vous pouvez maintenant vous connecter.");
     }
 }
-

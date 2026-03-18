@@ -12,6 +12,6 @@ public class VerifyResetCodeRequest {
     private String email;
 
     @NotBlank
-    @Size(min = 6, max = 6, message = "Code must be 6 digits")
+    @Size(min = 6, max = 6, message = "Le code doit contenir 6 chiffres")
     private String code;
 }

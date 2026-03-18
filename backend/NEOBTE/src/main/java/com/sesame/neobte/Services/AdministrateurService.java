@@ -14,4 +14,5 @@ public interface AdministrateurService {
     Utilisateur createUtilisateur(CreateUserRequest dto);
     Utilisateur updateUser(Long id, UpdateUserRequest dto);
     void deleteUser(Long id);
+    void setPremium(Long id, boolean premium);
 }

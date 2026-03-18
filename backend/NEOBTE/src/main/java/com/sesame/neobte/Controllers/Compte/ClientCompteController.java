@@ -3,6 +3,7 @@ package com.sesame.neobte.Controllers.Compte;
 import com.sesame.neobte.DTO.Requests.DemandeClotureCompte.DemandeClotureCreateDTO;
 import com.sesame.neobte.DTO.Responses.Compte.CompteResponseDTO;
 import com.sesame.neobte.DTO.Responses.DemandeClotureCompte.DemandeClotureResponseDTO;
+import com.sesame.neobte.Exceptions.customExceptions.UnauthorizedException;
 import com.sesame.neobte.Security.Services.JwtService;
 import com.sesame.neobte.Services.CompteService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,8 +22,18 @@ public class ClientCompteController {
     private final JwtService jwtService;
 
     @GetMapping("/utilisateur/{userId}")
-    public List<CompteResponseDTO> getUserAccounts(@PathVariable Long userId) {
-        return compteService.getComptesByUtilisateur(userId);
+    public List<CompteResponseDTO> getUserAccounts(@PathVariable Long userId, HttpServletRequest req) {
+        Long callerId = jwtService.extractUserId(req.getHeader("Authorization").substring(7));
+        if (!callerId.equals(userId)) {
+            throw new UnauthorizedException("Accès refusé");
+        }
+        return compteService.getComptesByUtilisateur(callerId);
+    }
+
+    @GetMapping("/me")
+    public List<CompteResponseDTO> getMyAccounts(HttpServletRequest req) {
+        Long callerId = jwtService.extractUserId(req.getHeader("Authorization").substring(7));
+        return compteService.getComptesByUtilisateur(callerId);
     }
 
     // Suspend own account instantly

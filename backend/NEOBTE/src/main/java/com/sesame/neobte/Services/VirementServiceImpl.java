@@ -1,13 +1,16 @@
 package com.sesame.neobte.Services;
 
+import com.sesame.neobte.DTO.Requests.Virement.InternalTransferCreateDTO;
 import com.sesame.neobte.DTO.Requests.Virement.VirementCreateDTO;
 import com.sesame.neobte.DTO.Responses.Virement.RecipientPreviewDTO;
+import com.sesame.neobte.DTO.Responses.Virement.TransferConstraintsDTO;
 import com.sesame.neobte.DTO.Responses.Virement.VirementResponseDTO;
 import com.sesame.neobte.Entities.Class.*;
 
 import com.sesame.neobte.Entities.Class.Fraude.FraudeConfig;
 import com.sesame.neobte.Entities.Enumeration.StatutCompte;
 import com.sesame.neobte.Entities.Enumeration.TypeCompte;
+import com.sesame.neobte.Entities.Enumeration.NotificationType;
 import com.sesame.neobte.Exceptions.customExceptions.BadRequestException;
 import com.sesame.neobte.Exceptions.customExceptions.ResourceNotFoundException;
 import com.sesame.neobte.Repositories.*;
@@ -18,6 +21,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 
 @Service
@@ -30,6 +35,7 @@ public class VirementServiceImpl implements VirementService {
     private final ICompteInterneRepository compteInterneRepository;
     private final IFraisTransactionRepository fraisTransactionRepository;
     private final FraudeService fraudeService;
+    private final NotificationService notificationService;
 
     @Value("${neobte.transfer.fee-rate:0.005}")
     private double feeRate;
@@ -43,29 +49,39 @@ public class VirementServiceImpl implements VirementService {
             IUtilisateurRepository utilisateurRepository,
             ICompteInterneRepository compteInterneRepository,
             IFraisTransactionRepository fraisTransactionRepository,
-            FraudeService fraudeService) {
+            FraudeService fraudeService,
+            NotificationService notificationService) {
         this.virementRepository = virementRepository;
         this.compteRepository = compteRepository;
         this.utilisateurRepository = utilisateurRepository;
         this.compteInterneRepository = compteInterneRepository;
         this.fraisTransactionRepository = fraisTransactionRepository;
         this.fraudeService = fraudeService;
+        this.notificationService = notificationService;
     }
 
+    private static final int PREMIUM_DAILY_LIMIT = 50;
 
     @Override
-    public RecipientPreviewDTO resolveRecipient(String identifier) {
+    public RecipientPreviewDTO resolveRecipient(String identifier, Long senderUserId) {
         FraudeConfig cfg = fraudeService.getConfigEntity();
+        int effectiveDailyCountLimit = cfg.getDailyCountLimit();
+        if (senderUserId != null) {
+            Utilisateur sender = utilisateurRepository.findById(senderUserId).orElse(null);
+            if (sender != null && sender.isPremium()) {
+                effectiveDailyCountLimit = PREMIUM_DAILY_LIMIT;
+            }
+        }
 
         Utilisateur recipient = findByIdentifier(identifier);
         if (recipient == null) return new RecipientPreviewDTO(
-                null, null, null, null, false, feeRate, null,
-                cfg.getLargeTransferThreshold(), cfg.getDailyAmountLimit(), cfg.getDailyCountLimit());
+                null, null, null, null, false, null, feeRate, null,
+                cfg.getLargeTransferThreshold(), cfg.getDailyAmountLimit(), effectiveDailyCountLimit);
 
         Compte primary = getPrimaryAccount(recipient.getIdUtilisateur());
         if (primary == null) return new RecipientPreviewDTO(
-                null, null, null, null, false, feeRate, null,
-                cfg.getLargeTransferThreshold(), cfg.getDailyAmountLimit(), cfg.getDailyCountLimit());
+                null, null, null, null, false, null, feeRate, null,
+                cfg.getLargeTransferThreshold(), cfg.getDailyAmountLimit(), effectiveDailyCountLimit);
 
         return new RecipientPreviewDTO(
                 recipient.getPrenom() + " " + recipient.getNom(),
@@ -73,48 +89,76 @@ public class VirementServiceImpl implements VirementService {
                 primary.getIdCompte(),
                 primary.getTypeCompte().name(),
                 true,
+                recipient.getPhotoUrl(),
                 feeRate,
                 null,  // estimated fee calculated on frontend from feeRate
                 cfg.getLargeTransferThreshold(),
                 cfg.getDailyAmountLimit(),
-                cfg.getDailyCountLimit()
+                effectiveDailyCountLimit
         );
     }
 
+
+    private static final int FREE_MONTHLY_LIMIT    = 10;
+    private static final int PREMIUM_MONTHLY_LIMIT  = 50;
+
+    @Override
+    public TransferConstraintsDTO getConstraints(Long senderUserId, boolean internal) {
+        FraudeConfig cfg = fraudeService.getConfigEntity();
+
+        int effectiveDailyCountLimit = cfg.getDailyCountLimit();
+        if (senderUserId != null) {
+            Utilisateur sender = utilisateurRepository.findById(senderUserId).orElse(null);
+            if (sender != null && sender.isPremium()) {
+                effectiveDailyCountLimit = PREMIUM_DAILY_LIMIT;
+            }
+        }
+
+        double effectiveFeeRate = internal ? 0.0 : feeRate;
+        return new TransferConstraintsDTO(
+                effectiveFeeRate,
+                cfg.getLargeTransferThreshold(),
+                cfg.getDailyAmountLimit(),
+                effectiveDailyCountLimit
+        );
+    }
 
     @Override
     @Transactional
     public VirementResponseDTO effectuerVirement(VirementCreateDTO dto, Long senderUserId) {
 
-        if (dto.getMontant() <= 0) throw new BadRequestException("Amount must be greater than 0");
-
-        // Hard fraud limits — enforceHardLimits runs via the FraudeService proxy
-        // so it uses its own @Transactional(readOnly=true) and releases its connection
-        // before this write transaction acquires its locks.
-        fraudeService.enforceHardLimits(senderUserId, dto.getMontant());
+        if (dto.getMontant() <= 0) throw new BadRequestException("Le montant doit être supérieur à 0");
 
         // Idempotency check
         Optional<Virement> existing = virementRepository.findByIdempotencyKey(dto.getIdempotencyKey());
         if (existing.isPresent()) return mapToResponseDTO(existing.get());
 
-        utilisateurRepository.findById(senderUserId)
-                .orElseThrow(() -> new ResourceNotFoundException("Sender not found"));
+        // ── Plan-based monthly transfer limit ─────────────────────────────
+        Utilisateur sender = utilisateurRepository.findById(senderUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("Expéditeur introuvable"));
+        enforceMonthlyLimit(sender);
+        // ─────────────────────────────────────────────────────────────────
+
+        // Hard fraud limits
+        // so it uses its own @Transactional(readOnly=true) and releases its connection
+        // before this write transaction acquires its locks.
+        fraudeService.enforceHardLimits(senderUserId, dto.getMontant());
 
         Compte compteSource = getPrimaryAccount(senderUserId);
         if (compteSource == null)
-            throw new BadRequestException("You don't have an active bank account. Please open one first.");
+            throw new BadRequestException("Vous n'avez pas de compte bancaire actif. Veuillez en ouvrir un d'abord.");
 
         Utilisateur recipient = findByIdentifier(dto.getRecipientIdentifier());
 
         if (recipient == null)
-            throw new ResourceNotFoundException("No user found with that email or phone number");
+            throw new ResourceNotFoundException("Aucun utilisateur trouvé avec cet email ou ce numéro de téléphone");
 
         if (recipient.getIdUtilisateur().equals(senderUserId))
-            throw new BadRequestException("You cannot transfer money to yourself");
+            throw new BadRequestException("Vous ne pouvez pas vous transférer de l'argent à vous-même");
 
         Compte compteDestination = getPrimaryAccount(recipient.getIdUtilisateur());
         if (compteDestination == null)
-            throw new BadRequestException("The recipient does not have an active bank account");
+            throw new BadRequestException("Le bénéficiaire n'a pas de compte bancaire actif");
 
         // Calculate tax
         double frais = Math.round(dto.getMontant() * feeRate * 1000.0) / 1000.0;
@@ -131,9 +175,9 @@ public class VirementServiceImpl implements VirementService {
         Compte lockedDest   = lockedLow.getIdCompte().equals(compteDestination.getIdCompte()) ? lockedLow : lockedHigh;
 
         if (lockedSource.getStatutCompte() != StatutCompte.ACTIVE)
-            throw new BadRequestException("Your account is not active");
+            throw new BadRequestException("Votre compte n'est pas actif");
         if (lockedSource.getSolde() < totalDebite)
-            throw new BadRequestException("Insufficient balance (amount + fee: " + totalDebite + " TND)");
+            throw new BadRequestException("Solde insuffisant (montant + frais : " + totalDebite + " TND)");
 
         // Debit sender (amount + fee), credit receiver (amount only)
         lockedSource.setSolde(lockedSource.getSolde() - totalDebite);
@@ -155,7 +199,7 @@ public class VirementServiceImpl implements VirementService {
 
         // Credit internal fee account + audit record — all in same transaction
         CompteInterne feeAccount = compteInterneRepository.findByNom(feeAccountName)
-                .orElseThrow(() -> new IllegalStateException("Internal fee account not found. Check DataInitializer."));
+                .orElseThrow(() -> new IllegalStateException("Compte interne des frais introuvable. Vérifiez DataInitializer."));
         feeAccount.setSolde(feeAccount.getSolde() + frais);
         compteInterneRepository.save(feeAccount);
 
@@ -168,6 +212,104 @@ public class VirementServiceImpl implements VirementService {
         // Async fraud monitoring — fires in a separate thread after commit.
         // Uses IDs only to avoid detached-entity issues across thread boundaries.
         fraudeService.analyzeTransferAsync(saved.getIdVirement(), senderUserId);
+
+        // Notifications (after commit via NotificationService)
+        notificationService.notifyUser(
+                senderUserId,
+                NotificationType.TRANSFER_SENT,
+                "Virement envoyé",
+                "Vous avez envoyé " + dto.getMontant() + " TND à " + recipient.getPrenom() + " " + recipient.getNom() + ".",
+                "/virement-view"
+        );
+        notificationService.notifyUser(
+                recipient.getIdUtilisateur(),
+                NotificationType.TRANSFER_RECEIVED,
+                "Virement reçu",
+                "Vous avez reçu " + dto.getMontant() + " TND de " + sender.getPrenom() + " " + sender.getNom() + ".",
+                "/virement-view"
+        );
+
+        return mapToResponseDTO(saved);
+    }
+
+    @Override
+    @Transactional
+    public VirementResponseDTO effectuerVirementInterne(InternalTransferCreateDTO dto, Long senderUserId) {
+        if (dto.getMontant() == null || dto.getMontant() <= 0) {
+            throw new BadRequestException("Le montant doit être supérieur à 0");
+        }
+        if (dto.getCompteSourceId() == null || dto.getCompteDestinationId() == null) {
+            throw new BadRequestException("Comptes source/destination invalides");
+        }
+        if (dto.getCompteSourceId().equals(dto.getCompteDestinationId())) {
+            throw new BadRequestException("Veuillez sélectionner deux comptes différents");
+        }
+        if (dto.getIdempotencyKey() == null || dto.getIdempotencyKey().isBlank()) {
+            throw new BadRequestException("Clé d'idempotence invalide");
+        }
+
+        Optional<Virement> existing = virementRepository.findByIdempotencyKey(dto.getIdempotencyKey());
+        if (existing.isPresent()) return mapToResponseDTO(existing.get());
+
+        Utilisateur sender = utilisateurRepository.findById(senderUserId)
+                .orElseThrow(() -> new ResourceNotFoundException("Expéditeur introuvable"));
+        enforceMonthlyLimit(sender);
+
+        // Hard fraud limits still apply
+        fraudeService.enforceHardLimits(senderUserId, dto.getMontant());
+
+        // Lock accounts in consistent order (lower id first) to prevent deadlocks
+        Long lowId  = Math.min(dto.getCompteSourceId(), dto.getCompteDestinationId());
+        Long highId = Math.max(dto.getCompteSourceId(), dto.getCompteDestinationId());
+
+        Compte lockedLow = compteRepository.findByIdForUpdate(lowId)
+                .orElseThrow(() -> new ResourceNotFoundException("Compte introuvable"));
+        Compte lockedHigh = compteRepository.findByIdForUpdate(highId)
+                .orElseThrow(() -> new ResourceNotFoundException("Compte introuvable"));
+
+        Compte lockedSource = lockedLow.getIdCompte().equals(dto.getCompteSourceId()) ? lockedLow : lockedHigh;
+        Compte lockedDest   = lockedLow.getIdCompte().equals(dto.getCompteDestinationId()) ? lockedLow : lockedHigh;
+
+        if (lockedSource.getUtilisateur() == null || !Objects.equals(lockedSource.getUtilisateur().getIdUtilisateur(), senderUserId)) {
+            throw new BadRequestException("Compte source invalide");
+        }
+        if (lockedDest.getUtilisateur() == null || !Objects.equals(lockedDest.getUtilisateur().getIdUtilisateur(), senderUserId)) {
+            throw new BadRequestException("Compte destination invalide");
+        }
+        if (lockedSource.getStatutCompte() != StatutCompte.ACTIVE || lockedDest.getStatutCompte() != StatutCompte.ACTIVE) {
+            throw new BadRequestException("Vos comptes doivent être actifs pour effectuer un transfert interne");
+        }
+
+        double montant = dto.getMontant();
+        if (lockedSource.getSolde() < montant) {
+            throw new BadRequestException("Solde insuffisant (montant : " + montant + " TND)");
+        }
+
+        lockedSource.setSolde(lockedSource.getSolde() - montant);
+        lockedDest.setSolde(lockedDest.getSolde() + montant);
+        compteRepository.save(lockedSource);
+        compteRepository.save(lockedDest);
+
+        Virement virement = new Virement();
+        virement.setCompteDe(lockedSource);
+        virement.setCompteA(lockedDest);
+        virement.setMontant(montant);
+        virement.setFrais(0.0);
+        virement.setTauxFrais(0.0);
+        virement.setDateDeVirement(new Date());
+        virement.setIdempotencyKey(dto.getIdempotencyKey());
+        Virement saved = virementRepository.save(virement);
+
+        fraudeService.analyzeTransferAsync(saved.getIdVirement(), senderUserId);
+
+        notificationService.notifyUser(
+                senderUserId,
+                NotificationType.TRANSFER_SENT,
+                "Transfert interne effectué",
+                "Vous avez transféré " + montant + " TND du compte #" + lockedSource.getIdCompte()
+                        + " vers le compte #" + lockedDest.getIdCompte() + ".",
+                "/virement-view"
+        );
 
         return mapToResponseDTO(saved);
     }
@@ -225,6 +367,20 @@ public class VirementServiceImpl implements VirementService {
         }
         return identifier.length() <= 4 ? "****"
                 : "*".repeat(identifier.length() - 4) + identifier.substring(identifier.length() - 4);
+    }
+
+    private void enforceMonthlyLimit(Utilisateur sender) {
+        Date monthStart = Date.from(LocalDate.now().withDayOfMonth(1)
+                .atStartOfDay(ZoneId.systemDefault()).toInstant());
+        long usedThisMonth = virementRepository.countOutgoingSince(sender.getIdUtilisateur(), monthStart);
+        int limit = sender.isPremium() ? PREMIUM_MONTHLY_LIMIT : FREE_MONTHLY_LIMIT;
+        if (usedThisMonth >= limit) {
+            throw new BadRequestException(
+                    "Limite mensuelle de virements atteinte (" + usedThisMonth + "/" + limit + "). "
+                            + (sender.isPremium()
+                            ? "Vous êtes abonné Premium. Merci de contacter la BTE pour plus d'assistance."
+                            : "Passez à Premium pour 50 virements par mois. Rendez-vous dans l'agence BTE la plus proche."));
+        }
     }
 
     private VirementResponseDTO mapToResponseDTO(Virement v) {

@@ -1,0 +1,189 @@
+<div class="pricing-root">
+
+  <!-- Header -->
+  <div class="pricing-header">
+    <button class="btn-back" (click)="goBack()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <polyline points="15 18 9 12 15 6"/>
+      </svg>
+      Retour
+    </button>
+    <div class="pricing-header-center">
+      <div class="pricing-logo">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+        </svg>
+      </div>
+      <h1 class="pricing-title">Choisissez votre offre</h1>
+      <p class="pricing-sub">Commencez gratuitement, passez à Premium quand vous en avez besoin.</p>
+    </div>
+    <div style="width:72px"></div>
+  </div>
+
+  <!-- Plan cards -->
+  <div class="plans-grid">
+
+    <!-- FREE PLAN -->
+    <div class="plan-card">
+      <div class="plan-top">
+        <span class="plan-chip plan-chip-free">Free</span>
+        <h2 class="plan-name">Gratuite</h2>
+        <div class="plan-price">
+          <span class="plan-amount">0</span>
+          <span class="plan-currency">TND / mois</span>
+        </div>
+        <p class="plan-tagline">L’essentiel pour démarrer avec NeoBTE.</p>
+      </div>
+
+      <ul class="plan-features">
+        <li class="pf-yes">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Jusqu’à <strong>10 virements</strong> par mois
+        </li>
+        <li class="pf-yes">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Gestion des comptes &amp; aperçu du solde
+        </li>
+        <li class="pf-yes">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Fil des actualités BTE
+        </li>
+        <li class="pf-yes">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Tickets support client
+        </li>
+        <li class="pf-yes">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Protection anti‑fraude &amp; alertes
+        </li>
+        <li class="pf-no">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          Assistant IA financier
+        </li>
+        <li class="pf-no">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          Graphiques personnels (revenus &amp; dépenses)
+        </li>
+        <li class="pf-no">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          Tendances finance &amp; insights
+        </li>
+      </ul>
+
+      <div class="plan-footer">
+        <button class="btn-current" disabled>Offre actuelle</button>
+      </div>
+    </div>
+
+    <!-- PREMIUM PLAN -->
+    <div class="plan-card plan-card-premium">
+      <div class="premium-glow"></div>
+      <div class="plan-top">
+        <span class="plan-chip plan-chip-premium">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Premium
+        </span>
+        <h2 class="plan-name">Premium</h2>
+        <div class="plan-price">
+          <span class="plan-amount">Sur demande en agence</span>
+        </div>
+        <p class="plan-tagline">Débloquez l’IA &amp; une limite de virements plus élevée.</p>
+      </div>
+
+      <ul class="plan-features">
+        <li class="pf-yes">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Jusqu’à <strong>50 virements</strong> par mois
+        </li>
+        <li class="pf-yes">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Gestion des comptes &amp; aperçu du solde
+        </li>
+        <li class="pf-yes">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Fil des actualités BTE
+        </li>
+        <li class="pf-yes">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Tickets support client
+        </li>
+        <li class="pf-yes">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          Protection anti‑fraude &amp; alertes
+        </li>
+        <li class="pf-yes pf-highlight">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span><strong>Assistant IA</strong> — finance, virements &amp; services BTE</span>
+        </li>
+        <li class="pf-yes pf-highlight">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span><strong>Graphiques personnels</strong> (revenus &amp; dépenses)</span>
+        </li>
+        <li class="pf-yes pf-highlight">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+          <span><strong>Tendances finance</strong> &amp; insights</span>
+        </li>
+      </ul>
+
+      <div class="plan-footer">
+        <button class="btn-upgrade" (click)="openAgencyModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+          </svg>
+          Obtenir Premium
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Note -->
+  <p class="pricing-note">
+    Toutes les offres incluent une sécurité bancaire et une surveillance des transactions.
+  </p>
+
+  <!-- Agency modal -->
+  <div class="modal-backdrop" *ngIf="showAgencyModal" (click)="closeAgencyModal()">
+    <div class="modal-box" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="closeAgencyModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+
+      <div class="modal-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+      </div>
+
+      <h3 class="modal-title">Rendez‑vous dans une agence BTE</h3>
+      <p class="modal-body">
+        Pour souscrire à <strong>NeoBTE Premium</strong>, rendez‑vous dans l’agence
+        <strong>Banque de Tunisie et des Emirats (BTE)</strong> la plus proche et parlez à un conseiller.
+      </p>
+      <p class="modal-body">
+        L’activation se fait directement sur votre compte, généralement le jour même.
+      </p>
+
+      <div class="modal-steps">
+        <div class="ms-step">
+          <span class="ms-num">1</span>
+          <span>Apportez votre CIN et les informations de votre compte NeoBTE</span>
+        </div>
+        <div class="ms-step">
+          <span class="ms-num">2</span>
+          <span>Demandez l’activation de l’abonnement <strong>Premium</strong> sur votre compte</span>
+        </div>
+        <div class="ms-step">
+          <span class="ms-num">3</span>
+          <span>Une fois activé, l’assistant IA et les graphiques Premium seront disponibles immédiatement</span>
+        </div>
+      </div>
+
+      <button class="btn-modal-ok" (click)="closeAgencyModal()">Compris</button>
+    </div>
+  </div>
+
+</div>

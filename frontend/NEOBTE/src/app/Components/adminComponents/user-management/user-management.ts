@@ -161,6 +161,21 @@ export class UserManagement implements OnInit {
     this.selectedUserId = null;
     this.userForm.reset({ pays: 'Tunisie' });
   }
-}
 
+  togglePremium(user: UserListDTO) {
+    const nextPremium = !(user.premium ?? false);
+    // Optimistic UI update
+    user.premium = nextPremium;
+    this.adminService.setPremium(user.id, nextPremium).subscribe({
+      next: (res) => {
+        user.premium = res.premium;
+      },
+      error: () => {
+        // Revert on failure
+        user.premium = !nextPremium;
+        this.error = 'Failed to update premium status';
+      }
+    });
+  }
+}
 

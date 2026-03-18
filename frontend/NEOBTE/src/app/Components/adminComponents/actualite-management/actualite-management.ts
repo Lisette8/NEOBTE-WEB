@@ -4,6 +4,7 @@ import { ActualiteService } from '../../../Services/actualite-service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ConfirmModalService } from '../../../Services/SharedServices/confirm-modal.service';
+import { ActualiteCreateDTO } from '../../../Entities/DTO/actualite-create-dto';
 
 @Component({
   selector: 'app-actualite-management',
@@ -20,12 +21,17 @@ export class ActualiteManagement implements OnInit {
   size = 6;
   totalPages = 0;
 
-  titre = '';
-  description = '';
+  form: ActualiteCreateDTO = {
+    titre: '',
+    sousTitre: '',
+    categorie: '',
+    description: '',
+    contenu: '',
+  };
 
   editingId: number | null = null;
-  editTitre = '';
-  editDescription = '';
+  imageFile: File | null = null;
+  imagePreviewUrl: string | null = null;
 
   constructor(
     private actualiteService: ActualiteService,
@@ -45,49 +51,64 @@ export class ActualiteManagement implements OnInit {
   }
 
 
-  createActualite() {
-
-    const data = {
-      titre: this.titre,
-      description: this.description
+  submit() {
+    const payload: ActualiteCreateDTO = {
+      titre: this.form.titre,
+      sousTitre: this.form.sousTitre ?? null,
+      categorie: this.form.categorie ?? null,
+      description: this.form.description,
+      contenu: this.form.contenu ?? null,
     };
 
-    this.actualiteService.create(data).subscribe(() => {
+    if (this.editingId != null) {
+      this.actualiteService.update(this.editingId, payload, this.imageFile).subscribe(() => {
+        this.resetForm();
+        this.loadActualites();
+      });
+      return;
+    }
 
-      this.titre = '';
-      this.description = '';
-
+    this.actualiteService.create(payload, this.imageFile).subscribe(() => {
+      this.resetForm();
       this.loadActualites();
     });
   }
 
   startEdit(act: Actualite) {
     this.editingId = act.idActualite;
-    this.editTitre = act.titre;
-    this.editDescription = act.description;
+    this.form = {
+      titre: act.titre,
+      sousTitre: act.sousTitre ?? '',
+      categorie: act.categorie ?? '',
+      description: act.description ?? '',
+      contenu: act.contenu ?? '',
+    };
+    this.imageFile = null;
+    this.imagePreviewUrl = act.imageUrl ? this.mediaUrl(act.imageUrl) : null;
   }
 
   cancelEdit() {
-    this.editingId = null;
-    this.editTitre = '';
-    this.editDescription = '';
+    this.resetForm();
   }
 
-  updateActualite(id: number) {
+  onImageSelected(ev: Event) {
+    const input = ev.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+    this.imageFile = file;
+    this.imagePreviewUrl = file ? URL.createObjectURL(file) : null;
+  }
 
-    const data = {
-      titre: this.editTitre,
-      description: this.editDescription
-    };
+  resetForm() {
+    this.editingId = null;
+    this.form = { titre: '', sousTitre: '', categorie: '', description: '', contenu: '' };
+    this.imageFile = null;
+    this.imagePreviewUrl = null;
+  }
 
-    this.actualiteService.update(id, data).subscribe(() => {
-
-      this.editingId = null;
-      this.editTitre = '';
-      this.editDescription = '';
-
-      this.loadActualites();
-    });
+  mediaUrl(url?: string | null): string {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    return `http://localhost:8080${url}`;
   }
 
 

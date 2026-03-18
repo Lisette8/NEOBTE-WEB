@@ -33,5 +33,7 @@ public class FraisTransaction implements Serializable {
     private Date dateCreation;
 
     @PrePersist
-    protected void onCreate() { this.dateCreation = new Date(); }
+    protected void onCreate() {
+        this.dateCreation = new Date();
+    }
 }

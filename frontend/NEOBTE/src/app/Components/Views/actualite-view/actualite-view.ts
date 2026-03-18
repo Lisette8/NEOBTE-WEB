@@ -19,6 +19,16 @@ export class ActualiteView implements OnInit {
   loading = false;
   error = '';
 
+  readonly reactions = [
+    // "Sérieux" façon LinkedIn (icône + libellé), sans réactions moqueuses/tristes/colère
+    { key: 'LIKE', emoji: '👍', label: "J’aime" },
+    { key: 'CELEBRATE', emoji: '👏', label: 'Bravo' },
+    { key: 'SUPPORT', emoji: '🤝', label: 'Soutien' },
+    { key: 'LOVE', emoji: '❤️', label: "J’adore" },
+    { key: 'INSIGHTFUL', emoji: '💡', label: 'Pertinent' },
+    { key: 'CURIOUS', emoji: '🤔', label: 'Intéressant' },
+  ] as const;
+
   constructor(private actualiteService: ActualiteService) {}
 
   ngOnInit(): void {
@@ -35,7 +45,7 @@ export class ActualiteView implements OnInit {
         this.loading = false;
       },
       error: () => {
-        this.error = 'Failed to load news.';
+        this.error = 'Impossible de charger les actualités.';
         this.loading = false;
       }
     });
@@ -53,5 +63,25 @@ export class ActualiteView implements OnInit {
       this.page--;
       this.loadActualites();
     }
+  }
+
+  mediaUrl(url?: string | null): string {
+    if (!url) return '';
+    if (url.startsWith('http')) return url;
+    return `http://localhost:8080${url}`;
+  }
+
+  react(act: Actualite, reaction: string) {
+    this.actualiteService.react(act.idActualite, reaction).subscribe({
+      next: (updated) => {
+        act.reactions = updated.reactions ?? {};
+        act.myReaction = updated.myReaction ?? null;
+      },
+      error: () => {}
+    });
+  }
+
+  reactionCount(act: Actualite, reaction: string): number {
+    return Number((act.reactions ?? {})[reaction] ?? 0);
   }
 }

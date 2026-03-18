@@ -24,18 +24,7 @@
     <p style="font-size:0.83rem;color:var(--red)" *ngIf="error">{{ error }}</p>
 
     <div class="accounts-list">
-      <div class="account-item" *ngFor="let compte of comptes">
-        <div class="ai-top">
-          <span class="ai-type">{{ compte.typeCompte }}</span>
-          <span class="badge" [ngClass]="{
-            'badge-green': compte.statutCompte === 'ACTIVE',
-            'badge-amber': compte.statutCompte === 'BLOCKED',
-            'badge-red':   compte.statutCompte === 'CLOSED'
-          }">{{ compte.statutCompte }}</span>
-        </div>
-        <p class="ai-id">Compte #{{ compte.idCompte }}</p>
-        <p class="ai-balance">{{ compte.solde | number:'1.3-3' }} <span style="font-size:0.7rem;color:var(--text-3);font-weight:400">TND</span></p>
-      </div>
+      <app-account-physical-card class="account-phys" *ngFor="let compte of comptes" [compte]="compte" />
     </div>
 
     <p class="accounts-empty" *ngIf="comptes.length === 0 && !loading">

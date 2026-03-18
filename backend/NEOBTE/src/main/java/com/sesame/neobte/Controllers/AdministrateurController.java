@@ -51,5 +51,12 @@ public class AdministrateurController {
         administrateurService.deleteUser(id);
     }
 
+    /** Toggle premium subscription for a client user. */
+    @PutMapping("/users/{id}/premium")
+    public Map<String, Object> setPremium(@PathVariable Long id, @RequestBody Map<String, Boolean> body) {
+        boolean premium = Boolean.TRUE.equals(body.get("premium"));
+        administrateurService.setPremium(id, premium);
+        return Map.of("userId", id, "premium", premium);
+    }
 
 }

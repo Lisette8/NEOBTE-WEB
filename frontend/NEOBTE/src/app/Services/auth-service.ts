@@ -6,6 +6,7 @@ import { AuthResponse } from '../Entities/Interfaces/auth-response';
 import { LoginRequest } from '../Entities/Interfaces/login-request';
 import { Treasury } from '../Entities/Interfaces/treasury';
 import { Rib } from '../Entities/Interfaces/rib';
+import { ChangePasswordRequest, ClientProfile, UpdateClientProfileRequest } from '../Entities/Interfaces/client-profile';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -28,7 +29,7 @@ export class AuthService {
   }
  
   logout(): Observable<any> {
-    return this.http.post(`${this.API_URL}/logout`, {}).pipe(
+    return this.http.post(`${this.API_URL}/logout`, {}, { responseType: 'text' }).pipe(
       tap(() => localStorage.removeItem('token'))
     );
   }
@@ -47,10 +48,24 @@ export class AuthService {
   }
  
   // ── Profile ──
-  getCurrentUser(): Observable<any> {
-    return this.http.get<any>(`${this.CLIENT_URL}/current`);
+  getCurrentUser(): Observable<ClientProfile> {
+    return this.http.get<ClientProfile>(`${this.CLIENT_URL}/current`);
   }
- 
+
+  updateProfile(dto: UpdateClientProfileRequest): Observable<ClientProfile> {
+    return this.http.put<ClientProfile>(`${this.CLIENT_URL}/current`, dto);
+  }
+
+  changePassword(dto: ChangePasswordRequest): Observable<string> {
+    return this.http.put(`${this.CLIENT_URL}/change-password`, dto, { responseType: 'text' });
+  }
+
+  uploadProfilePhoto(image: File): Observable<ClientProfile> {
+    const fd = new FormData();
+    fd.append('image', image);
+    return this.http.put<ClientProfile>(`${this.CLIENT_URL}/photo`, fd);
+  }
+
   getMyRib(): Observable<Rib> {
     return this.http.get<Rib>(`${this.CLIENT_URL}/rib`);
   }

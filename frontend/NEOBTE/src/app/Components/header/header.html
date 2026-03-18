@@ -31,9 +31,55 @@
         </svg>
         Support
       </a>
+      <a routerLink="/settings-view" routerLinkActive="active" class="nav-link">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+        Paramètres
+      </a>
     </nav>
 
     <div class="header-actions" *ngIf="isLoggedIn()">
+      <div class="notif">
+        <button class="btn-notif" type="button" (click)="toggleNotifications()" aria-label="Notifications">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+               stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+          <span class="badge" *ngIf="unreadCount > 0">{{ unreadCount > 99 ? '99+' : unreadCount }}</span>
+        </button>
+
+        <div class="notif-menu" *ngIf="notifOpen">
+          <div class="notif-hd">
+            <p class="notif-title">Notifications</p>
+            <button class="link" type="button" (click)="markAllRead()" [disabled]="unreadCount===0">Tout lire</button>
+          </div>
+
+          <div class="notif-list" *ngIf="latest.length > 0; else emptyNotifs">
+            <button
+              class="notif-item"
+              *ngFor="let n of latest"
+              type="button"
+              (click)="openNotification(n)"
+              [class.unread]="!n.lu"
+            >
+              <div class="dot" *ngIf="!n.lu"></div>
+              <div class="txt">
+                <p class="t">{{ n.titre }}</p>
+                <p class="m">{{ n.message }}</p>
+              </div>
+            </button>
+          </div>
+          <ng-template #emptyNotifs>
+            <div class="notif-empty">Aucune notification pour le moment.</div>
+          </ng-template>
+
+          <a class="notif-all" routerLink="/notifications-view" (click)="closeNotifications()">Voir tout</a>
+        </div>
+      </div>
+
       <button class="btn-logout" (click)="logout()">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>

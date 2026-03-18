@@ -107,6 +107,13 @@ public class AdministrateurServiceImpl implements AdministrateurService {
         utilisateurRepository.delete(user);
     }
 
+    @Override
+    public void setPremium(Long id, boolean premium) {
+        Utilisateur user = getUserEntityById(id);
+        user.setPremium(premium);
+        utilisateurRepository.save(user);
+    }
+
 
     // mapper
     private AdminUserResponse toAdminResponse(Utilisateur user) {
@@ -132,6 +139,7 @@ public class AdministrateurServiceImpl implements AdministrateurService {
                 .role(user.getRole())
                 .dateCreationCompte(user.getDateCreationCompte())
                 .totalSolde(totalSolde)
+                .premium(user.isPremium())
                 .build();
     }
 }

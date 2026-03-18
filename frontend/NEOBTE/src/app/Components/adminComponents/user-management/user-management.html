@@ -55,6 +55,7 @@
           <th>Genre</th>
           <th>Role</th>
           <th>Solde total</th>
+          <th class="text-center" *ngIf="currentTab === 'CLIENTS'">Premium</th>
           <th class="text-center" *ngIf="currentTab === 'CLIENTS'">Actions</th>
         </tr>
       </thead>
@@ -70,6 +71,17 @@
           <td>{{ user.genre }}</td>
           <td>{{ user.role }}</td>
           <td class="font-mono">{{ user.totalSolde | number:'1.2-2' }} TND</td>
+          <td class="text-center" *ngIf="currentTab === 'CLIENTS'">
+            <button
+              class="premium-toggle"
+              [class.on]="user.premium"
+              (click)="togglePremium(user)"
+              type="button"
+              title="Toggle Premium"
+            >
+              {{ user.premium ? 'ON' : 'OFF' }}
+            </button>
+          </td>
           <td class="action-cells" *ngIf="currentTab === 'CLIENTS'">
             <button class="btn btn-edit" (click)="editUser(user)">Edit</button>
             <button class="btn btn-delete" (click)="deleteUser(user.id)">Delete</button>

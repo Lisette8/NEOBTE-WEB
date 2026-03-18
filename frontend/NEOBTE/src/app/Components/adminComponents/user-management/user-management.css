@@ -198,3 +198,22 @@
   background-color: #fee2e2;
   color: #b91c1c;
 }
+
+/* Premium toggle */
+.premium-toggle {
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid #e5e7eb;
+  background: #f9fafb;
+  color: #6b7280;
+  font-weight: 800;
+  font-size: 0.75rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.premium-toggle.on {
+  background: #e0e7ff;
+  border-color: #c7d2fe;
+  color: #0000A0;
+}
+.premium-toggle:hover { transform: translateY(-1px); }

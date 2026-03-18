@@ -1,0 +1,92 @@
+.insights-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-xl);
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.insights-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.insights-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--green-light);
+  color: var(--green);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+.insights-badge.locked {
+  background: #f1f5f9;
+  color: #64748b;
+}
+.insights-badge svg { width: 14px; height: 14px; }
+
+.insights-upgrade {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--blue);
+  text-decoration: none;
+}
+.insights-upgrade:hover { opacity: 0.8; }
+
+.locked-upsell {
+  border: 1px dashed var(--border);
+  border-radius: var(--r-lg);
+  padding: 16px;
+  background: var(--bg);
+}
+.lu-title { margin: 0 0 6px; font-weight: 800; color: var(--text-1); }
+.lu-body  { margin: 0 0 12px; font-size: 0.85rem; color: var(--text-2); line-height: 1.5; }
+.lu-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 14px;
+  border-radius: var(--r-md);
+  background: var(--blue);
+  color: #fff;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 0.82rem;
+}
+.lu-btn:hover { background: #0000c8; }
+
+.insights-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.stat {
+  border: 1px solid var(--border-soft);
+  border-radius: var(--r-lg);
+  padding: 12px;
+  background: var(--bg);
+}
+.stat .k { margin: 0 0 4px; font-size: 0.72rem; color: var(--text-3); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.stat .v { margin: 0; font-size: 0.95rem; font-weight: 800; color: var(--text-1); font-variant-numeric: tabular-nums; }
+
+.status-msg { margin: 0; font-size: 0.85rem; }
+.status-msg.loading { color: var(--text-2); }
+.status-msg.error { color: #b91c1c; }
+
+.charts { display: grid; grid-template-columns: 1fr; gap: 14px; }
+.chart-block { border-top: 1px solid var(--border-soft); padding-top: 12px; }
+.chart-title { margin: 0 0 10px; font-size: 0.82rem; font-weight: 800; color: var(--text-1); }
+.chart-wrap { height: 200px; }
+
+@media (max-width: 720px) {
+  .insights-stats { grid-template-columns: 1fr; }
+  .chart-wrap { height: 180px; }
+}
+

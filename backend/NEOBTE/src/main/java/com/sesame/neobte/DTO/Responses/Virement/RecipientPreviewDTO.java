@@ -15,6 +15,7 @@ public class RecipientPreviewDTO {
     private Long primaryCompteId;
     private String primaryCompteType;
     private boolean found;
+    private String photoUrl;
 
     // Fee info
     private Double feeRate;

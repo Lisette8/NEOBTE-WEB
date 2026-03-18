@@ -14,6 +14,7 @@ import com.sesame.neobte.Exceptions.customExceptions.ResourceNotFoundException;
 import com.sesame.neobte.Repositories.ICompteRepository;
 import com.sesame.neobte.Repositories.IDemandeCompteRepository;
 import com.sesame.neobte.Repositories.IUtilisateurRepository;
+import com.sesame.neobte.Services.Other.AdminEventPublisher;
 import com.sesame.neobte.Services.Other.EmailService;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
@@ -33,6 +34,7 @@ public class DemandeCompteServiceImpl implements DemandeCompteService {
     private final ICompteRepository compteRepository;
     private final IUtilisateurRepository utilisateurRepository;
     private final EmailService emailService;
+    private final AdminEventPublisher adminEventPublisher;
 
 
     @Override
@@ -180,6 +182,8 @@ public class DemandeCompteServiceImpl implements DemandeCompteService {
                 demande.getTypeCompte().name(), savedCompte.getIdCompte());
 
         log.info("Account request APPROVED: demandeId={}, newCompteId={}", demandeId, savedCompte.getIdCompte());
+        adminEventPublisher.publish(AdminEventPublisher.EventType.DEMANDE);
+        adminEventPublisher.publish(AdminEventPublisher.EventType.COMPTE);
         return mapToDTO(demande);
     }
 

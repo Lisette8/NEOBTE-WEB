@@ -14,6 +14,7 @@ import com.sesame.neobte.Entities.Enumeration.NotificationType;
 import com.sesame.neobte.Exceptions.customExceptions.BadRequestException;
 import com.sesame.neobte.Exceptions.customExceptions.ResourceNotFoundException;
 import com.sesame.neobte.Repositories.*;
+import com.sesame.neobte.Services.Other.AdminEventPublisher;
 import org.springframework.transaction.annotation.Transactional;
 import com.sesame.neobte.Security.Services.Fraude.FraudeService;
 
@@ -38,6 +39,7 @@ public class VirementServiceImpl implements VirementService {
     private final IFraisTransactionRepository fraisTransactionRepository;
     private final FraudeService fraudeService;
     private final NotificationService notificationService;
+    private final AdminEventPublisher adminEventPublisher;
 
     @Value("${neobte.transfer.fee-rate:0.005}")
     private double feeRate;
@@ -52,7 +54,8 @@ public class VirementServiceImpl implements VirementService {
             ICompteInterneRepository compteInterneRepository,
             IFraisTransactionRepository fraisTransactionRepository,
             FraudeService fraudeService,
-            NotificationService notificationService) {
+            NotificationService notificationService,
+            AdminEventPublisher adminEventPublisher) {
         this.virementRepository = virementRepository;
         this.compteRepository = compteRepository;
         this.utilisateurRepository = utilisateurRepository;
@@ -60,6 +63,7 @@ public class VirementServiceImpl implements VirementService {
         this.fraisTransactionRepository = fraisTransactionRepository;
         this.fraudeService = fraudeService;
         this.notificationService = notificationService;
+        this.adminEventPublisher = adminEventPublisher;
     }
 
     private static final int PREMIUM_DAILY_LIMIT = 50;
@@ -220,6 +224,7 @@ public class VirementServiceImpl implements VirementService {
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override public void afterCommit() {
                 fraudeService.analyzeTransferAsync(savedId1, senderId1);
+                adminEventPublisher.publish(AdminEventPublisher.EventType.VIREMENT);
             }
         });
 
@@ -316,6 +321,7 @@ public class VirementServiceImpl implements VirementService {
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
             @Override public void afterCommit() {
                 fraudeService.analyzeTransferAsync(savedId2, senderId2);
+                adminEventPublisher.publish(AdminEventPublisher.EventType.VIREMENT);
             }
         });
 

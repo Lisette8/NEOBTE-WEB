@@ -11,6 +11,7 @@ import com.sesame.neobte.Repositories.IActualiteReactionRepository;
 import com.sesame.neobte.Repositories.IActualiteRepository;
 import com.sesame.neobte.Repositories.IUtilisateurRepository;
 import com.sesame.neobte.Entities.Enumeration.NotificationType;
+import com.sesame.neobte.Services.Other.AdminEventPublisher;
 import lombok.AllArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -27,6 +28,7 @@ public class ActualiteServiceImpl implements ActualiteService {
     private final IUtilisateurRepository utilisateurRepository;
     private final IActualiteReactionRepository reactionRepository;
     private final NotificationService notificationService;
+    private final AdminEventPublisher adminEventPublisher;
 
     @Override
     public Page<ActualiteResponseDTO> getAll(int page, int size, Long callerUserId) {
@@ -77,7 +79,9 @@ public class ActualiteServiceImpl implements ActualiteService {
                 "Une nouvelle actualité a été publiée : " + saved.getTitre(),
                 "/actualite-view"
         );
-        return mapToResponseDTO(saved, Map.of(), null);
+        ActualiteResponseDTO r = mapToResponseDTO(saved, Map.of(), null);
+        adminEventPublisher.publish(AdminEventPublisher.EventType.ACTUALITE);
+        return r;
     }
 
     @Override
@@ -101,13 +105,16 @@ public class ActualiteServiceImpl implements ActualiteService {
         );
 
         ReactionBundle bundle = loadReactions(List.of(id), null);
-        return mapToResponseDTO(saved, bundle.countsByPost.getOrDefault(id, Map.of()), null);
+        ActualiteResponseDTO r2 = mapToResponseDTO(saved, bundle.countsByPost.getOrDefault(id, Map.of()), null);
+        adminEventPublisher.publish(AdminEventPublisher.EventType.ACTUALITE);
+        return r2;
     }
 
     @Override
     public void deleteActualite(Long id) {
         reactionRepository.deleteByActualite_IdActualite(id);
         actualiteRepository.deleteById(id);
+        adminEventPublisher.publish(AdminEventPublisher.EventType.ACTUALITE);
     }
 
     @Override

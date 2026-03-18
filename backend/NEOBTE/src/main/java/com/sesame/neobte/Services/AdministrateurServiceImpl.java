@@ -8,7 +8,9 @@ import com.sesame.neobte.Entities.Class.Utilisateur;
 import com.sesame.neobte.Exceptions.customExceptions.BadRequestException;
 import com.sesame.neobte.Exceptions.customExceptions.ResourceNotFoundException;
 import com.sesame.neobte.Repositories.IUtilisateurRepository;
+import com.sesame.neobte.Services.Other.AdminEventPublisher;
 import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -16,11 +18,12 @@ import java.util.Date;
 import java.util.List;
 
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class AdministrateurServiceImpl implements AdministrateurService {
 
     private final IUtilisateurRepository utilisateurRepository;
     private final PasswordEncoder passwordEncoder;
+    private final AdminEventPublisher adminEventPublisher;
 
 
     @Override
@@ -77,7 +80,9 @@ public class AdministrateurServiceImpl implements AdministrateurService {
         utilisateur.setRole(dto.getRole() != null ? dto.getRole() : Role.CLIENT);
         utilisateur.setDateCreationCompte(new Date());
 
-        return utilisateurRepository.save(utilisateur);
+        Utilisateur created = utilisateurRepository.save(utilisateur);
+        adminEventPublisher.publish(AdminEventPublisher.EventType.USER);
+        return created;
     }
 
 
@@ -97,7 +102,9 @@ public class AdministrateurServiceImpl implements AdministrateurService {
         if (dto.getMotDePasse() != null)    user.setMotDePasse(passwordEncoder.encode(dto.getMotDePasse()));
         if (dto.getRole() != null)          user.setRole(dto.getRole());
 
-        return utilisateurRepository.save(user);
+        Utilisateur updated = utilisateurRepository.save(user);
+        adminEventPublisher.publish(AdminEventPublisher.EventType.USER);
+        return updated;
     }
 
 
@@ -105,6 +112,7 @@ public class AdministrateurServiceImpl implements AdministrateurService {
     public void deleteUser(Long id) {
         Utilisateur user = getUserEntityById(id);
         utilisateurRepository.delete(user);
+        adminEventPublisher.publish(AdminEventPublisher.EventType.USER);
     }
 
     @Override
@@ -112,6 +120,7 @@ public class AdministrateurServiceImpl implements AdministrateurService {
         Utilisateur user = getUserEntityById(id);
         user.setPremium(premium);
         utilisateurRepository.save(user);
+        adminEventPublisher.publish(AdminEventPublisher.EventType.USER);
     }
 
 

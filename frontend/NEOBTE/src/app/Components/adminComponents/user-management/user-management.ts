@@ -1,11 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { AdminService } from '../../../Services/admin-service';
 import { UserListDTO } from '../../../Entities/DTO/Admin/user-list-dto';
 import { UserCreateDTO } from '../../../Entities/DTO/Admin/user-create-dto';
 import { UserUpdateDTO } from '../../../Entities/DTO/Admin/user-update-dto';
 import { ConfirmModalService } from '../../../Services/SharedServices/confirm-modal.service';
+import { WebsocketService } from '../../../Services/SharedServices/websocket.service';
 
 @Component({
   selector: 'app-user-management',
@@ -13,7 +14,7 @@ import { ConfirmModalService } from '../../../Services/SharedServices/confirm-mo
   templateUrl: './user-management.html',
   styleUrl: './user-management.css',
 })
-export class UserManagement implements OnInit {
+export class UserManagement implements OnInit, OnDestroy {
   users: UserListDTO[] = [];
   loading = false;
   error = '';
@@ -28,7 +29,8 @@ export class UserManagement implements OnInit {
   constructor(
     private adminService: AdminService,
     private fb: FormBuilder,
-    private modalService: ConfirmModalService
+    private modalService: ConfirmModalService,
+    private ws: WebsocketService
   ) {
     this.userForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -48,7 +50,12 @@ export class UserManagement implements OnInit {
 
   ngOnInit(): void {
     this.loadUsers();
+    this.ws.subscribeAdmin((event) => {
+      if (event.type === 'USER') this.loadUsers();
+    });
   }
+
+  ngOnDestroy() { }
 
   loadUsers() {
     this.loading = true;
@@ -116,7 +123,6 @@ export class UserManagement implements OnInit {
         next: () => { this.loadUsers(); this.resetForm(); }
       });
     } else {
-      // Generate a random temporary password — user must change it on first login
       const tempPassword = 'Tmp@' + Math.random().toString(36).slice(2, 10);
       const create: UserCreateDTO = {
         email: v.email,
@@ -164,18 +170,13 @@ export class UserManagement implements OnInit {
 
   togglePremium(user: UserListDTO) {
     const nextPremium = !(user.premium ?? false);
-    // Optimistic UI update
     user.premium = nextPremium;
     this.adminService.setPremium(user.id, nextPremium).subscribe({
-      next: (res) => {
-        user.premium = res.premium;
-      },
+      next: (res) => { user.premium = res.premium; },
       error: () => {
-        // Revert on failure
         user.premium = !nextPremium;
         this.error = 'Failed to update premium status';
       }
     });
   }
 }
-

@@ -1,10 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Actualite } from '../../../Entities/Interfaces/actualite';
 import { ActualiteService } from '../../../Services/actualite-service';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ConfirmModalService } from '../../../Services/SharedServices/confirm-modal.service';
 import { ActualiteCreateDTO } from '../../../Entities/DTO/actualite-create-dto';
+import { WebsocketService } from '../../../Services/SharedServices/websocket.service';
 
 @Component({
   selector: 'app-actualite-management',
@@ -13,8 +14,7 @@ import { ActualiteCreateDTO } from '../../../Entities/DTO/actualite-create-dto';
   templateUrl: './actualite-management.html',
   styleUrl: './actualite-management.css',
 })
-export class ActualiteManagement implements OnInit {
-
+export class ActualiteManagement implements OnInit, OnDestroy {
 
   actualites: Actualite[] = [];
   page = 0;
@@ -35,13 +35,18 @@ export class ActualiteManagement implements OnInit {
 
   constructor(
     private actualiteService: ActualiteService,
-    private modalService: ConfirmModalService
+    private modalService: ConfirmModalService,
+    private ws: WebsocketService
   ) { }
 
   ngOnInit(): void {
     this.loadActualites();
+    this.ws.subscribeAdmin((event) => {
+      if (event.type === 'ACTUALITE') this.loadActualites();
+    });
   }
 
+  ngOnDestroy() { }
 
   loadActualites() {
     this.actualiteService.getAll(this.page, this.size).subscribe(data => {
@@ -49,7 +54,6 @@ export class ActualiteManagement implements OnInit {
       this.totalPages = data.totalPages;
     });
   }
-
 
   submit() {
     const payload: ActualiteCreateDTO = {
@@ -87,9 +91,7 @@ export class ActualiteManagement implements OnInit {
     this.imagePreviewUrl = act.imageUrl ? this.mediaUrl(act.imageUrl) : null;
   }
 
-  cancelEdit() {
-    this.resetForm();
-  }
+  cancelEdit() { this.resetForm(); }
 
   onImageSelected(ev: Event) {
     const input = ev.target as HTMLInputElement;
@@ -111,7 +113,6 @@ export class ActualiteManagement implements OnInit {
     return `http://localhost:8080${url}`;
   }
 
-
   async deleteActualite(id: number) {
     const confirmed = await this.modalService.confirm({
       title: 'Supprimer l\'actualité',
@@ -128,22 +129,11 @@ export class ActualiteManagement implements OnInit {
     }
   }
 
-
-  //pagination functions
   nextPage() {
-    if (this.page < this.totalPages - 1) {
-      this.page++;
-      this.loadActualites();
-    }
+    if (this.page < this.totalPages - 1) { this.page++; this.loadActualites(); }
   }
 
   previousPage() {
-    if (this.page > 0) {
-      this.page--;
-      this.loadActualites();
-    }
+    if (this.page > 0) { this.page--; this.loadActualites(); }
   }
-
-
-
 }

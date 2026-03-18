@@ -15,6 +15,7 @@ import com.sesame.neobte.Exceptions.customExceptions.ResourceNotFoundException;
 import com.sesame.neobte.Repositories.ICompteRepository;
 import com.sesame.neobte.Repositories.IDemandeClotureCompteRepository;
 import com.sesame.neobte.Repositories.IUtilisateurRepository;
+import com.sesame.neobte.Services.Other.AdminEventPublisher;
 import jakarta.transaction.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +32,7 @@ public class CompteServiceImpl implements CompteService {
     private final ICompteRepository compteRepository;
     private final IUtilisateurRepository utilisateurRepository;
     private final IDemandeClotureCompteRepository demandeClotureRepository;
+    private final AdminEventPublisher adminEventPublisher;
 
 
     // ── Basic CRUD ─────────────────────────────────────────────────────────
@@ -44,7 +46,9 @@ public class CompteServiceImpl implements CompteService {
         compte.setTypeCompte(dto.getTypeCompte());
         compte.setStatutCompte(StatutCompte.ACTIVE);
         compte.setUtilisateur(user);
-        return mapToDTO(compteRepository.save(compte));
+        CompteResponseDTO r = mapToDTO(compteRepository.save(compte));
+        adminEventPublisher.publish(AdminEventPublisher.EventType.COMPTE);
+        return r;
     }
 
     @Override
@@ -61,6 +65,7 @@ public class CompteServiceImpl implements CompteService {
     @Override
     public void deleteCompteById(Long id) {
         compteRepository.deleteById(id);
+        adminEventPublisher.publish(AdminEventPublisher.EventType.COMPTE);
     }
 
     @Override
@@ -82,7 +87,9 @@ public class CompteServiceImpl implements CompteService {
 
         compte.setStatutCompte(StatutCompte.SUSPENDU);
         log.info("Compte {} suspendu par l'utilisateur {}", compteId, userId);
-        return mapToDTO(compteRepository.save(compte));
+        CompteResponseDTO r2 = mapToDTO(compteRepository.save(compte));
+        adminEventPublisher.publish(AdminEventPublisher.EventType.COMPTE);
+        return r2;
     }
 
     @Override
@@ -95,7 +102,9 @@ public class CompteServiceImpl implements CompteService {
 
         compte.setStatutCompte(StatutCompte.ACTIVE);
         log.info("Compte {} réactivé par l'utilisateur {}", compteId, userId);
-        return mapToDTO(compteRepository.save(compte));
+        CompteResponseDTO r3 = mapToDTO(compteRepository.save(compte));
+        adminEventPublisher.publish(AdminEventPublisher.EventType.COMPTE);
+        return r3;
     }
 
     @Override
@@ -162,7 +171,9 @@ public class CompteServiceImpl implements CompteService {
         compte.setStatutCompte(StatutCompte.ACTIVE);
         compte.setDateSuppressionPrevue(null);
         log.info("Clôture annulée par le client pour le compte {}", compteId);
-        return mapToDTO(compteRepository.save(compte));
+        CompteResponseDTO r4 = mapToDTO(compteRepository.save(compte));
+        adminEventPublisher.publish(AdminEventPublisher.EventType.COMPTE);
+        return r4;
     }
 
     // ── Admin status management ─────────────────────────────────────────────
@@ -177,7 +188,9 @@ public class CompteServiceImpl implements CompteService {
         compte.setStatutCompte(dto.getNewStatut());
 
         log.info("Admin: statut du compte {} changé de {} à {}", compteId, ancien, dto.getNewStatut());
-        return mapToDTO(compteRepository.save(compte));
+        CompteResponseDTO r5 = mapToDTO(compteRepository.save(compte));
+        adminEventPublisher.publish(AdminEventPublisher.EventType.COMPTE);
+        return r5;
     }
 
     @Override
@@ -213,7 +226,9 @@ public class CompteServiceImpl implements CompteService {
         demande.setDateDecision(LocalDateTime.now());
 
         log.info("Demande de clôture {} approuvée. Nouveau statut compte : {}", demandeId, compte.getStatutCompte());
-        return mapClotureToDTO(demandeClotureRepository.save(demande));
+        DemandeClotureResponseDTO r6 = mapClotureToDTO(demandeClotureRepository.save(demande));
+        adminEventPublisher.publish(AdminEventPublisher.EventType.COMPTE);
+        return r6;
     }
 
     @Override
@@ -233,7 +248,9 @@ public class CompteServiceImpl implements CompteService {
         demande.setDateDecision(LocalDateTime.now());
 
         log.info("Demande de clôture {} rejetée.", demandeId);
-        return mapClotureToDTO(demandeClotureRepository.save(demande));
+        DemandeClotureResponseDTO r7 = mapClotureToDTO(demandeClotureRepository.save(demande));
+        adminEventPublisher.publish(AdminEventPublisher.EventType.COMPTE);
+        return r7;
     }
 
 

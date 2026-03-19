@@ -1,8 +1,9 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { RouterModule } from '@angular/router';
 import { NotificationService } from '../../../Services/notification-service';
 import { ClientNotification } from '../../../Entities/Interfaces/notification';
+import { interval, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-notifications-view',
@@ -11,7 +12,7 @@ import { ClientNotification } from '../../../Entities/Interfaces/notification';
   templateUrl: './notifications-view.html',
   styleUrl: './notifications-view.css',
 })
-export class NotificationsView implements OnInit {
+export class NotificationsView implements OnInit, OnDestroy {
   notifications: ClientNotification[] = [];
   loading = false;
   error = '';
@@ -20,10 +21,17 @@ export class NotificationsView implements OnInit {
   totalPages = 0;
   unreadOnly = false;
 
-  constructor(private notificationService: NotificationService) {}
+  private pollSub?: Subscription;
+
+  constructor(private notificationService: NotificationService) { }
 
   ngOnInit(): void {
     this.load();
+    this.pollSub = interval(2000).subscribe(() => this.load());
+  }
+
+  ngOnDestroy(): void {
+    this.pollSub?.unsubscribe();
   }
 
   load() {
@@ -35,46 +43,25 @@ export class NotificationsView implements OnInit {
         this.totalPages = res.totalPages ?? 0;
         this.loading = false;
       },
-      error: () => {
-        this.error = "Impossible de charger vos notifications.";
-        this.loading = false;
-      },
+      error: () => { this.error = 'Impossible de charger vos notifications.'; this.loading = false; },
     });
   }
 
-  toggleUnreadOnly() {
-    this.unreadOnly = !this.unreadOnly;
-    this.page = 0;
-    this.load();
-  }
+  toggleUnreadOnly() { this.unreadOnly = !this.unreadOnly; this.page = 0; this.load(); }
 
   markAllRead() {
     this.notificationService.markAllRead().subscribe({
-      next: () => {
-        this.notifications = this.notifications.map((n) => ({ ...n, lu: true }));
-      },
-      error: () => {},
+      next: () => { this.notifications = this.notifications.map((n) => ({ ...n, lu: true })); },
+      error: () => { },
     });
   }
 
   markRead(n: ClientNotification) {
     if (n.lu) return;
     n.lu = true;
-    this.notificationService.markRead(n.id).subscribe({ next: () => {}, error: () => {} });
+    this.notificationService.markRead(n.id).subscribe({ next: () => { }, error: () => { } });
   }
 
-  nextPage() {
-    if (this.page < this.totalPages - 1) {
-      this.page++;
-      this.load();
-    }
-  }
-
-  previousPage() {
-    if (this.page > 0) {
-      this.page--;
-      this.load();
-    }
-  }
+  nextPage() { if (this.page < this.totalPages - 1) { this.page++; this.load(); } }
+  previousPage() { if (this.page > 0) { this.page--; this.load(); } }
 }
-

@@ -21,8 +21,6 @@ import com.sesame.neobte.Repositories.Fraude.IFraudeAlerteRepository;
 import com.sesame.neobte.Repositories.Fraude.IFraudeConfigRepository;
 import com.sesame.neobte.Repositories.IUtilisateurRepository;
 import com.sesame.neobte.Repositories.IVirementRepository;
-import com.sesame.neobte.Security.Services.Fraude.FraudeService;
-import com.sesame.neobte.Services.Other.AdminEventPublisher;
 import com.sesame.neobte.Services.Other.EmailService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -49,7 +47,6 @@ public class FraudeServiceImpl implements FraudeService {
     private final IUtilisateurRepository utilisateurRepository;
     private final IVirementRepository virementRepository;
     private final EmailService emailService;
-    private final AdminEventPublisher adminEventPublisher;
 
     // ─────────────────────────────────────────────────────────────────────────
     // PRE-FLIGHT: hard limits
@@ -190,7 +187,6 @@ public class FraudeServiceImpl implements FraudeService {
             if (raised.isEmpty()) return;
 
             alerteRepository.saveAll(raised);
-            adminEventPublisher.publish(AdminEventPublisher.EventType.FRAUDE);
             log.warn("[FRAUD] {} alert(s) for user {} ({})",
                     raised.size(), senderUserId, sender.getEmail());
 
@@ -243,7 +239,8 @@ public class FraudeServiceImpl implements FraudeService {
         alerte.setStatut(newStatut);
         if (dto.getAdminNote() != null) alerte.setAdminNote(dto.getAdminNote());
         alerte.setDateRevue(LocalDateTime.now());
-        return mapToDTO(alerteRepository.save(alerte));
+        FraudeAlerteResponseDTO reviewed = mapToDTO(alerteRepository.save(alerte));
+        return reviewed;
     }
 
     @Override
@@ -269,7 +266,8 @@ public class FraudeServiceImpl implements FraudeService {
         cfg.setSuspiciousHourStart(dto.getSuspiciousHourStart());
         cfg.setSuspiciousHourEnd(dto.getSuspiciousHourEnd());
         cfg.setEmailAlertsEnabled(dto.isEmailAlertsEnabled());
-        return mapConfigToDTO(configRepository.save(cfg));
+        FraudeConfigResponseDTO updatedCfg = mapConfigToDTO(configRepository.save(cfg));
+        return updatedCfg;
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────

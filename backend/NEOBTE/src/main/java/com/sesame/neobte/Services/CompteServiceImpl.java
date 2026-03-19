@@ -15,8 +15,7 @@ import com.sesame.neobte.Exceptions.customExceptions.ResourceNotFoundException;
 import com.sesame.neobte.Repositories.ICompteRepository;
 import com.sesame.neobte.Repositories.IDemandeClotureCompteRepository;
 import com.sesame.neobte.Repositories.IUtilisateurRepository;
-import com.sesame.neobte.Services.Other.AdminEventPublisher;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -32,8 +31,6 @@ public class CompteServiceImpl implements CompteService {
     private final ICompteRepository compteRepository;
     private final IUtilisateurRepository utilisateurRepository;
     private final IDemandeClotureCompteRepository demandeClotureRepository;
-    private final AdminEventPublisher adminEventPublisher;
-
 
     // ── Basic CRUD ─────────────────────────────────────────────────────────
 
@@ -47,7 +44,6 @@ public class CompteServiceImpl implements CompteService {
         compte.setStatutCompte(StatutCompte.ACTIVE);
         compte.setUtilisateur(user);
         CompteResponseDTO r = mapToDTO(compteRepository.save(compte));
-        adminEventPublisher.publish(AdminEventPublisher.EventType.COMPTE);
         return r;
     }
 
@@ -65,7 +61,6 @@ public class CompteServiceImpl implements CompteService {
     @Override
     public void deleteCompteById(Long id) {
         compteRepository.deleteById(id);
-        adminEventPublisher.publish(AdminEventPublisher.EventType.COMPTE);
     }
 
     @Override
@@ -73,7 +68,6 @@ public class CompteServiceImpl implements CompteService {
         return compteRepository.findByUtilisateur_IdUtilisateur(userId)
                 .stream().map(this::mapToDTO).toList();
     }
-
 
     // ── Client self-service ─────────────────────────────────────────────────
 
@@ -88,7 +82,6 @@ public class CompteServiceImpl implements CompteService {
         compte.setStatutCompte(StatutCompte.SUSPENDU);
         log.info("Compte {} suspendu par l'utilisateur {}", compteId, userId);
         CompteResponseDTO r2 = mapToDTO(compteRepository.save(compte));
-        adminEventPublisher.publish(AdminEventPublisher.EventType.COMPTE);
         return r2;
     }
 
@@ -103,7 +96,6 @@ public class CompteServiceImpl implements CompteService {
         compte.setStatutCompte(StatutCompte.ACTIVE);
         log.info("Compte {} réactivé par l'utilisateur {}", compteId, userId);
         CompteResponseDTO r3 = mapToDTO(compteRepository.save(compte));
-        adminEventPublisher.publish(AdminEventPublisher.EventType.COMPTE);
         return r3;
     }
 
@@ -136,7 +128,8 @@ public class CompteServiceImpl implements CompteService {
         compteRepository.save(compte);
 
         log.info("Demande de clôture soumise pour le compte {} — suppression prévue dans 48h", dto.getCompteId());
-        return mapClotureToDTO(demandeClotureRepository.save(demande));
+        DemandeClotureResponseDTO rCloture = mapClotureToDTO(demandeClotureRepository.save(demande));
+        return rCloture;
     }
 
     @Override
@@ -144,7 +137,6 @@ public class CompteServiceImpl implements CompteService {
         return demandeClotureRepository.findByUtilisateur_IdUtilisateur(userId)
                 .stream().map(this::mapClotureToDTO).toList();
     }
-
 
     @Override
     @Transactional
@@ -172,7 +164,7 @@ public class CompteServiceImpl implements CompteService {
         compte.setDateSuppressionPrevue(null);
         log.info("Clôture annulée par le client pour le compte {}", compteId);
         CompteResponseDTO r4 = mapToDTO(compteRepository.save(compte));
-        adminEventPublisher.publish(AdminEventPublisher.EventType.COMPTE);
+
         return r4;
     }
 
@@ -189,7 +181,6 @@ public class CompteServiceImpl implements CompteService {
 
         log.info("Admin: statut du compte {} changé de {} à {}", compteId, ancien, dto.getNewStatut());
         CompteResponseDTO r5 = mapToDTO(compteRepository.save(compte));
-        adminEventPublisher.publish(AdminEventPublisher.EventType.COMPTE);
         return r5;
     }
 
@@ -227,7 +218,6 @@ public class CompteServiceImpl implements CompteService {
 
         log.info("Demande de clôture {} approuvée. Nouveau statut compte : {}", demandeId, compte.getStatutCompte());
         DemandeClotureResponseDTO r6 = mapClotureToDTO(demandeClotureRepository.save(demande));
-        adminEventPublisher.publish(AdminEventPublisher.EventType.COMPTE);
         return r6;
     }
 
@@ -249,10 +239,8 @@ public class CompteServiceImpl implements CompteService {
 
         log.info("Demande de clôture {} rejetée.", demandeId);
         DemandeClotureResponseDTO r7 = mapClotureToDTO(demandeClotureRepository.save(demande));
-        adminEventPublisher.publish(AdminEventPublisher.EventType.COMPTE);
         return r7;
     }
-
 
     // ── Helpers ────────────────────────────────────────────────────────────
 

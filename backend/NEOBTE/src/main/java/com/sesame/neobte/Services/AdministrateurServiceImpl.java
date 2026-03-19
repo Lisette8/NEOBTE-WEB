@@ -8,8 +8,6 @@ import com.sesame.neobte.Entities.Class.Utilisateur;
 import com.sesame.neobte.Exceptions.customExceptions.BadRequestException;
 import com.sesame.neobte.Exceptions.customExceptions.ResourceNotFoundException;
 import com.sesame.neobte.Repositories.IUtilisateurRepository;
-import com.sesame.neobte.Services.Other.AdminEventPublisher;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -23,8 +21,6 @@ public class AdministrateurServiceImpl implements AdministrateurService {
 
     private final IUtilisateurRepository utilisateurRepository;
     private final PasswordEncoder passwordEncoder;
-    private final AdminEventPublisher adminEventPublisher;
-
 
     @Override
     public List<AdminUserResponse> getAllUsers() {
@@ -34,19 +30,16 @@ public class AdministrateurServiceImpl implements AdministrateurService {
                 .toList();
     }
 
-
     public Utilisateur getUserEntityById(Long id) {
         return utilisateurRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id " + id));
     }
-
 
     @Override
     public AdminUserResponse getUserById(Long id) {
         Utilisateur user = getUserEntityById(id);
         return toAdminResponse(user);
     }
-
 
     @Override
     public Utilisateur createUtilisateur(CreateUserRequest dto) {
@@ -81,10 +74,8 @@ public class AdministrateurServiceImpl implements AdministrateurService {
         utilisateur.setDateCreationCompte(new Date());
 
         Utilisateur created = utilisateurRepository.save(utilisateur);
-        adminEventPublisher.publish(AdminEventPublisher.EventType.USER);
         return created;
     }
-
 
     @Override
     public Utilisateur updateUser(Long id, UpdateUserRequest dto) {
@@ -103,16 +94,13 @@ public class AdministrateurServiceImpl implements AdministrateurService {
         if (dto.getRole() != null)          user.setRole(dto.getRole());
 
         Utilisateur updated = utilisateurRepository.save(user);
-        adminEventPublisher.publish(AdminEventPublisher.EventType.USER);
         return updated;
     }
-
 
     @Override
     public void deleteUser(Long id) {
         Utilisateur user = getUserEntityById(id);
         utilisateurRepository.delete(user);
-        adminEventPublisher.publish(AdminEventPublisher.EventType.USER);
     }
 
     @Override
@@ -120,9 +108,7 @@ public class AdministrateurServiceImpl implements AdministrateurService {
         Utilisateur user = getUserEntityById(id);
         user.setPremium(premium);
         utilisateurRepository.save(user);
-        adminEventPublisher.publish(AdminEventPublisher.EventType.USER);
     }
-
 
     // mapper
     private AdminUserResponse toAdminResponse(Utilisateur user) {

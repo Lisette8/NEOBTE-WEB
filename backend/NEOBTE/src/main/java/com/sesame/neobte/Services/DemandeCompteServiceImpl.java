@@ -14,9 +14,8 @@ import com.sesame.neobte.Exceptions.customExceptions.ResourceNotFoundException;
 import com.sesame.neobte.Repositories.ICompteRepository;
 import com.sesame.neobte.Repositories.IDemandeCompteRepository;
 import com.sesame.neobte.Repositories.IUtilisateurRepository;
-import com.sesame.neobte.Services.Other.AdminEventPublisher;
 import com.sesame.neobte.Services.Other.EmailService;
-import jakarta.transaction.Transactional;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -24,6 +23,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
 
 @Service
 @AllArgsConstructor
@@ -34,8 +34,6 @@ public class DemandeCompteServiceImpl implements DemandeCompteService {
     private final ICompteRepository compteRepository;
     private final IUtilisateurRepository utilisateurRepository;
     private final EmailService emailService;
-    private final AdminEventPublisher adminEventPublisher;
-
 
     @Override
     @Transactional
@@ -84,7 +82,6 @@ public class DemandeCompteServiceImpl implements DemandeCompteService {
         return mapToDTO(saved);
     }
 
-
     private void validateKycForType(DemandeCompteCreateDTO dto) {
         // CIN and dateNaissance required for ALL account types
         if (dto.getCin() == null || dto.getCin().isBlank())
@@ -105,7 +102,6 @@ public class DemandeCompteServiceImpl implements DemandeCompteService {
         }
     }
 
-
     private void updateUserKyc(Utilisateur user, DemandeCompteCreateDTO dto) {
         // Only write fields that haven't been set yet — don't overwrite existing verified data
         if (user.getCin() == null) user.setCin(dto.getCin());
@@ -120,7 +116,6 @@ public class DemandeCompteServiceImpl implements DemandeCompteService {
         }
     }
 
-
     @Override
     public List<DemandeCompteResponseDTO> getDemandesByUser(Long userId) {
         return demandeRepository
@@ -130,7 +125,6 @@ public class DemandeCompteServiceImpl implements DemandeCompteService {
                 .toList();
     }
 
-
     @Override
     public List<DemandeCompteResponseDTO> getAllDemandes() {
         return demandeRepository.findAllByOrderByStatutDemandeAscDateDemandeDesc()
@@ -138,7 +132,6 @@ public class DemandeCompteServiceImpl implements DemandeCompteService {
                 .map(this::mapToDTO)
                 .toList();
     }
-
 
     @Override
     public List<DemandeCompteResponseDTO> getDemandesByStatut(String statut) {
@@ -153,7 +146,6 @@ public class DemandeCompteServiceImpl implements DemandeCompteService {
                 .map(this::mapToDTO)
                 .toList();
     }
-
 
     @Override
     @Transactional
@@ -182,11 +174,9 @@ public class DemandeCompteServiceImpl implements DemandeCompteService {
                 demande.getTypeCompte().name(), savedCompte.getIdCompte());
 
         log.info("Account request APPROVED: demandeId={}, newCompteId={}", demandeId, savedCompte.getIdCompte());
-        adminEventPublisher.publish(AdminEventPublisher.EventType.DEMANDE);
-        adminEventPublisher.publish(AdminEventPublisher.EventType.COMPTE);
+
         return mapToDTO(demande);
     }
-
 
     @Override
     @Transactional
@@ -213,7 +203,6 @@ public class DemandeCompteServiceImpl implements DemandeCompteService {
         return mapToDTO(demande);
     }
 
-
     @Async
     protected void sendConfirmationEmailAsync(String email, String prenom, String typeCompte) {
         try { emailService.sendDemandeConfirmationEmail(email, prenom, typeCompte); }
@@ -231,7 +220,6 @@ public class DemandeCompteServiceImpl implements DemandeCompteService {
         try { emailService.sendDemandeRejectionEmail(email, prenom, typeCompte, reason); }
         catch (Exception e) { log.error("Failed to send rejection email to {}: {}", email, e.getMessage()); }
     }
-
 
     private DemandeCompteResponseDTO mapToDTO(DemandeCompte d) {
         DemandeCompteResponseDTO dto = new DemandeCompteResponseDTO();

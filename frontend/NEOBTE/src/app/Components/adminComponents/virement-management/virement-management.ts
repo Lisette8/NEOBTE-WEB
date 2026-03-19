@@ -3,6 +3,7 @@ import { VirementService } from '../../../Services/virement.service';
 import { Virement } from '../../../Entities/Interfaces/virement';
 import { CommonModule } from '@angular/common';
 import { WebsocketService } from '../../../Services/SharedServices/websocket.service';
+import { interval, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-virement-management',
@@ -13,31 +14,40 @@ import { WebsocketService } from '../../../Services/SharedServices/websocket.ser
 })
 export class VirementManagement implements OnInit, OnDestroy {
 
+  private pollSub?: Subscription;
+
   virements: Virement[] = [];
   loading = false;
 
-  constructor(
-    private adminVirementService: VirementService,
-    private ws: WebsocketService
-  ) { }
+  constructor(private adminVirementService: VirementService) { }
 
   ngOnInit() {
+    this.startPolling();
     this.loadVirements();
-    this.ws.subscribeAdmin((event) => {
-      if (event.type === 'VIREMENT') this.loadVirements();
-    });
-  }
-
-  ngOnDestroy() {
-    // WebsocketService is a singleton — do NOT disconnect here,
-    // other components share the same connection.
   }
 
   loadVirements() {
     this.loading = true;
+
     this.adminVirementService.getAllVirements().subscribe({
-      next: (data) => { this.virements = data; this.loading = false; },
-      error: () => { this.loading = false; }
+      next: (data) => {
+        this.virements = data;
+        this.loading = false;
+      },
+      error: () => {
+        this.loading = false;
+      }
     });
   }
+
+  startPolling() {
+    this.pollSub = interval(5000).subscribe(() => {
+      this.loadVirements();
+    });
+  }
+
+  ngOnDestroy() {
+    this.pollSub?.unsubscribe();
+  }
+
 }

@@ -38,6 +38,9 @@ public class SecurityConfig {
                         // static uploads (images)
                         .requestMatchers("/uploads/**").permitAll()
 
+                        //websocket
+                        .requestMatchers("/ws/**").permitAll()
+
                         // v1 permit all for quicker testing via postman
                         // v2 permit all auth(login and register), rest is protected (Client)
                         .requestMatchers(

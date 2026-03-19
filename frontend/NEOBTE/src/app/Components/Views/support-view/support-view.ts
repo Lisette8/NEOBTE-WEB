@@ -1,9 +1,10 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { SupportService } from '../../../Services/support-service';
 import { SupportCreateDTO } from '../../../Entities/DTO/support-create-dto';
 import { Support } from '../../../Entities/Interfaces/support';
+import { interval, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-support-view',
@@ -12,20 +13,29 @@ import { Support } from '../../../Entities/Interfaces/support';
   templateUrl: './support-view.html',
   styleUrl: './support-view.css',
 })
-export class SupportView implements OnInit {
- 
+export class SupportView implements OnInit, OnDestroy {
+
   tickets: Support[] = [];
   loading = false;
   submitting = false;
   error = '';
   successMessage = '';
- 
+
   newTicket: SupportCreateDTO = { sujet: '', message: '' };
- 
-  constructor(private supportService: SupportService) {}
- 
-  ngOnInit(): void { this.loadTickets(); }
- 
+
+  private pollSub?: Subscription;
+
+  constructor(private supportService: SupportService) { }
+
+  ngOnInit(): void {
+    this.loadTickets();
+    this.pollSub = interval(2000).subscribe(() => this.loadTickets());
+  }
+
+  ngOnDestroy(): void {
+    this.pollSub?.unsubscribe();
+  }
+
   loadTickets() {
     this.loading = true;
     this.supportService.getMyTickets().subscribe({
@@ -33,13 +43,12 @@ export class SupportView implements OnInit {
       error: () => { this.error = 'Impossible de charger les tickets.'; this.loading = false; }
     });
   }
- 
+
   createTicket() {
     if (!this.newTicket.sujet || !this.newTicket.message) return;
     this.submitting = true;
     this.successMessage = '';
     this.error = '';
- 
     this.supportService.createTicket(this.newTicket).subscribe({
       next: () => {
         this.newTicket = { sujet: '', message: '' };
@@ -47,17 +56,17 @@ export class SupportView implements OnInit {
         this.submitting = false;
         this.loadTickets();
       },
-      error: () => { this.error = 'Échec de l\'envoi du ticket.'; this.submitting = false; }
+      error: () => { this.error = "Échec de l'envoi du ticket."; this.submitting = false; }
     });
   }
- 
+
   getStatusLabel(status: string): string {
     switch (status) {
-      case 'OPEN':        return 'Ouvert';
+      case 'OPEN': return 'Ouvert';
       case 'IN_PROGRESS': return 'En cours';
-      case 'RESOLVED':    return 'Résolu';
-      case 'CLOSED':      return 'Fermé';
-      default:            return status;
+      case 'RESOLVED': return 'Résolu';
+      case 'CLOSED': return 'Fermé';
+      default: return status;
     }
   }
 }

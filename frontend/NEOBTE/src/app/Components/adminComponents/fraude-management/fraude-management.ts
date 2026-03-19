@@ -3,9 +3,8 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FilterStatutPipe } from '../../../Security/Services/FilterStatutPipe';
 import { FraudeAlerte, FraudeConfig } from '../../../Entities/Interfaces/fraude';
-import { interval, Subscription } from 'rxjs';
-import { startWith, switchMap } from 'rxjs/operators';
 import { FraudeService } from '../../../Security/Services/FraudeService';
+import { WebsocketService } from '../../../Services/SharedServices/websocket.service';
 
 type SecurityTab = 'alerts' | 'config';
 type AlertFilter = 'ALL' | 'OPEN' | 'REVIEWED' | 'DISMISSED';
@@ -18,49 +17,41 @@ type AlertFilter = 'ALL' | 'OPEN' | 'REVIEWED' | 'DISMISSED';
   styleUrl: './fraude-management.css',
 })
 export class FraudeManagement implements OnInit, OnDestroy {
- 
+
   secTab: SecurityTab = 'alerts';
   alertFilter: AlertFilter = 'OPEN';
- 
   alertes: FraudeAlerte[] = [];
   alertesLoading = true;
   alertesError = '';
   openCount = 0;
- 
-  // Inline review panel
+
   reviewingId: number | null = null;
   reviewNote = '';
   reviewSubmitting = false;
   reviewError = '';
- 
-  // Config
+
   config: FraudeConfig | null = null;
   configForm: FraudeConfig | null = null;
   configLoading = true;
   configSaving = false;
   configSuccess = '';
   configError = '';
- 
-  private pollSub?: Subscription;
-  private readonly POLL_MS = 20_000;
- 
-  constructor(private fraudeService: FraudeService) {}
- 
+
+  constructor(private fraudeService: FraudeService, private ws: WebsocketService) { }
+
   ngOnInit() {
     this.loadConfig();
-    this.startPolling();
+    this.loadAlertes();
+    // Real-time: reload when new fraud alerts arrive
+    this.ws.subscribeAdmin((event) => {
+      if (event.type === 'FRAUDE') this.loadAlertes();
+    });
   }
- 
-  ngOnDestroy() {
-    this.pollSub?.unsubscribe();
-  }
- 
-  // ── Polling ──────────────────────────────────────────────
-  private startPolling() {
-    this.pollSub = interval(this.POLL_MS).pipe(
-      startWith(0),
-      switchMap(() => this.fraudeService.getAllAlertes())
-    ).subscribe({
+
+  ngOnDestroy() { }
+
+  loadAlertes() {
+    this.fraudeService.getAllAlertes().subscribe({
       next: (data) => {
         this.alertes = data;
         this.openCount = data.filter(a => a.statut === 'OPEN').length;
@@ -69,25 +60,15 @@ export class FraudeManagement implements OnInit, OnDestroy {
       error: () => { this.alertesLoading = false; this.alertesError = 'Failed to load alerts.'; }
     });
   }
- 
-  // ── Alerts ───────────────────────────────────────────────
+
   get filteredAlertes(): FraudeAlerte[] {
     if (this.alertFilter === 'ALL') return this.alertes;
     return this.alertes.filter(a => a.statut === this.alertFilter);
   }
- 
-  openReview(id: number) {
-    this.reviewingId = id;
-    this.reviewNote = '';
-    this.reviewError = '';
-  }
- 
-  cancelReview() {
-    this.reviewingId = null;
-    this.reviewNote = '';
-    this.reviewError = '';
-  }
- 
+
+  openReview(id: number) { this.reviewingId = id; this.reviewNote = ''; this.reviewError = ''; }
+  cancelReview() { this.reviewingId = null; this.reviewNote = ''; this.reviewError = ''; }
+
   submitReview(newStatut: 'REVIEWED' | 'DISMISSED') {
     if (this.reviewingId === null) return;
     this.reviewSubmitting = true;
@@ -100,90 +81,59 @@ export class FraudeManagement implements OnInit, OnDestroy {
         this.reviewSubmitting = false;
         this.reviewingId = null;
       },
-      error: (err) => {
+      error: (err: any) => {
         this.reviewError = err?.error?.message || 'Failed to update alert.';
         this.reviewSubmitting = false;
       }
     });
   }
- 
-  // ── Config ───────────────────────────────────────────────
+
   loadConfig() {
     this.configLoading = true;
     this.fraudeService.getConfig().subscribe({
-      next: (cfg) => {
-        this.config = cfg;
-        this.configForm = { ...cfg };
-        this.configLoading = false;
-      },
+      next: (cfg) => { this.config = cfg; this.configForm = { ...cfg }; this.configLoading = false; },
       error: () => { this.configLoading = false; this.configError = 'Failed to load config.'; }
     });
   }
- 
+
   saveConfig() {
     if (!this.configForm) return;
     this.configSaving = true;
-    this.configSuccess = '';
-    this.configError = '';
+    this.configSuccess = ''; this.configError = '';
     this.fraudeService.updateConfig(this.configForm).subscribe({
       next: (updated) => {
-        this.config = updated;
-        this.configForm = { ...updated };
+        this.config = updated; this.configForm = { ...updated };
         this.configSuccess = 'Configuration saved.';
         this.configSaving = false;
         setTimeout(() => this.configSuccess = '', 3000);
       },
-      error: (err) => {
-        this.configError = err?.error?.message || 'Failed to save config.';
-        this.configSaving = false;
-      }
+      error: (err: any) => { this.configError = err?.error?.message || 'Failed to save config.'; this.configSaving = false; }
     });
   }
- 
-  resetConfigForm() {
-    if (this.config) this.configForm = { ...this.config };
-    this.configSuccess = '';
-    this.configError = '';
-  }
- 
-  // ── Helpers ──────────────────────────────────────────────
+
+  resetConfigForm() { if (this.config) this.configForm = { ...this.config }; this.configSuccess = ''; this.configError = ''; }
+
   severityClass(s: string): string {
-    switch (s) {
-      case 'HIGH':   return 'sev-high';
-      case 'MEDIUM': return 'sev-medium';
-      case 'LOW':    return 'sev-low';
-      default:       return '';
-    }
+    switch (s) { case 'HIGH': return 'sev-high'; case 'MEDIUM': return 'sev-medium'; case 'LOW': return 'sev-low'; default: return ''; }
   }
- 
+
   statutClass(s: string): string {
-    switch (s) {
-      case 'OPEN':      return 'st-open';
-      case 'REVIEWED':  return 'st-reviewed';
-      case 'DISMISSED': return 'st-dismissed';
-      default:          return '';
-    }
+    switch (s) { case 'OPEN': return 'st-open'; case 'REVIEWED': return 'st-reviewed'; case 'DISMISSED': return 'st-dismissed'; default: return ''; }
   }
- 
+
   typeLabel(t: string): string {
     switch (t) {
-      case 'SUSPICIOUS_HOUR':       return 'Suspicious Hour';
-      case 'DAILY_COUNT_EXCEEDED':  return 'Daily Count Exceeded';
-      case 'DAILY_AMOUNT_EXCEEDED': return 'Daily Amount Exceeded';
-      case 'RAPID_SUCCESSION':      return 'Rapid Succession';
-      case 'LARGE_SINGLE_TRANSFER': return 'Large Transfer';
-      default: return t;
+      case 'SUSPICIOUS_HOUR': return 'Suspicious Hour'; case 'DAILY_COUNT_EXCEEDED': return 'Daily Count Exceeded';
+      case 'DAILY_AMOUNT_EXCEEDED': return 'Daily Amount Exceeded'; case 'RAPID_SUCCESSION': return 'Rapid Succession';
+      case 'LARGE_SINGLE_TRANSFER': return 'Large Transfer'; default: return t;
     }
   }
- 
+
   typeIcon(t: string): string {
     switch (t) {
-      case 'SUSPICIOUS_HOUR':       return 'clock';
-      case 'DAILY_COUNT_EXCEEDED':  return 'repeat';
-      case 'DAILY_AMOUNT_EXCEEDED': return 'trending-up';
-      case 'RAPID_SUCCESSION':      return 'zap';
-      case 'LARGE_SINGLE_TRANSFER': return 'alert-triangle';
-      default: return 'shield';
+      case 'SUSPICIOUS_HOUR': return 'clock'; case 'DAILY_COUNT_EXCEEDED': return 'repeat';
+      case 'DAILY_AMOUNT_EXCEEDED': return 'trending-up'; case 'RAPID_SUCCESSION': return 'zap';
+      case 'LARGE_SINGLE_TRANSFER': return 'alert-triangle'; default: return 'shield';
     }
   }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Compte } from '../../../Entities/Interfaces/compte';
 import { CompteService } from '../../../Services/compte-service';
 import { AuthService } from '../../../Services/auth-service';
@@ -8,6 +8,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { DemandeCompte } from '../../../Entities/Interfaces/demande-compte';
 import { DemandeCompteCreateDTO } from '../../../Entities/DTO/demande-compte-create-dto';
 import { AccountPhysicalCard } from '../../account-physical-card/account-physical-card';
+import { interval, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-compte-view',
@@ -16,83 +17,85 @@ import { AccountPhysicalCard } from '../../account-physical-card/account-physica
   templateUrl: './compte-view.html',
   styleUrl: './compte-view.css',
 })
-export class CompteView implements OnInit {
- 
+export class CompteView implements OnInit, OnDestroy {
+
   comptes: Compte[] = [];
   demandes: DemandeCompte[] = [];
   loading = false;
   error = '';
- 
+
   step: 'list' | 'select-type' | 'fill-kyc' = 'list';
   selectedType: 'COURANT' | 'EPARGNE' | 'PROFESSIONNEL' | null = null;
   kycForm!: FormGroup;
   submitting = false;
   submitSuccess = '';
   submitError = '';
- 
+
+  private pollSub?: Subscription;
+
   readonly accountTypes = [
     {
-      type: 'COURANT' as const,
-      label: 'Compte Chèque',
+      type: 'COURANT' as const, label: 'Compte Chèque',
       desc: 'Opérations quotidiennes — dépôts, retraits, virements',
       needs: 'CIN · Date de naissance · Adresse · Profession'
     },
     {
-      type: 'EPARGNE' as const,
-      label: 'Compte Épargne',
+      type: 'EPARGNE' as const, label: 'Compte Épargne',
       desc: 'Faites fructifier votre épargne avec des intérêts',
       needs: 'CIN · Date de naissance'
     },
     {
-      type: 'PROFESSIONNEL' as const,
-      label: 'Compte Professionnel',
-      desc: 'Banque d\'affaires pour professionnels et indépendants',
-      needs: 'CIN · Date de naissance · Adresse · Profession · Nom de l\'entreprise'
+      type: 'PROFESSIONNEL' as const, label: 'Compte Professionnel',
+      desc: "Banque d'affaires pour professionnels et indépendants",
+      needs: "CIN · Date de naissance · Adresse · Profession · Nom de l'entreprise"
     }
   ];
- 
+
   constructor(
     private compteService: CompteService,
     private authService: AuthService,
     private fb: FormBuilder,
     private router: Router,
     private route: ActivatedRoute,
-  ) {}
- 
+  ) { }
+
   ngOnInit(): void {
     this.route.queryParams.subscribe(params => {
       if (params['open'] === 'true') this.step = 'select-type';
     });
     this.loadData();
+    this.pollSub = interval(2000).subscribe(() => this.loadData());
   }
- 
+
+  ngOnDestroy(): void {
+    this.pollSub?.unsubscribe();
+  }
+
   loadData() {
     const userId = this.authService.getUserId();
     if (!userId) return;
- 
     this.loading = true;
     this.compteService.getUserAccounts(userId).subscribe({
       next: (data) => { this.comptes = data; this.loading = false; },
       error: () => { this.error = 'Impossible de charger les comptes.'; this.loading = false; }
     });
- 
     this.compteService.getMyDemandes().subscribe({
       next: (data) => this.demandes = data,
-      error: () => {}
+      error: () => { }
     });
   }
- 
+
   selectType(type: 'COURANT' | 'EPARGNE' | 'PROFESSIONNEL') {
     this.selectedType = type;
     this.buildKycForm(type);
     this.step = 'fill-kyc';
   }
- 
+
   private buildKycForm(type: 'COURANT' | 'EPARGNE' | 'PROFESSIONNEL') {
     const base = {
-      cin:           ['', [Validators.required, Validators.pattern(/^[0-9]{8}$/)]],
+      cin: ['', [Validators.required, Validators.pattern(/^[0-9]{8}$/)]],
       dateNaissance: ['', Validators.required],
-      motif:         [''],
+      motif: [''],
     };
     if (type === 'COURANT') {
       this.kycForm = this.fb.group({ ...base, adresse: ['', Validators.required], job: ['', Validators.required] });
@@ -102,58 +105,46 @@ export class CompteView implements OnInit {
       this.kycForm = this.fb.group({ ...base, adresse: ['', Validators.required], job: ['', Validators.required], nomEntreprise: ['', Validators.required] });
     }
   }
- 
+
   submitDemande() {
     if (this.kycForm.invalid) { this.kycForm.markAllAsTouched(); return; }
- 
     this.submitting = true;
     this.submitError = '';
- 
     const v = this.kycForm.value;
     const dto: DemandeCompteCreateDTO = {
       typeCompte: this.selectedType!,
-      cin: v.cin,
-      dateNaissance: v.dateNaissance,
-      motif: v.motif || undefined,
-      adresse: v.adresse || undefined,
-      job: v.job || undefined,
-      nomEntreprise: v.nomEntreprise || undefined,
+      cin: v.cin, dateNaissance: v.dateNaissance,
+      motif: v.motif || undefined, adresse: v.adresse || undefined,
+      job: v.job || undefined, nomEntreprise: v.nomEntreprise || undefined,
     };
- 
     this.compteService.submitDemandeCompte(dto).subscribe({
       next: () => {
         this.submitting = false;
-        this.submitSuccess = 'Votre demande a été soumise ! Un administrateur l\'examinera prochainement.';
+        this.submitSuccess = "Votre demande a été soumise ! Un administrateur l'examinera prochainement.";
         this.step = 'list';
         this.loadData();
       },
-      error: (err) => {
+      error: (err: any) => {
         this.submitting = false;
         this.submitError = err?.error?.message || 'Échec de la soumission.';
       }
     });
   }
- 
+
   fieldInvalid(field: string): boolean {
     const ctrl = this.kycForm?.get(field);
     return !!(ctrl?.invalid && ctrl?.touched);
   }
- 
-  cancelRequest() {
-    this.step = 'select-type';
-    this.selectedType = null;
-    this.submitError = '';
-  }
- 
+
+  cancelRequest() { this.step = 'select-type'; this.selectedType = null; this.submitError = ''; }
+
   goBack() {
     if (this.step === 'fill-kyc') { this.step = 'select-type'; return; }
     this.router.navigate(['/home-view']);
   }
- 
-  get pendingDemandes() {
-    return this.demandes.filter(d => d.statutDemande === 'EN_ATTENTE');
-  }
- 
+
+  get pendingDemandes() { return this.demandes.filter(d => d.statutDemande === 'EN_ATTENTE'); }
+
   get availableAccountTypes() {
     const ownedTypes = this.comptes.map(c => c.typeCompte);
     const pendingTypes = this.demandes.filter(d => d.statutDemande === 'EN_ATTENTE').map(d => d.typeCompte);

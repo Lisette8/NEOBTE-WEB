@@ -2,7 +2,7 @@ import { Component, OnDestroy, OnInit } from '@angular/core';
 import { AuthService } from '../../../Services/auth-service';
 import { Treasury } from '../../../Entities/Interfaces/treasury';
 import { CommonModule } from '@angular/common';
-import { WebsocketService } from '../../../Services/SharedServices/websocket.service';
+import { interval, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-treasury-component',
@@ -17,22 +17,20 @@ export class TreasuryComponent implements OnInit, OnDestroy {
   loading = true;
   error = '';
 
-  constructor(
-    private authService: AuthService,
-    private ws: WebsocketService
-  ) { }
+  private pollSub?: Subscription;
+
+  constructor(private authService: AuthService) { }
 
   ngOnInit() {
     this.loadTreasury();
-    this.ws.subscribeAdmin((event) => {
-      if (event.type === 'VIREMENT') this.loadTreasury();
-    });
+    this.pollSub = interval(5000).subscribe(() => this.loadTreasury());
   }
 
-  ngOnDestroy() { }
+  ngOnDestroy() {
+    this.pollSub?.unsubscribe();
+  }
 
   loadTreasury() {
-    this.loading = true;
     this.authService.getTreasury().subscribe({
       next: (data) => { this.treasury = data; this.loading = false; },
       error: () => { this.error = 'Failed to load treasury data.'; this.loading = false; }

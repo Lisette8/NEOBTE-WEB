@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { ActualiteService } from '../../../Services/actualite-service';
 import { Actualite } from '../../../Entities/Interfaces/actualite';
 import { CommonModule } from '@angular/common';
@@ -13,6 +13,7 @@ import { ClientChatbot } from '../../client-chatbot/client-chatbot';
 import { ClientMarketRates } from '../../client-market-rates/client-market-rates';
 import { ClientInsightsData, PremiumStatus } from '../../../Entities/Interfaces/client-premium';
 import { AccountPhysicalCard } from '../../account-physical-card/account-physical-card';
+import { interval, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-home-view',
@@ -21,8 +22,8 @@ import { AccountPhysicalCard } from '../../account-physical-card/account-physica
   templateUrl: './home-view.html',
   styleUrl: './home-view.css',
 })
-export class HomeView implements OnInit {
- 
+export class HomeView implements OnInit, OnDestroy {
+
   userName = '';
   comptes: Compte[] = [];
   demandes: DemandeCompte[] = [];
@@ -39,24 +40,34 @@ export class HomeView implements OnInit {
 
   private accountsLoaded = false;
   private premiumLoaded = false;
- 
+  private pollSub?: Subscription;
+
   constructor(
     private authService: AuthService,
     private compteService: CompteService,
     private actualiteService: ActualiteService,
     private clientAiService: ClientAiService,
     private router: Router
-  ) {}
- 
+  ) { }
+
   ngOnInit() {
     const userId = this.authService.getUserId();
     if (!userId) return;
- 
+
+    this.loadData(userId);
+    this.pollSub = interval(180000).subscribe(() => this.loadData(userId));
+  }
+
+  ngOnDestroy() {
+    this.pollSub?.unsubscribe();
+  }
+
+  private loadData(userId: number) {
     this.authService.getCurrentUser().subscribe({
       next: (user) => this.userName = user.prenom || '',
-      error: () => {}
+      error: () => { }
     });
- 
+
     this.compteService.getUserAccounts(userId).subscribe({
       next: (data) => {
         this.comptes = data;
@@ -66,19 +77,17 @@ export class HomeView implements OnInit {
       },
       error: () => { this.loading = false; this.accountsLoaded = true; }
     });
- 
+
     this.compteService.getMyDemandes().subscribe({
       next: (data) => this.demandes = data,
-      error: () => {}
-    });
- 
-    this.actualiteService.getAll(0, 3).subscribe({
-      next: (data) => this.actualites = data.content,
-      error: () => {}
+      error: () => { }
     });
 
-    this.premiumLoading = true;
-    this.premiumError = '';
+    this.actualiteService.getAll(0, 3).subscribe({
+      next: (data) => this.actualites = data.content,
+      error: () => { }
+    });
+
     this.clientAiService.getPremiumStatus().subscribe({
       next: (s) => {
         this.premiumStatus = s;
@@ -93,32 +102,23 @@ export class HomeView implements OnInit {
       }
     });
   }
- 
-  // Accounts shown on dashboard — hide CLOSED and accounts pending deletion
+
   get visibleComptes(): Compte[] {
     return this.comptes.filter(c =>
       c.statutCompte !== 'CLOSED' &&
       !(c.statutCompte === 'SUSPENDED' && c.dateSuppressionPrevue)
     );
   }
- 
+
   get totalBalance(): number {
     return this.visibleComptes
       .filter(c => c.statutCompte === 'ACTIVE')
       .reduce((sum, c) => sum + (c.solde ?? 0), 0);
   }
- 
-  get activeComptes(): Compte[] {
-    return this.visibleComptes.filter(c => c.statutCompte === 'ACTIVE');
-  }
- 
-  get pendingDemandes(): DemandeCompte[] {
-    return this.demandes.filter(d => d.statutDemande === 'EN_ATTENTE');
-  }
 
-  get isPremium(): boolean {
-    return !!this.premiumStatus?.premium;
-  }
+  get activeComptes(): Compte[] { return this.visibleComptes.filter(c => c.statutCompte === 'ACTIVE'); }
+  get pendingDemandes(): DemandeCompte[] { return this.demandes.filter(d => d.statutDemande === 'EN_ATTENTE'); }
+  get isPremium(): boolean { return !!this.premiumStatus?.premium; }
 
   get transferUsageLabel(): string {
     if (!this.premiumStatus) return '';
@@ -130,32 +130,24 @@ export class HomeView implements OnInit {
     return Math.min(100, Math.round((this.premiumStatus.transfersThisMonth / this.premiumStatus.monthlyLimit) * 100));
   }
 
-  openAccount(compteId: number) {
-    this.router.navigate(['/account', compteId]);
-  }
-
-  openPricing() {
-    this.router.navigate(['/pricing-view']);
-  }
+  openAccount(compteId: number) { this.router.navigate(['/account', compteId]); }
+  openPricing() { this.router.navigate(['/pricing-view']); }
 
   goToAiSection() {
-    if (!this.isPremium) {
-      this.openPricing();
-      return;
-    }
+    if (!this.isPremium) { this.openPricing(); return; }
     const el = document.getElementById('premium-section');
     el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
- 
+
   getAccountLabel(type: string): string {
     switch (type) {
-      case 'COURANT':       return 'Compte Chèque';
-      case 'EPARGNE':       return 'Compte Épargne';
+      case 'COURANT': return 'Compte Chèque';
+      case 'EPARGNE': return 'Compte Épargne';
       case 'PROFESSIONNEL': return 'Compte Pro';
-      default:              return type;
+      default: return type;
     }
   }
- 
+
   getTimeOfDay(): string {
     const h = new Date().getHours();
     if (h < 12) return 'Bonjour';
@@ -167,19 +159,12 @@ export class HomeView implements OnInit {
     if (!this.premiumLoaded || !this.accountsLoaded) return;
     if (!this.isPremium) return;
     if (this.insightsLoading || this.insights) return;
-
     const accountIds = this.visibleComptes.map(c => c.idCompte);
     this.insightsLoading = true;
     this.insightsError = '';
     this.clientAiService.getClientInsights(accountIds, this.totalBalance).subscribe({
-      next: (data) => {
-        this.insights = data;
-        this.insightsLoading = false;
-      },
-      error: () => {
-        this.insightsLoading = false;
-        this.insightsError = 'Failed to load insights.';
-      }
+      next: (data) => { this.insights = data; this.insightsLoading = false; },
+      error: () => { this.insightsLoading = false; this.insightsError = 'Failed to load insights.'; }
     });
   }
 }

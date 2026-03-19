@@ -5,7 +5,7 @@ import { AuthService } from '../../Services/auth-service';
 import { NotificationService } from '../../Services/notification-service';
 import { WebsocketService } from '../../Services/SharedServices/websocket.service';
 import { ClientNotification } from '../../Entities/Interfaces/notification';
-import { Subscription } from 'rxjs';
+import { interval, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-header',
@@ -19,19 +19,19 @@ export class Header implements OnInit, OnDestroy {
   notifOpen = false;
   unreadCount = 0;
   latest: ClientNotification[] = [];
+
   private routerSub?: Subscription;
+  private pollSub?: Subscription;
   private notificationsInitialized = false;
 
   constructor(
     private authService: AuthService,
     private router: Router,
     private notificationService: NotificationService,
-    private websocketService: WebsocketService
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.routerSub = this.router.events.subscribe(() => {
-      // Initialize when a token appears (login) and reset when it disappears (logout).
       const logged = this.isLoggedIn();
       if (logged && !this.notificationsInitialized) this.initNotifications();
       if (!logged && this.notificationsInitialized) this.resetNotifications();
@@ -41,30 +41,19 @@ export class Header implements OnInit, OnDestroy {
 
   ngOnDestroy(): void {
     this.routerSub?.unsubscribe();
-  }
-  
-  toggleMenu() {
-    this.isMenuOpen = !this.isMenuOpen;
+    this.pollSub?.unsubscribe();
   }
 
-  isLoggedIn(): boolean {
-    return this.authService.isLoggedIn();
-  }
-
-  toggleNotifications() {
-    this.notifOpen = !this.notifOpen;
-  }
-
-  closeNotifications() {
-    this.notifOpen = false;
-  }
+  toggleMenu() { this.isMenuOpen = !this.isMenuOpen; }
+  isLoggedIn(): boolean { return this.authService.isLoggedIn(); }
+  toggleNotifications() { this.notifOpen = !this.notifOpen; }
+  closeNotifications() { this.notifOpen = false; }
 
   openNotification(n: ClientNotification) {
-    // Optimistic mark read
     if (!n.lu) {
       n.lu = true;
       this.unreadCount = Math.max(0, this.unreadCount - 1);
-      this.notificationService.markRead(n.id).subscribe({ next: () => {}, error: () => {} });
+      this.notificationService.markRead(n.id).subscribe({ next: () => { }, error: () => { } });
     }
     this.closeNotifications();
     if (n.lien) this.router.navigate([n.lien]);
@@ -76,18 +65,14 @@ export class Header implements OnInit, OnDestroy {
         this.unreadCount = 0;
         this.latest = this.latest.map((n) => ({ ...n, lu: true }));
       },
-      error: () => {},
+      error: () => { },
     });
   }
 
   logout() {
     this.authService.logout().subscribe({
-      next: () => {
-        this.resetNotifications();
-        this.router.navigate(['/auth-view']);
-      },
+      next: () => { this.resetNotifications(); this.router.navigate(['/auth-view']); },
       error: () => {
-        // In case backend fails, the token will be removed...
         localStorage.removeItem('token');
         this.resetNotifications();
         this.router.navigate(['/auth-view']);
@@ -98,23 +83,20 @@ export class Header implements OnInit, OnDestroy {
   private initNotifications() {
     const userId = this.authService.getUserId();
     if (!userId) return;
-
     this.notificationsInitialized = true;
+    this.fetchNotifications();
+    // Poll every 5s for new notifications
+    this.pollSub = interval(2000).subscribe(() => this.fetchNotifications());
+  }
 
-    // Initial state
+  private fetchNotifications() {
     this.notificationService.getUnreadCount().subscribe({
       next: (res) => (this.unreadCount = Number(res.count ?? 0)),
-      error: () => (this.unreadCount = 0),
+      error: () => { },
     });
     this.notificationService.getMyNotifications(0, 5, false).subscribe({
       next: (page) => (this.latest = page.content ?? []),
-      error: () => (this.latest = []),
-    });
-
-    // Real-time via WebSocket
-    this.websocketService.subscribeNotifications(userId, (msg: ClientNotification) => {
-      this.unreadCount += 1;
-      this.latest = [msg, ...this.latest].slice(0, 5);
+      error: () => { },
     });
   }
 
@@ -123,6 +105,7 @@ export class Header implements OnInit, OnDestroy {
     this.notifOpen = false;
     this.unreadCount = 0;
     this.latest = [];
-    this.websocketService.disconnect();
+    this.pollSub?.unsubscribe();
+    this.pollSub = undefined;
   }
 }

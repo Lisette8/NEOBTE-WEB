@@ -6,6 +6,7 @@ import { ConfirmModalService } from '../../../Services/SharedServices/confirm-mo
 import { DemandeCloture } from '../../../Entities/Interfaces/demande-cloture';
 import { FormsModule } from '@angular/forms';
 import { WebsocketService } from '../../../Services/SharedServices/websocket.service';
+import { interval, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-compte-management',
@@ -16,15 +17,20 @@ import { WebsocketService } from '../../../Services/SharedServices/websocket.ser
 })
 export class CompteManagement implements OnInit, OnDestroy {
 
+  private pollSub?: Subscription;
+
   activeTab: 'comptes' | 'clotures' = 'comptes';
 
+  // Accounts
   comptes: Compte[] = [];
   accountsLoading = true;
 
+  // Closure requests
   demandes: DemandeCloture[] = [];
   clotureFilter: 'EN_ATTENTE' | 'APPROUVEE' | 'REJETEE' | 'ALL' = 'EN_ATTENTE';
   cloturesLoading = true;
 
+  // Inline action panel
   actionCompteId: number | null = null;
   actionType: 'status' | null = null;
   selectedStatut = '';
@@ -32,6 +38,7 @@ export class CompteManagement implements OnInit, OnDestroy {
   actionLoading = false;
   actionError = '';
 
+  // Closure decision panel
   clotureActionId: number | null = null;
   clotureActionType: 'approve' | 'reject' | null = null;
   clotureCommentaire = '';
@@ -42,22 +49,14 @@ export class CompteManagement implements OnInit, OnDestroy {
 
   constructor(
     private compteService: CompteService,
-    private modalService: ConfirmModalService,
-    private ws: WebsocketService
+    private modalService: ConfirmModalService
   ) { }
 
   ngOnInit() {
+    this.startPolling();
     this.loadComptes();
     this.loadClotures();
-    this.ws.subscribeAdmin((event) => {
-      if (event.type === 'COMPTE' || event.type === 'DEMANDE' || event.type === 'VIREMENT') {
-        this.loadComptes();
-        this.loadClotures();
-      }
-    });
   }
-
-  ngOnDestroy() { }
 
   loadComptes() {
     this.accountsLoading = true;
@@ -82,6 +81,7 @@ export class CompteManagement implements OnInit, OnDestroy {
 
   onClotureFilterChange() { this.loadClotures(); }
 
+  // Status change
   openStatusAction(id: number, currentStatut: string) {
     this.actionCompteId = id;
     this.actionType = 'status';
@@ -115,6 +115,7 @@ export class CompteManagement implements OnInit, OnDestroy {
     });
   }
 
+  // Closure decisions
   openClotureAction(id: number, type: 'approve' | 'reject') {
     this.clotureActionId = id;
     this.clotureActionType = type;
@@ -178,4 +179,15 @@ export class CompteManagement implements OnInit, OnDestroy {
   get pendingCloturesCount(): number {
     return this.demandes.filter(d => d.statut === 'EN_ATTENTE').length;
   }
+
+  startPolling() {
+    this.pollSub = interval(5000).subscribe(() => {
+      this.loadComptes(); this.loadClotures();
+    });
+  }
+
+  ngOnDestroy() {
+    this.pollSub?.unsubscribe();
+  }
+
 }

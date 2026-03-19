@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { VirementService } from '../../../Services/virement.service';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
@@ -6,7 +6,7 @@ import { Virement } from '../../../Entities/Interfaces/virement';
 import { Compte } from '../../../Entities/Interfaces/compte';
 import { CompteService } from '../../../Services/compte-service';
 import { ConfirmModalService } from '../../../Services/SharedServices/confirm-modal.service';
-import { debounceTime, distinctUntilChanged, Subject, switchMap } from 'rxjs';
+import { debounceTime, distinctUntilChanged, interval, Subject, Subscription, switchMap } from 'rxjs';
 import { RecipientPreview } from '../../../Entities/Interfaces/recipient-preview';
 import { TransferConstraints } from '../../../Entities/Interfaces/transfer-constraints';
 
@@ -17,8 +17,8 @@ import { TransferConstraints } from '../../../Entities/Interfaces/transfer-const
   templateUrl: './virement-view.html',
   styleUrl: './virement-view.css',
 })
-export class VirementView implements OnInit {
- 
+export class VirementView implements OnInit, OnDestroy {
+
   step: 'lookup' | 'confirm' | 'success' = 'lookup';
   mode: 'externe' | 'interne' = 'externe';
   transferForm: FormGroup;
@@ -27,9 +27,10 @@ export class VirementView implements OnInit {
   resolving = false;
   resolveError = '';
   lastCompletedTransfer: Virement | null = null;
- 
+
   private identifierChange$ = new Subject<string>();
- 
+  private pollSub?: Subscription;
+
   loading = false;
   error = '';
   limitWarning = '';  // shown inline before submit, not after
@@ -40,7 +41,7 @@ export class VirementView implements OnInit {
   comptesLoading = false;
   constraintsExternal: TransferConstraints | null = null;
   constraintsInternal: TransferConstraints | null = null;
- 
+
   constructor(
     private virementService: VirementService,
     private compteService: CompteService,
@@ -58,12 +59,16 @@ export class VirementView implements OnInit {
       montant: [null, [Validators.required, Validators.min(1)]],
     });
   }
- 
+
   ngOnInit() {
     this.loadHistory();
     this.loadComptes();
     this.loadConstraints();
- 
+    this.pollSub = interval(50000).subscribe(() => {
+      this.loadHistory();
+      this.loadComptes();
+    });
+
     this.identifierChange$.pipe(
       debounceTime(600),
       distinctUntilChanged(),
@@ -96,7 +101,7 @@ export class VirementView implements OnInit {
         this.resolveError = 'Impossible de rechercher le destinataire. Réessayez.';
       }
     });
- 
+
     // Re-check limit warning whenever the amount changes
     this.transferForm.get('montant')?.valueChanges.subscribe(() => this.checkLimitWarning());
     this.internalForm.get('montant')?.valueChanges.subscribe(() => this.checkLimitWarning());
@@ -137,17 +142,17 @@ export class VirementView implements OnInit {
       error: () => (this.constraintsInternal = null),
     });
   }
- 
+
   onIdentifierInput(event: Event) {
     this.identifierChange$.next((event.target as HTMLInputElement).value);
   }
- 
+
   fieldInvalid(field: string): boolean {
     const form = this.mode === 'interne' ? this.internalForm : this.transferForm;
     const ctrl = form.get(field);
     return !!(ctrl?.invalid && ctrl?.touched);
   }
- 
+
   get montant(): number {
     const form = this.mode === 'interne' ? this.internalForm : this.transferForm;
     return form.get('montant')?.value ?? 0;
@@ -179,13 +184,13 @@ export class VirementView implements OnInit {
     }
     return this.constraintsExternal;
   }
- 
+
   get estimatedFee(): number {
     const c = this.currentConstraints;
     if (!c || !this.montant) return 0;
     return Math.round(this.montant * (c.feeRate ?? 0) * 1000) / 1000;
   }
- 
+
   get totalDebite(): number { return this.montant + this.estimatedFee; }
 
   mediaUrl(url?: string | null): string {
@@ -193,17 +198,17 @@ export class VirementView implements OnInit {
     if (url.startsWith('http')) return url;
     return `http://localhost:8080${url}`;
   }
- 
+
   /** Check limits and set a warning message — does NOT block the UI, just informs */
   checkLimitWarning() {
     this.limitWarning = '';
     const c = this.currentConstraints;
     if (!c || !this.montant) return;
- 
+
     const threshold = c.largeTransferThreshold;
     const dailyAmount = c.dailyAmountLimit;
     const dailyCount = c.dailyCountLimit;
- 
+
     if (threshold && this.montant > threshold) {
       this.limitWarning = `Ce montant dépasse la limite par virement de ${this.formatNum(threshold)} TND fixée par votre banque.`;
       return;
@@ -216,14 +221,14 @@ export class VirementView implements OnInit {
       this.limitWarning = `Limite journalière : ${dailyCount} virements maximum.`;
     }
   }
- 
+
   get hasLimitError(): boolean {
     const c = this.currentConstraints;
     if (!c || !this.montant) return false;
     const threshold = c.largeTransferThreshold;
     return !!(threshold && this.montant > threshold);
   }
- 
+
   proceedToConfirm() {
     this.error = '';
     if (this.mode === 'interne') {
@@ -247,7 +252,7 @@ export class VirementView implements OnInit {
     }
     this.step = 'confirm';
   }
- 
+
   async confirmTransfer() {
     if (this.mode === 'interne') {
       const confirmed = await this.modalService.confirm({
@@ -289,12 +294,12 @@ export class VirementView implements OnInit {
       cancelText: 'Annuler',
       type: 'warning'
     });
- 
+
     if (!confirmed) return;
- 
+
     this.loading = true;
     this.error = '';
- 
+
     this.virementService.transfer({
       recipientIdentifier: this.transferForm.value.recipientIdentifier,
       montant: this.montant,
@@ -314,7 +319,7 @@ export class VirementView implements OnInit {
       }
     });
   }
- 
+
   resetForm() {
     this.step = 'lookup';
     this.recipient = null;
@@ -324,7 +329,7 @@ export class VirementView implements OnInit {
     this.lastCompletedTransfer = null;
     this.transferForm.reset();
   }
- 
+
   loadHistory() {
     this.historyLoading = true;
     this.virementService.getHistory().subscribe({
@@ -332,8 +337,13 @@ export class VirementView implements OnInit {
       error: () => { this.historyLoading = false; }
     });
   }
- 
+
   private formatNum(n: number): string {
     return n.toLocaleString('fr-TN', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
   }
+
+  ngOnDestroy(): void {
+    this.pollSub?.unsubscribe();
+  }
+
 }

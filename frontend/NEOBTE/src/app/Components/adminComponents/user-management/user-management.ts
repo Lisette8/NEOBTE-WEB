@@ -7,6 +7,7 @@ import { UserCreateDTO } from '../../../Entities/DTO/Admin/user-create-dto';
 import { UserUpdateDTO } from '../../../Entities/DTO/Admin/user-update-dto';
 import { ConfirmModalService } from '../../../Services/SharedServices/confirm-modal.service';
 import { WebsocketService } from '../../../Services/SharedServices/websocket.service';
+import { interval, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-user-management',
@@ -15,6 +16,9 @@ import { WebsocketService } from '../../../Services/SharedServices/websocket.ser
   styleUrl: './user-management.css',
 })
 export class UserManagement implements OnInit, OnDestroy {
+
+  private pollSub?: Subscription;
+
   users: UserListDTO[] = [];
   loading = false;
   error = '';
@@ -29,8 +33,7 @@ export class UserManagement implements OnInit, OnDestroy {
   constructor(
     private adminService: AdminService,
     private fb: FormBuilder,
-    private modalService: ConfirmModalService,
-    private ws: WebsocketService
+    private modalService: ConfirmModalService
   ) {
     this.userForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -50,12 +53,8 @@ export class UserManagement implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadUsers();
-    this.ws.subscribeAdmin((event) => {
-      if (event.type === 'USER') this.loadUsers();
-    });
+    this.startPolling();
   }
-
-  ngOnDestroy() { }
 
   loadUsers() {
     this.loading = true;
@@ -123,6 +122,7 @@ export class UserManagement implements OnInit, OnDestroy {
         next: () => { this.loadUsers(); this.resetForm(); }
       });
     } else {
+      // Generate a random temporary password — user must change it on first login
       const tempPassword = 'Tmp@' + Math.random().toString(36).slice(2, 10);
       const create: UserCreateDTO = {
         email: v.email,
@@ -170,13 +170,29 @@ export class UserManagement implements OnInit, OnDestroy {
 
   togglePremium(user: UserListDTO) {
     const nextPremium = !(user.premium ?? false);
+    // Optimistic UI update
     user.premium = nextPremium;
     this.adminService.setPremium(user.id, nextPremium).subscribe({
-      next: (res) => { user.premium = res.premium; },
+      next: (res) => {
+        user.premium = res.premium;
+      },
       error: () => {
+        // Revert on failure
         user.premium = !nextPremium;
         this.error = 'Failed to update premium status';
       }
     });
   }
+
+  startPolling() {
+    this.pollSub = interval(5000).subscribe(() => {
+      this.loadUsers();
+    });
+  }
+
+  ngOnDestroy() {
+    this.pollSub?.unsubscribe();
+  }
+
 }
+

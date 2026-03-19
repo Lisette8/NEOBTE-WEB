@@ -10,7 +10,8 @@ import { TreasuryComponent } from '../treasury-component/treasury-component';
 import { FraudeManagement } from '../fraude-management/fraude-management';
 import { FraudeService } from '../../../Security/Services/FraudeService';
 import { AiAnalytics } from '../ai-analytics/ai-analytics';
-import { WebsocketService } from '../../../Services/SharedServices/websocket.service';
+import { interval } from 'rxjs/internal/observable/interval';
+import { Subscription } from 'rxjs';
 
 
 @Component({
@@ -27,20 +28,18 @@ export class AdminDashboard implements OnInit, OnDestroy {
   today = new Date();
   openAlertCount = 0;
 
-  constructor(
-    private fraudeService: FraudeService,
-    private ws: WebsocketService
-  ) { }
+  private pollSub?: Subscription;
+
+  constructor(private fraudeService: FraudeService) { }
 
   ngOnInit() {
     this.loadAlertCount();
-    // Keep the badge counter in the sidebar in sync in real time
-    this.ws.subscribeAdmin((event) => {
-      if (event.type === 'FRAUDE') this.loadAlertCount();
-    });
+    this.pollSub = interval(5000).subscribe(() => this.loadAlertCount());
   }
 
-  ngOnDestroy() { }
+  ngOnDestroy() {
+    this.pollSub?.unsubscribe();
+  }
 
   loadAlertCount() {
     this.fraudeService.countOpen().subscribe({

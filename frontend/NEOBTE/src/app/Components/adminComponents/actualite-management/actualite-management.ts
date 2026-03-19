@@ -6,6 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { ConfirmModalService } from '../../../Services/SharedServices/confirm-modal.service';
 import { ActualiteCreateDTO } from '../../../Entities/DTO/actualite-create-dto';
 import { WebsocketService } from '../../../Services/SharedServices/websocket.service';
+import { interval, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-actualite-management',
@@ -15,6 +16,9 @@ import { WebsocketService } from '../../../Services/SharedServices/websocket.ser
   styleUrl: './actualite-management.css',
 })
 export class ActualiteManagement implements OnInit, OnDestroy {
+
+  private pollSub?: Subscription;
+
 
   actualites: Actualite[] = [];
   page = 0;
@@ -35,18 +39,15 @@ export class ActualiteManagement implements OnInit, OnDestroy {
 
   constructor(
     private actualiteService: ActualiteService,
-    private modalService: ConfirmModalService,
-    private ws: WebsocketService
+    private modalService: ConfirmModalService
   ) { }
 
   ngOnInit(): void {
+    this.startPolling();
+    this.startPolling();
     this.loadActualites();
-    this.ws.subscribeAdmin((event) => {
-      if (event.type === 'ACTUALITE') this.loadActualites();
-    });
   }
 
-  ngOnDestroy() { }
 
   loadActualites() {
     this.actualiteService.getAll(this.page, this.size).subscribe(data => {
@@ -54,6 +55,7 @@ export class ActualiteManagement implements OnInit, OnDestroy {
       this.totalPages = data.totalPages;
     });
   }
+
 
   submit() {
     const payload: ActualiteCreateDTO = {
@@ -91,7 +93,9 @@ export class ActualiteManagement implements OnInit, OnDestroy {
     this.imagePreviewUrl = act.imageUrl ? this.mediaUrl(act.imageUrl) : null;
   }
 
-  cancelEdit() { this.resetForm(); }
+  cancelEdit() {
+    this.resetForm();
+  }
 
   onImageSelected(ev: Event) {
     const input = ev.target as HTMLInputElement;
@@ -113,6 +117,7 @@ export class ActualiteManagement implements OnInit, OnDestroy {
     return `http://localhost:8080${url}`;
   }
 
+
   async deleteActualite(id: number) {
     const confirmed = await this.modalService.confirm({
       title: 'Supprimer l\'actualité',
@@ -129,11 +134,33 @@ export class ActualiteManagement implements OnInit, OnDestroy {
     }
   }
 
+
+  //pagination functions
   nextPage() {
-    if (this.page < this.totalPages - 1) { this.page++; this.loadActualites(); }
+    if (this.page < this.totalPages - 1) {
+      this.page++;
+      this.loadActualites();
+    }
   }
 
   previousPage() {
-    if (this.page > 0) { this.page--; this.loadActualites(); }
+    if (this.page > 0) {
+      this.page--;
+      this.loadActualites();
+    }
   }
+
+
+
+
+  startPolling() {
+    this.pollSub = interval(5000).subscribe(() => {
+      this.loadActualites();
+    });
+  }
+
+  ngOnDestroy() {
+    this.pollSub?.unsubscribe();
+  }
+
 }

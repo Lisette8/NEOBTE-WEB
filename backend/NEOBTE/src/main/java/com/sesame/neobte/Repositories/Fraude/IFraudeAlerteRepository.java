@@ -19,6 +19,7 @@ public interface IFraudeAlerteRepository extends JpaRepository<FraudeAlerte, Lon
     List<FraudeAlerte> findByStatutOrderByDateAlerteDesc(FraudeStatut statut);
 
     List<FraudeAlerte> findByUtilisateur_IdUtilisateurOrderByDateAlerteDesc(Long userId);
+    void deleteByUtilisateur_IdUtilisateur(Long userId);
 
     long countByStatut(FraudeStatut statut);
 

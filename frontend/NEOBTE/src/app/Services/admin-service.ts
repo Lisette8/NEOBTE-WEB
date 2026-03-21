@@ -6,18 +6,33 @@ import { UserListDTO } from '../Entities/DTO/Admin/user-list-dto';
 import { UserUpdateDTO } from '../Entities/DTO/Admin/user-update-dto';
 import { UserCreateDTO } from '../Entities/DTO/Admin/user-create-dto';
 
-@Injectable({
-  providedIn: 'root',
-})
+export interface AdminStats {
+  totalClients: number;
+  totalAdmins: number;
+  totalTransfers: number;
+  totalVolume: number;
+  avgTransfer: number;
+  totalAccounts: number;
+}
+
+export interface GlobalSearchResult {
+  users: SearchUser[];
+  accounts: SearchAccount[];
+  transfers: SearchTransfer[];
+  tickets: SearchTicket[];
+}
+
+export interface SearchUser { id: number; fullName: string; email: string; role: string; premium: boolean; }
+export interface SearchAccount { id: number; type: string; statut: string; solde: number; userId: number; userFullName: string; }
+export interface SearchTransfer { id: number; montant: number; senderName: string; recipientName: string; date: string; }
+export interface SearchTicket { id: number; sujet: string; status: string; userEmail: string; }
+
+@Injectable({ providedIn: 'root' })
 export class AdminService {
 
-  private api = "http://localhost:8080/api/v1/admin";
+  private api = 'http://localhost:8080/api/v1/admin';
 
-  constructor(private http: HttpClient) {}
-
-  
-
-  //endpoints
+  constructor(private http: HttpClient) { }
 
   getAllUsers(): Observable<UserListDTO[]> {
     return this.http.get<UserListDTO[]>(`${this.api}/all`);
@@ -26,9 +41,6 @@ export class AdminService {
   getUserById(id: number) {
     return this.http.get<User>(`${this.api}/users/${id}`);
   }
-
-
-  //admin crud
 
   createUser(user: UserCreateDTO) {
     return this.http.post(`${this.api}/users`, user);
@@ -49,4 +61,11 @@ export class AdminService {
     );
   }
 
+  getStats(): Observable<AdminStats> {
+    return this.http.get<AdminStats>(`${this.api}/stats`);
+  }
+
+  globalSearch(query: string): Observable<GlobalSearchResult> {
+    return this.http.get<GlobalSearchResult>(`${this.api}/search`, { params: { q: query } });
+  }
 }

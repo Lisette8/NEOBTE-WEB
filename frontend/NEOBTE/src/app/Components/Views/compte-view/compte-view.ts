@@ -64,7 +64,7 @@ export class CompteView implements OnInit, OnDestroy {
       if (params['open'] === 'true') this.step = 'select-type';
     });
     this.loadData();
-    this.pollSub = interval(2000).subscribe(() => this.loadData());
+    this.pollSub = interval(50000).subscribe(() => this.loadData());
   }
 
   ngOnDestroy(): void {

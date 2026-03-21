@@ -15,6 +15,8 @@ public interface IDemandeCompteRepository extends JpaRepository<DemandeCompte, L
     List<DemandeCompte> findByStatutDemandeOrderByDateDemandeAsc(StatutDemande statut);
     List<DemandeCompte> findAllByOrderByStatutDemandeAscDateDemandeDesc();
 
+    void deleteByUtilisateur_IdUtilisateur(Long userId);
+
     boolean existsByUtilisateur_IdUtilisateurAndTypeCompteAndStatutDemande(
             Long userId,
             TypeCompte typeCompte,
@@ -23,3 +25,4 @@ public interface IDemandeCompteRepository extends JpaRepository<DemandeCompte, L
 
 
 }
+

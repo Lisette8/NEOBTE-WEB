@@ -12,4 +12,5 @@ public interface IDemandeClotureCompteRepository extends JpaRepository<DemandeCl
     List<DemandeClotureCompte> findAllByOrderByStatutAscDateDemandeDesc();
     List<DemandeClotureCompte> findByUtilisateur_IdUtilisateur(Long userId);
     boolean existsByCompte_IdCompteAndStatut(Long compteId, StatutDemande statut);
+    void deleteByUtilisateur_IdUtilisateur(Long userId);
 }

@@ -15,6 +15,7 @@ public interface IActualiteReactionRepository extends JpaRepository<ActualiteRea
     Optional<ActualiteReaction> findByActualite_IdActualiteAndUtilisateur_IdUtilisateur(Long actualiteId, Long userId);
 
     void deleteByActualite_IdActualite(Long actualiteId);
+    void deleteByUtilisateur_IdUtilisateur(Long userId);
 
     @Query("SELECT r.actualite.idActualite, r.emoji, COUNT(r) " +
             "FROM ActualiteReaction r " +

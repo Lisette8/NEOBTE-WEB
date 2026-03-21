@@ -43,8 +43,7 @@ public class CompteServiceImpl implements CompteService {
         compte.setTypeCompte(dto.getTypeCompte());
         compte.setStatutCompte(StatutCompte.ACTIVE);
         compte.setUtilisateur(user);
-        CompteResponseDTO r = mapToDTO(compteRepository.save(compte));
-        return r;
+        return mapToDTO(compteRepository.save(compte));
     }
 
     @Override
@@ -75,28 +74,22 @@ public class CompteServiceImpl implements CompteService {
     @Transactional
     public CompteResponseDTO suspendreCompte(Long compteId, Long userId) {
         Compte compte = findAndVerifyOwnership(compteId, userId);
-
         if (compte.getStatutCompte() != StatutCompte.ACTIVE)
             throw new BadRequestException("Seul un compte actif peut être suspendu.");
-
         compte.setStatutCompte(StatutCompte.SUSPENDU);
         log.info("Compte {} suspendu par l'utilisateur {}", compteId, userId);
-        CompteResponseDTO r2 = mapToDTO(compteRepository.save(compte));
-        return r2;
+        return mapToDTO(compteRepository.save(compte));
     }
 
     @Override
     @Transactional
     public CompteResponseDTO reactiverCompte(Long compteId, Long userId) {
         Compte compte = findAndVerifyOwnership(compteId, userId);
-
         if (compte.getStatutCompte() != StatutCompte.SUSPENDU)
             throw new BadRequestException("Seul un compte suspendu peut être réactivé.");
-
         compte.setStatutCompte(StatutCompte.ACTIVE);
         log.info("Compte {} réactivé par l'utilisateur {}", compteId, userId);
-        CompteResponseDTO r3 = mapToDTO(compteRepository.save(compte));
-        return r3;
+        return mapToDTO(compteRepository.save(compte));
     }
 
     @Override
@@ -121,15 +114,12 @@ public class CompteServiceImpl implements CompteService {
         demande.setMotif(dto.getMotif());
         demande.setStatut(StatutDemande.EN_ATTENTE);
 
-        // Suspend the account immediately and schedule auto-deletion in 48h
-        // Client can cancel within 48h — after that, a scheduler closes it permanently
         compte.setStatutCompte(StatutCompte.SUSPENDU);
         compte.setDateSuppressionPrevue(LocalDateTime.now().plusHours(48));
         compteRepository.save(compte);
 
         log.info("Demande de clôture soumise pour le compte {} — suppression prévue dans 48h", dto.getCompteId());
-        DemandeClotureResponseDTO rCloture = mapClotureToDTO(demandeClotureRepository.save(demande));
-        return rCloture;
+        return mapClotureToDTO(demandeClotureRepository.save(demande));
     }
 
     @Override
@@ -148,7 +138,6 @@ public class CompteServiceImpl implements CompteService {
         if (!pendingExists)
             throw new BadRequestException("Aucune demande de clôture en attente pour ce compte.");
 
-        // Cancel the pending request
         demandeClotureRepository.findByUtilisateur_IdUtilisateur(userId).stream()
                 .filter(d -> d.getCompte().getIdCompte().equals(compteId)
                         && d.getStatut() == StatutDemande.EN_ATTENTE)
@@ -159,13 +148,10 @@ public class CompteServiceImpl implements CompteService {
                     demandeClotureRepository.save(d);
                 });
 
-        // Reactivate the account and clear the deletion timer
         compte.setStatutCompte(StatutCompte.ACTIVE);
         compte.setDateSuppressionPrevue(null);
         log.info("Clôture annulée par le client pour le compte {}", compteId);
-        CompteResponseDTO r4 = mapToDTO(compteRepository.save(compte));
-
-        return r4;
+        return mapToDTO(compteRepository.save(compte));
     }
 
     // ── Admin status management ─────────────────────────────────────────────
@@ -175,13 +161,10 @@ public class CompteServiceImpl implements CompteService {
     public CompteResponseDTO updateStatutCompte(Long compteId, UpdateStatutCompteDTO dto) {
         Compte compte = compteRepository.findById(compteId)
                 .orElseThrow(() -> new ResourceNotFoundException("Compte not found: " + compteId));
-
         StatutCompte ancien = compte.getStatutCompte();
         compte.setStatutCompte(dto.getNewStatut());
-
         log.info("Admin: statut du compte {} changé de {} à {}", compteId, ancien, dto.getNewStatut());
-        CompteResponseDTO r5 = mapToDTO(compteRepository.save(compte));
-        return r5;
+        return mapToDTO(compteRepository.save(compte));
     }
 
     @Override
@@ -201,7 +184,6 @@ public class CompteServiceImpl implements CompteService {
 
         Compte compte = demande.getCompte();
 
-        // If balance > 0, block instead of closing — client must withdraw first
         if (compte.getSolde() != null && compte.getSolde() > 0) {
             compte.setStatutCompte(StatutCompte.BLOQUE);
             demande.setCommentaireAdmin(
@@ -217,8 +199,7 @@ public class CompteServiceImpl implements CompteService {
         demande.setDateDecision(LocalDateTime.now());
 
         log.info("Demande de clôture {} approuvée. Nouveau statut compte : {}", demandeId, compte.getStatutCompte());
-        DemandeClotureResponseDTO r6 = mapClotureToDTO(demandeClotureRepository.save(demande));
-        return r6;
+        return mapClotureToDTO(demandeClotureRepository.save(demande));
     }
 
     @Override
@@ -237,9 +218,15 @@ public class CompteServiceImpl implements CompteService {
         demande.setCommentaireAdmin(commentaire);
         demande.setDateDecision(LocalDateTime.now());
 
-        log.info("Demande de clôture {} rejetée.", demandeId);
-        DemandeClotureResponseDTO r7 = mapClotureToDTO(demandeClotureRepository.save(demande));
-        return r7;
+        // FIX: Reactivate the account — it was suspended when the client submitted the
+        // closure request. Rejecting it means the account goes back to ACTIVE.
+        Compte compte = demande.getCompte();
+        compte.setStatutCompte(StatutCompte.ACTIVE);
+        compte.setDateSuppressionPrevue(null);
+        compteRepository.save(compte);
+
+        log.info("Demande de clôture {} rejetée — compte {} réactivé.", demandeId, compte.getIdCompte());
+        return mapClotureToDTO(demandeClotureRepository.save(demande));
     }
 
     // ── Helpers ────────────────────────────────────────────────────────────

@@ -75,6 +75,16 @@ public class Utilisateur implements Serializable {
     @Column(nullable = false)
     private boolean premium = false;
 
+    /**
+     * Unique referral code for this user — generated on first save.
+     * Shared with friends to earn a free Premium month per successful referral.
+     */
+    @Column(unique = true)
+    private String referralCode;
+
+    /** When the referral-granted Premium expires (null = permanent or not premium). */
+    private java.time.LocalDateTime premiumExpiresAt;
+
     @OneToMany(mappedBy = "utilisateur")
     @JsonIgnore
     private List<Compte> comptes = new ArrayList<>();

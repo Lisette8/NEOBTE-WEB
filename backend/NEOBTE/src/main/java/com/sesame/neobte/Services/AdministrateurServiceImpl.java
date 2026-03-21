@@ -3,11 +3,14 @@ package com.sesame.neobte.Services;
 import com.sesame.neobte.DTO.Requests.Admin.CreateUserRequest;
 import com.sesame.neobte.DTO.Requests.Admin.UpdateUserRequest;
 import com.sesame.neobte.DTO.Responses.Admin.AdminUserResponse;
+import com.sesame.neobte.Entities.Class.Compte;
 import com.sesame.neobte.Entities.Enumeration.Role;
 import com.sesame.neobte.Entities.Class.Utilisateur;
 import com.sesame.neobte.Exceptions.customExceptions.BadRequestException;
 import com.sesame.neobte.Exceptions.customExceptions.ResourceNotFoundException;
-import com.sesame.neobte.Repositories.IUtilisateurRepository;
+import com.sesame.neobte.Repositories.*;
+import com.sesame.neobte.Repositories.Fraude.IFraudeAlerteRepository;
+import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,6 +24,15 @@ public class AdministrateurServiceImpl implements AdministrateurService {
 
     private final IUtilisateurRepository utilisateurRepository;
     private final PasswordEncoder passwordEncoder;
+    private final IReferralRewardRepository referralRewardRepository;
+    private final INotificationRepository notificationRepository;
+    private final ISupportRepository supportRepository;
+    private final IActualiteReactionRepository actualiteReactionRepository;
+    private final IFraudeAlerteRepository fraudeAlerteRepository;
+    private final IDemandeClotureCompteRepository demandeClotureCompteRepository;
+    private final IDemandeCompteRepository demandeCompteRepository;
+    private final IVirementRepository virementRepository;
+    private final ICompteRepository compteRepository;
 
     @Override
     public List<AdminUserResponse> getAllUsers() {
@@ -98,8 +110,46 @@ public class AdministrateurServiceImpl implements AdministrateurService {
     }
 
     @Override
+    @Transactional
     public void deleteUser(Long id) {
         Utilisateur user = getUserEntityById(id);
+
+        // 1. Delete referral reward rows linked to this user.
+        //    The referrer keeps their premium — it lives on Utilisateur.premium/premiumExpiresAt,
+        //    not on this record. Only the history entry is lost, which is acceptable.
+        referralRewardRepository.deleteByReferrer_IdUtilisateur(id);
+        referralRewardRepository.deleteByReferred_IdUtilisateur(id);
+
+        // 2. Notifications
+        notificationRepository.deleteByUtilisateur_IdUtilisateur(id);
+
+        // 3. Support tickets
+        supportRepository.deleteByUtilisateur_IdUtilisateur(id);
+
+        // 4. Actualite reactions
+        actualiteReactionRepository.deleteByUtilisateur_IdUtilisateur(id);
+
+        // 5. Fraud alerts
+        fraudeAlerteRepository.deleteByUtilisateur_IdUtilisateur(id);
+
+        // 6. Account closure requests
+        demandeClotureCompteRepository.deleteByUtilisateur_IdUtilisateur(id);
+
+        // 7. Account opening requests
+        demandeCompteRepository.deleteByUtilisateur_IdUtilisateur(id);
+
+        // 8. Virements linked to user's accounts, then the accounts themselves
+        List<Compte> comptes = compteRepository.findByUtilisateur_IdUtilisateur(id);
+        for (Compte compte : comptes) {
+            virementRepository.deleteAll(
+                    virementRepository.findByCompteDeIdCompteOrCompteAIdCompte(
+                            compte.getIdCompte(), compte.getIdCompte()
+                    )
+            );
+        }
+        compteRepository.deleteAll(comptes);
+
+        // 9. Finally delete the user
         utilisateurRepository.delete(user);
     }
 

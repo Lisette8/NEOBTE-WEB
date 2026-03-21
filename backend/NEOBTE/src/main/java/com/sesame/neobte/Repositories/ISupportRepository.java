@@ -9,4 +9,5 @@ import java.util.*;
 @Repository
 public interface ISupportRepository extends JpaRepository<Support, Long> {
     List<Support> findByUtilisateurIdUtilisateur(Long userId);
+    void deleteByUtilisateur_IdUtilisateur(Long userId);
 }

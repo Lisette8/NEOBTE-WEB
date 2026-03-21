@@ -13,17 +13,28 @@ import java.util.List;
 @Repository
 public interface IUtilisateurRepository extends JpaRepository<Utilisateur, Long> {
     Utilisateur findByEmail(String email);
+
     Utilisateur findByTelephone(String telephone);
+
     boolean existsByEmail(String email);
+
     boolean existsByTelephone(String telephone);
+
     boolean existsByUsername(String username);
+
     boolean existsByCin(String cin);
 
     long countByRole(Role role);
 
     List<Utilisateur> findByRole(Role role);
 
-    /** Monthly user registration counts (YYYY-MM, count) — Oracle TO_CHAR */
+    java.util.Optional<Utilisateur> findByReferralCode(String referralCode);
+
+    boolean existsByReferralCode(String referralCode);
+
+    /**
+     * Monthly user registration counts (YYYY-MM, count) — Oracle TO_CHAR
+     */
     @Query(value = "SELECT TO_CHAR(date_creation_compte, 'YYYY-MM') AS month, COUNT(*) AS cnt " +
             "FROM utilisateur " +
             "WHERE date_creation_compte >= :since " +

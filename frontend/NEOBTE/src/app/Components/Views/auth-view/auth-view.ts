@@ -7,6 +7,8 @@ import { RegisterRequest } from '../../../Entities/Interfaces/register-request';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ReferralService } from '../../../Services/SharedServices/Referral.service';
 
+
+
 @Component({
   selector: 'app-auth-view',
   imports: [ReactiveFormsModule, CommonModule],
@@ -15,12 +17,12 @@ import { ReferralService } from '../../../Services/SharedServices/Referral.servi
 })
 export class AuthView implements OnInit {
 
-  step: 'login' | 'register' | 'forgot' | 'verify-code' | 'new-password' | 'done' = 'login';
+  step: 'login' | 'register' | 'pin' | 'pin-forgot' | 'pin-forgot-code'
+    | 'forgot' | 'verify-code' | 'new-password' | 'done' = 'login';
+
   showPassword = false;
   error = '';
   loading = false;
-
-  // Pre-filled referral code from URL ?ref=XXXX
   prefillReferralCode = '';
 
   // Forms
@@ -28,10 +30,14 @@ export class AuthView implements OnInit {
   forgotForm: FormGroup;
   codeForm: FormGroup;
   newPasswordForm: FormGroup;
+  pinForm: FormGroup;
+  pinForgotCodeForm: FormGroup;
 
-  // State passed between steps
+  // State
   resetEmail = '';
   resetToken = '';
+  pinTempToken = '';       // held between login → pin step
+  pinBypassSent = false;
 
   constructor(
     private authService: AuthService,
@@ -61,6 +67,14 @@ export class AuthView implements OnInit {
       newPassword: ['', [Validators.required, Validators.minLength(8)]],
       confirmPassword: ['', Validators.required],
     });
+
+    this.pinForm = this.fb.group({
+      pin: ['', [Validators.required, Validators.pattern(/^\d{4,6}$/)]],
+    });
+
+    this.pinForgotCodeForm = this.fb.group({
+      code: ['', [Validators.required, Validators.pattern(/^[0-9]{6}$/)]],
+    });
   }
 
   ngOnInit(): void {
@@ -70,7 +84,6 @@ export class AuthView implements OnInit {
       return;
     }
 
-    // Auto-fill referral code from URL ?ref=XXXX and switch to register tab
     this.route.queryParams.subscribe(params => {
       if (params['ref']) {
         this.prefillReferralCode = params['ref'];
@@ -81,7 +94,7 @@ export class AuthView implements OnInit {
     });
   }
 
-  // ── Auth (login / register) ──────────────────────────────────────────
+  // ── Auth ──────────────────────────────────────────────────────────────────
 
   get isLoginMode() { return this.step === 'login'; }
 
@@ -89,9 +102,7 @@ export class AuthView implements OnInit {
     this.step = this.step === 'login' ? 'register' : 'login';
     this.error = '';
     this.authForm.reset();
-    if (this.prefillReferralCode) {
-      this.authForm.patchValue({ referralCode: this.prefillReferralCode });
-    }
+    if (this.prefillReferralCode) this.authForm.patchValue({ referralCode: this.prefillReferralCode });
     this.updateAuthValidators();
   }
 
@@ -123,9 +134,17 @@ export class AuthView implements OnInit {
 
     if (this.step === 'login') {
       this.authService.login({ email: v.email, motDePasse: v.motDePasse }).subscribe({
-        next: () => {
-          const role = this.authService.getUserRole();
-          this.router.navigate([role === 'ADMIN' ? '/admin-dashboard' : '/home-view']);
+        next: (res) => {
+          this.loading = false;
+          if (res.pinRequired) {
+            // Backend wants PIN verification — store temp token and go to pin step
+            this.pinTempToken = res.pinTempToken;
+            this.pinForm.reset();
+            this.step = 'pin';
+          } else {
+            const role = this.authService.getUserRole();
+            this.router.navigate([role === 'ADMIN' ? '/admin-dashboard' : '/home-view']);
+          }
         },
         error: () => { this.error = 'Identifiants invalides. Veuillez réessayer.'; this.loading = false; }
       });
@@ -141,15 +160,12 @@ export class AuthView implements OnInit {
 
       this.authService.register(req).subscribe({
         next: () => {
-          // Registration succeeded — now apply the referral code as a separate call
           if (trimmedCode) {
             this.referralService.applyCode(trimmedCode).subscribe({
               next: () => this.router.navigate(['/home-view']),
               error: (err) => {
-                // Referral failed but account exists — show message and let them in
                 this.error = err?.error?.message || 'Code de parrainage invalide. Votre compte a bien été créé.';
                 this.loading = false;
-                // Navigate after 3 seconds so they can read the message
                 setTimeout(() => this.router.navigate(['/home-view']), 3000);
               }
             });
@@ -162,17 +178,68 @@ export class AuthView implements OnInit {
     }
   }
 
-  // ── Forgot Password flow ─────────────────────────────────────────────
+  // ── PIN step ──────────────────────────────────────────────────────────────
+
+  submitPin() {
+    if (this.pinForm.invalid) { this.pinForm.markAllAsTouched(); return; }
+    this.error = '';
+    this.loading = true;
+    this.authService.verifyPin(this.pinTempToken, this.pinForm.value.pin).subscribe({
+      next: () => {
+        this.loading = false;
+        const role = this.authService.getUserRole();
+        this.router.navigate([role === 'ADMIN' ? '/admin-dashboard' : '/home-view']);
+      },
+      error: (err) => { this.error = err?.error?.message || 'PIN incorrect.'; this.loading = false; }
+    });
+  }
+
+  goToPinForgot() {
+    this.error = '';
+    this.pinBypassSent = false;
+    this.step = 'pin-forgot';
+  }
+
+  sendPinBypassCode() {
+    this.error = '';
+    this.loading = true;
+    this.authService.sendForgotPinCode(this.pinTempToken).subscribe({
+      next: () => {
+        this.loading = false;
+        this.pinBypassSent = true;
+        this.pinForgotCodeForm.reset();
+        this.step = 'pin-forgot-code';
+      },
+      error: (err) => { this.error = err?.error?.message || 'Impossible d\'envoyer le code.'; this.loading = false; }
+    });
+  }
+
+  submitPinBypassCode() {
+    if (this.pinForgotCodeForm.invalid) { this.pinForgotCodeForm.markAllAsTouched(); return; }
+    this.error = '';
+    this.loading = true;
+    this.authService.verifyForgotPinCode(this.pinTempToken, this.pinForgotCodeForm.value.code).subscribe({
+      next: () => {
+        this.loading = false;
+        const role = this.authService.getUserRole();
+        this.router.navigate([role === 'ADMIN' ? '/admin-dashboard' : '/home-view']);
+      },
+      error: (err) => { this.error = err?.error?.message || 'Code incorrect.'; this.loading = false; }
+    });
+  }
+
+  backToPin() { this.step = 'pin'; this.error = ''; }
+  backToLogin() { this.step = 'login'; this.error = ''; this.pinTempToken = ''; }
+
+  // ── Forgot Password ───────────────────────────────────────────────────────
 
   goToForgot() { this.step = 'forgot'; this.error = ''; this.forgotForm.reset(); }
-  backToLogin() { this.step = 'login'; this.error = ''; }
 
   submitForgot() {
     if (this.forgotForm.invalid) { this.forgotForm.markAllAsTouched(); return; }
     this.loading = true;
     this.error = '';
     const email = this.forgotForm.value.email;
-
     this.authService.forgotPassword(email).subscribe({
       next: () => { this.resetEmail = email; this.loading = false; this.step = 'verify-code'; },
       error: (err) => { this.error = err?.error?.message || 'Une erreur est survenue.'; this.loading = false; }
@@ -183,7 +250,6 @@ export class AuthView implements OnInit {
     if (this.codeForm.invalid) { this.codeForm.markAllAsTouched(); return; }
     this.loading = true;
     this.error = '';
-
     this.authService.verifyResetCode(this.resetEmail, this.codeForm.value.code).subscribe({
       next: (res) => { this.resetToken = res.resetToken; this.loading = false; this.step = 'new-password'; },
       error: (err) => { this.error = err?.error?.message || 'Code invalide.'; this.loading = false; }
@@ -195,7 +261,6 @@ export class AuthView implements OnInit {
     const v = this.newPasswordForm.value;
     if (this.newPasswordForm.invalid) { this.newPasswordForm.markAllAsTouched(); return; }
     if (v.newPassword !== v.confirmPassword) { this.error = 'Les mots de passe ne correspondent pas.'; return; }
-
     this.loading = true;
     this.authService.resetPassword(this.resetToken, v.newPassword).subscribe({
       next: () => { this.loading = false; this.step = 'done'; },

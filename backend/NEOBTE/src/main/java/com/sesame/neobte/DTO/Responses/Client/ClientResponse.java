@@ -29,5 +29,6 @@ public class ClientResponse {
     private Genre genre;
     private Role role;
     private Date dateCreationCompte;
+    private boolean pinEnabled;
 
 }

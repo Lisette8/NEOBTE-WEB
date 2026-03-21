@@ -147,6 +147,7 @@ public class UtilisateurServiceImpl implements UtilisateurService {
                 .genre(user.getGenre())
                 .role(user.getRole())
                 .dateCreationCompte(user.getDateCreationCompte())
+                .pinEnabled(user.isPinEnabled())
                 .build();
     }
 }

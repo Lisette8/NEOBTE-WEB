@@ -10,6 +10,7 @@ import com.sesame.neobte.Exceptions.customExceptions.UnauthorizedException;
 import com.sesame.neobte.Repositories.IUtilisateurRepository;
 import com.sesame.neobte.Security.Services.JwtService;
 import com.sesame.neobte.Security.Services.TokenBlacklistService;
+import com.sesame.neobte.Services.Other.PinService;
 import com.sesame.neobte.Services.Other.ReferralService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.transaction.Transactional;
@@ -29,6 +30,7 @@ public class AuthServiceImpl implements AuthService {
     private PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final TokenBlacklistService tokenBlacklistService;
+    private final PinService pinService;
 
     @Override
     public AuthResponse login(LoginRequest request) {
@@ -42,11 +44,20 @@ public class AuthServiceImpl implements AuthService {
             throw new UnauthorizedException("Invalid email or password");
         }
 
+        // If PIN is enabled → issue temp token, do NOT issue full JWT yet
+        if (utilisateur.isPinEnabled()) {
+            String pinTempToken = pinService.issuePinTempToken(utilisateur);
+            return AuthResponse.builder()
+                    .pinRequired(true)
+                    .pinTempToken(pinTempToken)
+                    .build();
+        }
+
         String token = jwtService.generateToken(
                 utilisateur.getIdUtilisateur(),
                 utilisateur.getRole().toString()
         );
-        return new AuthResponse(token);
+        return AuthResponse.builder().token(token).build();
     }
 
     @Override
@@ -70,7 +81,6 @@ public class AuthServiceImpl implements AuthService {
         utilisateur.setDateCreationCompte(new Date());
         utilisateur.setRole(Role.CLIENT);
 
-        // Auto-generate username from email prefix
         String baseUsername = request.getEmail().split("@")[0].replaceAll("[^a-zA-Z0-9._-]", "");
         String username = baseUsername;
         int suffix = 1;
@@ -79,7 +89,6 @@ public class AuthServiceImpl implements AuthService {
         }
         utilisateur.setUsername(username);
 
-        // Generate unique referral code before saving
         String referralCode;
         do {
             referralCode = UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
@@ -87,9 +96,8 @@ public class AuthServiceImpl implements AuthService {
         utilisateur.setReferralCode(referralCode);
 
         Utilisateur saved = clientRepository.save(utilisateur);
-
         String token = jwtService.generateToken(saved.getIdUtilisateur(), saved.getRole().toString());
-        return new AuthResponse(token);
+        return AuthResponse.builder().token(token).build();
     }
 
     @Override

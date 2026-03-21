@@ -32,10 +32,9 @@ public class Utilisateur implements Serializable {
     @Column(unique = true, nullable = false)
     private String username;
 
-    @JsonIgnore // password is hashed — hash visible in db
+    @JsonIgnore
     private String motDePasse;
 
-    /** Last successful password change timestamp (rate-limiting, security). */
     private LocalDateTime dateDernierChangementMotDePasse;
 
     @Enumerated(EnumType.STRING)
@@ -67,23 +66,36 @@ public class Utilisateur implements Serializable {
     @Column(length = 500)
     private String photoUrl;
 
-    /**
-     * Oracle 21c doesn't support BOOLEAN as a table column type.
-     * Let Hibernate map this to NUMBER(1) with the usual 0/1 check.
-     */
     @Convert(converter = BooleanToIntegerConverter.class)
     @Column(nullable = false)
     private boolean premium = false;
 
-    /**
-     * Unique referral code for this user — generated on first save.
-     * Shared with friends to earn a free Premium month per successful referral.
-     */
     @Column(unique = true)
     private String referralCode;
 
-    /** When the referral-granted Premium expires (null = permanent or not premium). */
-    private java.time.LocalDateTime premiumExpiresAt;
+    private LocalDateTime premiumExpiresAt;
+
+    // ── 2FA PIN ──────────────────────────────────────────────────────────────
+
+    /** Whether the user has enabled PIN-based second factor. */
+    @Convert(converter = BooleanToIntegerConverter.class)
+    @Column(nullable = false)
+    private boolean pinEnabled = false;
+
+    /** Hashed PIN (BCrypt). Null when PIN is not set. */
+    @JsonIgnore
+    private String pinCode;
+
+    /**
+     * Short-lived token issued after password is validated, before PIN is verified.
+     * Acts as a "half-authenticated" ticket — not a full JWT.
+     */
+    @JsonIgnore
+    private String pinTempToken;
+
+    private LocalDateTime pinTempTokenExpiry;
+
+    // ── Relations ─────────────────────────────────────────────────────────────
 
     @OneToMany(mappedBy = "utilisateur")
     @JsonIgnore
@@ -96,5 +108,4 @@ public class Utilisateur implements Serializable {
     @OneToMany(mappedBy = "utilisateur")
     @JsonIgnore
     private List<DemandeCompte> demandesCompte = new ArrayList<>();
-
 }

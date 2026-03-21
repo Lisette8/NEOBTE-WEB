@@ -66,6 +66,16 @@ export class SettingsView implements OnInit {
   codeCopied = false;
   linkCopied = false;
 
+  // PIN 2FA
+  pinSection: 'idle' | 'enable' | 'change' | 'disable' | 'forgot-send' | 'forgot-code' = 'idle';
+  pinInput = '';
+  pinConfirm = '';
+  pinOld = '';
+  pinResetCode = '';
+  pinLoading = false;
+  pinSuccess = '';
+  pinError = '';
+
   constructor(
     private authService: AuthService,
     private router: Router,
@@ -249,6 +259,102 @@ export class SettingsView implements OnInit {
   }
 
   resendResetCode() { this.fpCode = ''; this.sendResetCode(); }
+
+  // ── PIN 2FA ───────────────────────────────────────────────────────────────
+
+  private resetPinState() {
+    this.pinInput = ''; this.pinConfirm = ''; this.pinOld = ''; this.pinResetCode = '';
+    this.pinSuccess = ''; this.pinError = ''; this.pinLoading = false;
+  }
+
+  enablePin() {
+    this.pinError = '';
+    if (!this.pinInput || !/^\d{4,6}$/.test(this.pinInput)) {
+      this.pinError = 'Le PIN doit contenir 4 à 6 chiffres.'; return;
+    }
+    if (this.pinInput !== this.pinConfirm) {
+      this.pinError = 'Les PINs ne correspondent pas.'; return;
+    }
+    this.pinLoading = true;
+    this.authService.enablePin(this.pinInput).subscribe({
+      next: () => {
+        this.pinSuccess = 'PIN activé avec succès.';
+        this.pinSection = 'idle';
+        this.resetPinState();
+        this.loadProfile(); // refresh pinEnabled on profile
+        setTimeout(() => this.pinSuccess = '', 3000);
+      },
+      error: (err) => { this.pinError = this.extractErrorMessage(err) || 'Erreur.'; this.pinLoading = false; }
+    });
+  }
+
+  disablePin() {
+    this.pinError = '';
+    if (!this.pinOld) { this.pinError = 'Saisissez votre PIN actuel.'; return; }
+    this.pinLoading = true;
+    this.authService.disablePin(this.pinOld).subscribe({
+      next: () => {
+        this.pinSuccess = 'PIN désactivé.';
+        this.pinSection = 'idle';
+        this.resetPinState();
+        this.loadProfile();
+        setTimeout(() => this.pinSuccess = '', 3000);
+      },
+      error: (err) => { this.pinError = this.extractErrorMessage(err) || 'PIN incorrect.'; this.pinLoading = false; }
+    });
+  }
+
+  changePin() {
+    this.pinError = '';
+    if (!this.pinOld) { this.pinError = 'Saisissez votre ancien PIN.'; return; }
+    if (!this.pinInput || !/^\d{4,6}$/.test(this.pinInput)) {
+      this.pinError = 'Le nouveau PIN doit contenir 4 à 6 chiffres.'; return;
+    }
+    if (this.pinInput !== this.pinConfirm) {
+      this.pinError = 'Les PINs ne correspondent pas.'; return;
+    }
+    this.pinLoading = true;
+    this.authService.changePin(this.pinOld, this.pinInput).subscribe({
+      next: () => {
+        this.pinSuccess = 'PIN modifié avec succès.';
+        this.pinSection = 'idle';
+        this.resetPinState();
+        setTimeout(() => this.pinSuccess = '', 3000);
+      },
+      error: (err) => { this.pinError = this.extractErrorMessage(err) || 'Erreur.'; this.pinLoading = false; }
+    });
+  }
+
+  sendPinResetCode() {
+    this.pinError = '';
+    this.pinLoading = true;
+    this.authService.sendPinResetFromSettings().subscribe({
+      next: () => {
+        this.pinLoading = false;
+        this.pinSection = 'forgot-code';
+        this.pinResetCode = '';
+      },
+      error: (err) => { this.pinError = this.extractErrorMessage(err) || 'Erreur d\'envoi.'; this.pinLoading = false; }
+    });
+  }
+
+  verifyPinResetCode() {
+    this.pinError = '';
+    if (!this.pinResetCode || !/^\d{6}$/.test(this.pinResetCode)) {
+      this.pinError = 'Entrez le code à 6 chiffres reçu par e-mail.'; return;
+    }
+    this.pinLoading = true;
+    this.authService.verifyPinResetFromSettings(this.pinResetCode).subscribe({
+      next: () => {
+        this.pinSuccess = 'PIN désactivé. Vous pouvez maintenant en définir un nouveau.';
+        this.pinSection = 'idle';
+        this.resetPinState();
+        this.loadProfile();
+        setTimeout(() => this.pinSuccess = '', 4000);
+      },
+      error: (err) => { this.pinError = this.extractErrorMessage(err) || 'Code incorrect.'; this.pinLoading = false; }
+    });
+  }
 
   private extractErrorMessage(err: any): string {
     const e = err?.error;

@@ -15,6 +15,7 @@ export interface ClientProfile {
   genre?: 'HOMME' | 'FEMME' | null;
   role?: 'ADMIN' | 'CLIENT';
   dateCreationCompte?: string | null;
+  pinEnabled?: boolean;
 }
 
 export interface UpdateClientProfileRequest {
@@ -32,4 +33,3 @@ export interface ChangePasswordRequest {
   oldPassword: string;
   newPassword: string;
 }
-

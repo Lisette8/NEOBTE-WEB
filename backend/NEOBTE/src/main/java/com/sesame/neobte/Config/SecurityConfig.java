@@ -48,7 +48,10 @@ public class SecurityConfig {
                                 "/api/v1/auth/register",
                                 "/api/v1/auth/forgot-password",
                                 "/api/v1/auth/verify-reset-code",
-                                "/api/v1/auth/reset-password"
+                                "/api/v1/auth/reset-password",
+                                "/api/v1/auth/verify-pin",
+                                "/api/v1/auth/pin/forgot/send-code",
+                                "/api/v1/auth/pin/forgot/verify-code"
                         ).permitAll()
 
                         .requestMatchers("/api/v1/auth/logout").hasAnyRole("ADMIN", "CLIENT")

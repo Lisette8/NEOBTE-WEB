@@ -60,4 +60,9 @@ public class EmailService {
                 EmailTemplateLoader.loadFraudeAlertTemplate(
                         adminPrenom, clientName, clientEmail, alertType, severity, description));
     }
+
+    public void sendPinBypassEmail(String to, String prenom, String code) {
+        send(to, "NEO BTE — Code de contournement PIN",
+                EmailTemplateLoader.loadPinBypassTemplate(prenom, code));
+    }
 }

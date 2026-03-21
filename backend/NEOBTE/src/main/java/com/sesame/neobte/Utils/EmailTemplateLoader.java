@@ -53,6 +53,12 @@ public class EmailTemplateLoader {
         });
     }
 
+    public static String loadPinBypassTemplate(String prenom, String code) {
+        return loadTemplate("pin-bypass.html", new String[][]{
+                {"prenom", prenom}, {"code", code}
+        });
+    }
+
     public static String loadFraudeAlertTemplate(String adminPrenom, String clientName,
                                                  String clientEmail, String alertType,
                                                  String severity, String description) {

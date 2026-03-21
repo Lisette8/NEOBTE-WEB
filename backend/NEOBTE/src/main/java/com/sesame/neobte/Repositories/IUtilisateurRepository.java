@@ -32,6 +32,8 @@ public interface IUtilisateurRepository extends JpaRepository<Utilisateur, Long>
 
     boolean existsByReferralCode(String referralCode);
 
+    java.util.Optional<Utilisateur> findByPinTempToken(String pinTempToken);
+
     /**
      * Monthly user registration counts (YYYY-MM, count) — Oracle TO_CHAR
      */

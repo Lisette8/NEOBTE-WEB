@@ -4,7 +4,8 @@ import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, Validatio
 import { AuthService } from '../../../Services/auth-service';
 import { LoginRequest } from '../../../Entities/Interfaces/login-request';
 import { RegisterRequest } from '../../../Entities/Interfaces/register-request';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { ReferralService } from '../../../Services/SharedServices/Referral.service';
 
 @Component({
   selector: 'app-auth-view',
@@ -13,67 +14,87 @@ import { Router } from '@angular/router';
   styleUrl: './auth-view.css',
 })
 export class AuthView implements OnInit {
- 
+
   step: 'login' | 'register' | 'forgot' | 'verify-code' | 'new-password' | 'done' = 'login';
   showPassword = false;
   error = '';
   loading = false;
- 
+
+  // Pre-filled referral code from URL ?ref=XXXX
+  prefillReferralCode = '';
+
   // Forms
   authForm: FormGroup;
   forgotForm: FormGroup;
   codeForm: FormGroup;
   newPasswordForm: FormGroup;
- 
+
   // State passed between steps
   resetEmail = '';
   resetToken = '';
- 
+
   constructor(
     private authService: AuthService,
     private fb: FormBuilder,
-    private router: Router
+    private router: Router,
+    private route: ActivatedRoute,
+    private referralService: ReferralService
   ) {
     this.authForm = this.fb.group({
-      email:      ['', [Validators.required, Validators.email]],
+      email: ['', [Validators.required, Validators.email]],
       motDePasse: ['', Validators.required],
-      prenom:     [''],
-      nom:        [''],
-      telephone:  [''],
+      prenom: [''],
+      nom: [''],
+      telephone: [''],
+      referralCode: [''],
     });
- 
+
     this.forgotForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
     });
- 
+
     this.codeForm = this.fb.group({
       code: ['', [Validators.required, Validators.pattern(/^[0-9]{6}$/)]],
     });
- 
+
     this.newPasswordForm = this.fb.group({
-      newPassword:     ['', [Validators.required, Validators.minLength(8)]],
+      newPassword: ['', [Validators.required, Validators.minLength(8)]],
       confirmPassword: ['', Validators.required],
     });
   }
- 
+
   ngOnInit(): void {
     if (this.authService.isLoggedIn()) {
       const role = this.authService.getUserRole();
       this.router.navigate([role === 'ADMIN' ? '/admin-dashboard' : '/home-view']);
+      return;
     }
+
+    // Auto-fill referral code from URL ?ref=XXXX and switch to register tab
+    this.route.queryParams.subscribe(params => {
+      if (params['ref']) {
+        this.prefillReferralCode = params['ref'];
+        this.step = 'register';
+        this.updateAuthValidators();
+        this.authForm.patchValue({ referralCode: this.prefillReferralCode });
+      }
+    });
   }
- 
+
   // ── Auth (login / register) ──────────────────────────────────────────
- 
+
   get isLoginMode() { return this.step === 'login'; }
- 
+
   toggleMode() {
     this.step = this.step === 'login' ? 'register' : 'login';
     this.error = '';
     this.authForm.reset();
+    if (this.prefillReferralCode) {
+      this.authForm.patchValue({ referralCode: this.prefillReferralCode });
+    }
     this.updateAuthValidators();
   }
- 
+
   private updateAuthValidators() {
     if (this.step === 'login') {
       ['prenom', 'nom', 'telephone'].forEach(f => this.authForm.get(f)?.clearValidators());
@@ -86,92 +107,109 @@ export class AuthView implements OnInit {
     }
     ['prenom', 'nom', 'telephone', 'motDePasse'].forEach(f => this.authForm.get(f)?.updateValueAndValidity());
   }
- 
+
   fieldInvalid(form: FormGroup, field: string): boolean {
     const ctrl = form.get(field);
     return !!(ctrl?.invalid && ctrl?.touched);
   }
- 
+
   onSubmitAuth() {
     this.error = '';
     this.updateAuthValidators();
     if (this.authForm.invalid) { this.authForm.markAllAsTouched(); return; }
- 
+
     this.loading = true;
     const v = this.authForm.value;
- 
+
     if (this.step === 'login') {
       this.authService.login({ email: v.email, motDePasse: v.motDePasse }).subscribe({
         next: () => {
           const role = this.authService.getUserRole();
           this.router.navigate([role === 'ADMIN' ? '/admin-dashboard' : '/home-view']);
         },
-        error: () => { this.error = 'Invalid credentials. Please try again.'; this.loading = false; }
+        error: () => { this.error = 'Identifiants invalides. Veuillez réessayer.'; this.loading = false; }
       });
     } else {
-      this.authService.register({ email: v.email, motDePasse: v.motDePasse, prenom: v.prenom, nom: v.nom, telephone: v.telephone }).subscribe({
-        next: () => this.router.navigate(['/home-view']),
-        error: (err) => { this.error = err?.error?.message || 'Registration failed.'; this.loading = false; }
+      const req: RegisterRequest = {
+        email: v.email,
+        motDePasse: v.motDePasse,
+        prenom: v.prenom,
+        nom: v.nom,
+        telephone: v.telephone,
+      };
+      const trimmedCode = v.referralCode?.trim();
+
+      this.authService.register(req).subscribe({
+        next: () => {
+          // Registration succeeded — now apply the referral code as a separate call
+          if (trimmedCode) {
+            this.referralService.applyCode(trimmedCode).subscribe({
+              next: () => this.router.navigate(['/home-view']),
+              error: (err) => {
+                // Referral failed but account exists — show message and let them in
+                this.error = err?.error?.message || 'Code de parrainage invalide. Votre compte a bien été créé.';
+                this.loading = false;
+                // Navigate after 3 seconds so they can read the message
+                setTimeout(() => this.router.navigate(['/home-view']), 3000);
+              }
+            });
+          } else {
+            this.router.navigate(['/home-view']);
+          }
+        },
+        error: (err) => { this.error = err?.error?.message || 'Inscription échouée.'; this.loading = false; }
       });
     }
   }
- 
+
   // ── Forgot Password flow ─────────────────────────────────────────────
- 
+
   goToForgot() { this.step = 'forgot'; this.error = ''; this.forgotForm.reset(); }
   backToLogin() { this.step = 'login'; this.error = ''; }
- 
+
   submitForgot() {
     if (this.forgotForm.invalid) { this.forgotForm.markAllAsTouched(); return; }
     this.loading = true;
     this.error = '';
     const email = this.forgotForm.value.email;
- 
+
     this.authService.forgotPassword(email).subscribe({
-      next: () => {
-        this.resetEmail = email;
-        this.loading = false;
-        this.step = 'verify-code';
-      },
-      error: (err) => { this.error = err?.error?.message || 'Something went wrong.'; this.loading = false; }
+      next: () => { this.resetEmail = email; this.loading = false; this.step = 'verify-code'; },
+      error: (err) => { this.error = err?.error?.message || 'Une erreur est survenue.'; this.loading = false; }
     });
   }
- 
+
   submitCode() {
     if (this.codeForm.invalid) { this.codeForm.markAllAsTouched(); return; }
     this.loading = true;
     this.error = '';
- 
+
     this.authService.verifyResetCode(this.resetEmail, this.codeForm.value.code).subscribe({
-      next: (res) => {
-        this.resetToken = res.resetToken;
-        this.loading = false;
-        this.step = 'new-password';
-      },
-      error: (err) => { this.error = err?.error?.message || 'Invalid code.'; this.loading = false; }
+      next: (res) => { this.resetToken = res.resetToken; this.loading = false; this.step = 'new-password'; },
+      error: (err) => { this.error = err?.error?.message || 'Code invalide.'; this.loading = false; }
     });
   }
- 
+
   submitNewPassword() {
     this.error = '';
     const v = this.newPasswordForm.value;
     if (this.newPasswordForm.invalid) { this.newPasswordForm.markAllAsTouched(); return; }
-    if (v.newPassword !== v.confirmPassword) { this.error = 'Passwords do not match.'; return; }
- 
+    if (v.newPassword !== v.confirmPassword) { this.error = 'Les mots de passe ne correspondent pas.'; return; }
+
     this.loading = true;
     this.authService.resetPassword(this.resetToken, v.newPassword).subscribe({
       next: () => { this.loading = false; this.step = 'done'; },
-      error: (err) => { this.error = err?.error?.message || 'Reset failed.'; this.loading = false; }
+      error: (err) => { this.error = err?.error?.message || 'Réinitialisation échouée.'; this.loading = false; }
     });
   }
- 
+
   resendCode() {
     this.loading = true;
     this.error = '';
     this.codeForm.reset();
     this.authService.forgotPassword(this.resetEmail).subscribe({
       next: () => { this.loading = false; },
-      error: () => { this.error = 'Failed to resend code.'; this.loading = false; }
+      error: () => { this.error = 'Échec du renvoi du code.'; this.loading = false; }
     });
   }
 }

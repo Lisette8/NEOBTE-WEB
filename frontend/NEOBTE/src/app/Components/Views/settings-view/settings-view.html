@@ -21,13 +21,21 @@
       <button class="menu-item" type="button" [class.active]="section==='securite'" (click)="setSection('securite')">
         Sécurité
       </button>
-      <button class="menu-item" type="button" [class.active]="section==='abonnement'" (click)="setSection('abonnement')">
+      <button class="menu-item" type="button" [class.active]="section==='abonnement'"
+        (click)="setSection('abonnement')">
         Abonnement
       </button>
-      <button class="menu-item" type="button" [class.active]="section==='notifications'" (click)="setSection('notifications')">
+      <button class="menu-item" type="button" [class.active]="section==='parrainage'"
+        (click)="setSection('parrainage')">
+        Parrainage
+      </button>
+
+      <button class="menu-item" type="button" [class.active]="section==='notifications'"
+        (click)="setSection('notifications')">
         Notifications
       </button>
-      <button class="menu-item" type="button" [class.active]="section==='assistance'" (click)="setSection('assistance')">
+      <button class="menu-item" type="button" [class.active]="section==='assistance'"
+        (click)="setSection('assistance')">
         Assistance
       </button>
       <button class="menu-item" type="button" [class.active]="section==='bte'" (click)="setSection('bte')">
@@ -158,7 +166,8 @@
 
         <div class="forgot" *ngIf="showForgotPassword">
           <p class="hint">
-            Réinitialisez votre mot de passe par e-mail. Cette option utilise la même procédure que la page de connexion.
+            Réinitialisez votre mot de passe par e-mail. Cette option utilise la même procédure que la page de
+            connexion.
           </p>
 
           <p class="hint ok" *ngIf="fpSuccess">{{ fpSuccess }}</p>
@@ -233,6 +242,121 @@
         <div class="actions">
           <a class="btn primary" routerLink="/pricing-view">Voir les offres</a>
         </div>
+      </section>
+
+      <!-- Parrainage -->
+      <section class="card" *ngIf="section==='parrainage'">
+        <div class="card-hd">
+          <h2>Parrainage</h2>
+          <p>Invitez vos proches et gagnez du Premium gratuitement</p>
+        </div>
+
+        <div *ngIf="referralLoading" class="ref-loading">Chargement...</div>
+
+        <ng-container *ngIf="!referralLoading && referral">
+
+          <!-- How it works -->
+          <div class="ref-how">
+            <div class="ref-step">
+              <div class="ref-step-num">1</div>
+              <div class="ref-step-text">
+                <strong>Partagez votre code</strong>
+                <span>Envoyez votre code unique a un ami</span>
+              </div>
+            </div>
+            <div class="ref-step-arrow">&#8594;</div>
+            <div class="ref-step">
+              <div class="ref-step-num">2</div>
+              <div class="ref-step-text">
+                <strong>Il s'inscrit</strong>
+                <span>Votre ami cree son compte NEO BTE</span>
+              </div>
+            </div>
+            <div class="ref-step-arrow">&#8594;</div>
+            <div class="ref-step">
+              <div class="ref-step-num">3</div>
+              <div class="ref-step-text">
+                <strong>Vous gagnez</strong>
+                <span>3 jours de Premium offerts</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Code block -->
+          <div class="ref-code-block">
+            <div class="ref-code-label">Votre code de parrainage</div>
+            <div class="ref-code-row">
+              <span class="ref-code">{{ referral.referralCode }}</span>
+              <button class="ref-copy-btn" (click)="copyCode()">
+                <svg *ngIf="!codeCopied" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                  width="15" height="15">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+                </svg>
+                <svg *ngIf="codeCopied" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                  width="15" height="15">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+                {{ codeCopied ? 'Copie !' : 'Copier' }}
+              </button>
+            </div>
+            <div class="ref-link-row">
+              <span class="ref-link-text">{{ referral.referralLink }}</span>
+              <button class="ref-link-btn" (click)="copyLink()">
+                {{ linkCopied ? 'Copie !' : 'Copier le lien' }}
+              </button>
+            </div>
+          </div>
+
+          <!-- Stats -->
+          <div class="ref-stats">
+            <div class="ref-stat">
+              <div class="ref-stat-val">{{ referral.totalReferrals }}</div>
+              <div class="ref-stat-label">Ami{{ referral.totalReferrals !== 1 ? 's' : '' }} parraines</div>
+            </div>
+            <div class="ref-stat">
+              <div class="ref-stat-val">{{ referral.totalReferrals * 3 }}</div>
+              <div class="ref-stat-label">Jours de Premium gagnes</div>
+            </div>
+            <div class="ref-stat" *ngIf="referral.premium && referral.premiumExpiresAt">
+              <div class="ref-stat-val">{{ daysLeft(referral.premiumExpiresAt) }}</div>
+              <div class="ref-stat-label">Jours restants</div>
+            </div>
+          </div>
+
+          <!-- Premium badge if active -->
+          <div class="ref-premium-active" *ngIf="referral.premium && referral.premiumExpiresAt">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
+              <polygon
+                points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+            </svg>
+            Premium actif — expire le {{ referral.premiumExpiresAt | date:'d MMM y' }}
+          </div>
+
+          <!-- Referral history -->
+          <div class="ref-history" *ngIf="referral.referrals.length > 0">
+            <div class="ref-history-title">Historique des parrainages</div>
+            <div class="ref-history-row" *ngFor="let r of referral.referrals">
+              <div class="ref-history-avatar">{{ r.referredName.charAt(0) }}</div>
+              <div class="ref-history-info">
+                <span class="ref-history-name">{{ r.referredName }}</span>
+                <span class="ref-history-date">{{ r.dateReferral | date:'d MMM y' }}</span>
+              </div>
+              <div class="ref-reward-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
+                  <polygon
+                    points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                </svg>
+                +3j Premium
+              </div>
+            </div>
+          </div>
+
+          <div class="ref-empty" *ngIf="referral.referrals.length === 0">
+            Aucun parrainage pour l'instant. Partagez votre code pour commencer.
+          </div>
+
+        </ng-container>
       </section>
 
       <!-- Notifications -->

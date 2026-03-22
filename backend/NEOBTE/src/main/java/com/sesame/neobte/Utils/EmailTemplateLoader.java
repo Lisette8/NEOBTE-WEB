@@ -59,6 +59,21 @@ public class EmailTemplateLoader {
         });
     }
 
+    public static String loadClotureBlockedTemplate(String prenom, Long compteId, Double solde) {
+        return loadTemplate("cloture-blocked.html", new String[][]{
+                {"prenom", prenom},
+                {"compteId", String.valueOf(compteId)},
+                {"solde", String.format("%.3f", solde)}
+        });
+    }
+
+    public static String loadClotureApprovedTemplate(String prenom, Long compteId) {
+        return loadTemplate("cloture-approved.html", new String[][]{
+                {"prenom", prenom},
+                {"compteId", String.valueOf(compteId)}
+        });
+    }
+
     public static String loadFraudeAlertTemplate(String adminPrenom, String clientName,
                                                  String clientEmail, String alertType,
                                                  String severity, String description) {

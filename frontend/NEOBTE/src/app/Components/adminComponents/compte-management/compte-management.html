@@ -21,7 +21,9 @@
     </div>
 
     <div class="loading-state" *ngIf="accountsLoading">Chargement...</div>
-    <div class="empty-state" *ngIf="!accountsLoading && comptes.length === 0"><p>Aucun compte trouvé.</p></div>
+    <div class="empty-state" *ngIf="!accountsLoading && comptes.length === 0">
+      <p>Aucun compte trouvé.</p>
+    </div>
 
     <div class="table-wrap" *ngIf="!accountsLoading && comptes.length > 0">
       <table>
@@ -43,7 +45,10 @@
               <td><span class="badge badge-blue">{{ compte.typeCompte }}</span></td>
               <td>
                 <span class="badge" [ngClass]="getStatutClass(compte.statutCompte)">
-                  {{ compte.statutCompte }}
+                  {{ compte.statutCompte === 'ACTIVE' ? 'Actif' :
+                  compte.statutCompte === 'SUSPENDU' ? 'Suspendu' :
+                  compte.statutCompte === 'BLOQUE' ? 'Bloqué' :
+                  compte.statutCompte === 'CLOTURE' ? 'Clôturé' : compte.statutCompte }}
                 </span>
               </td>
               <td class="muted">#{{ compte.utilisateurId }}</td>
@@ -63,12 +68,16 @@
                     <div>
                       <label class="iap-label">Nouveau statut</label>
                       <select [(ngModel)]="selectedStatut" class="iap-select">
-                        <option *ngFor="let s of statuts" [value]="s">{{ s }}</option>
+                        <option value="ACTIVE">Actif</option>
+                        <option value="SUSPENDU">Suspendu</option>
+                        <option value="BLOQUE">Bloqué</option>
+                        <option value="CLOTURE">Clôturé</option>
                       </select>
                     </div>
                     <div style="flex:1">
                       <label class="iap-label">Commentaire (facultatif)</label>
-                      <input type="text" [(ngModel)]="actionCommentaire" class="iap-input" placeholder="Raison du changement...">
+                      <input type="text" [(ngModel)]="actionCommentaire" class="iap-input"
+                        placeholder="Raison du changement...">
                     </div>
                   </div>
                   <p class="action-error" *ngIf="actionError">{{ actionError }}</p>
@@ -102,8 +111,16 @@
       </select>
     </div>
 
+    <!-- Outcome banner -->
+    <div *ngIf="clotureOutcome" class="outcome-banner" [class.outcome-blocked]="clotureOutcome.blocked"
+      [class.outcome-closed]="!clotureOutcome.blocked">
+      {{ clotureOutcome.message }}
+    </div>
+
     <div class="loading-state" *ngIf="cloturesLoading">Chargement...</div>
-    <div class="empty-state" *ngIf="!cloturesLoading && demandes.length === 0"><p>Aucune demande pour ce filtre.</p></div>
+    <div class="empty-state" *ngIf="!cloturesLoading && demandes.length === 0">
+      <p>Aucune demande pour ce filtre.</p>
+    </div>
 
     <div class="demandes-list" *ngIf="!cloturesLoading && demandes.length > 0">
       <div class="demande-row" *ngFor="let d of demandes">
@@ -121,7 +138,10 @@
               <span class="dot">·</span>
               <span>{{ d.typeCompte }}</span>
               <span class="dot">·</span>
-              <span>Solde : {{ d.soldeAtDemande | number:'1.3-3' }} TND</span>
+              <span [class.balance-warning]="d.soldeAtDemande > 0">
+                Solde : {{ d.soldeAtDemande | number:'1.3-3' }} TND
+                <span *ngIf="d.soldeAtDemande > 0"> ⚠️</span>
+              </span>
               <span class="dot">·</span>
               <span>{{ d.dateDemande | date:'d MMM y' }}</span>
             </div>
@@ -134,7 +154,7 @@
         <div class="demande-actions" *ngIf="d.statut === 'EN_ATTENTE'">
           <ng-container *ngIf="clotureActionId !== d.id">
             <button class="btn-approve" (click)="openClotureAction(d.id, 'approve')">✓ Approuver</button>
-            <button class="btn-reject"  (click)="openClotureAction(d.id, 'reject')">✕ Rejeter</button>
+            <button class="btn-reject" (click)="openClotureAction(d.id, 'reject')">✕ Rejeter</button>
           </ng-container>
 
           <div class="decision-panel" *ngIf="clotureActionId === d.id">

@@ -8,24 +8,30 @@ import java.time.LocalDate;
 
 @Data
 public class DemandeCompteCreateDTO {
+
     @NotNull(message = "Account type is required")
     private TypeCompte typeCompte;
 
     @Size(max = 500)
     private String motif;
 
-    @NotBlank(message = "CIN is required")
+    /**
+     * Optional — only required when the user has no CIN on their profile yet (first account).
+     * For subsequent accounts the backend reads CIN directly from the user row.
+     */
     @Pattern(regexp = "^[0-9]{8}$", message = "CIN must be exactly 8 digits")
     private String cin;
 
-    @NotNull(message = "Date of birth is required")
+    /**
+     * Optional — same logic as CIN above.
+     */
     @Past(message = "Date of birth must be in the past")
     private LocalDate dateNaissance;
 
-    // obligatoire pour compte COURANT et PROFESSIONNEL
+    // Required for COURANT and PROFESSIONNEL (if not already on profile)
     private String adresse;
     private String job;
 
-    // obligatoire seulement pour compte PROFESSIONNEL
+    // Required for PROFESSIONNEL only
     private String nomEntreprise;
 }

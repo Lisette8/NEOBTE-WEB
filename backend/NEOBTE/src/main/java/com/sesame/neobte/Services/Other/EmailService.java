@@ -65,4 +65,15 @@ public class EmailService {
         send(to, "NEO BTE — Code de contournement PIN",
                 EmailTemplateLoader.loadPinBypassTemplate(prenom, code));
     }
+
+    public void sendClotureBlockedEmail(String to, String prenom, Long compteId, Double solde) {
+        send(to, "NEO BTE — Clôture impossible : solde non nul",
+                EmailTemplateLoader.loadClotureBlockedTemplate(prenom, compteId, solde));
+    }
+
+    public void sendClotureApprovedEmail(String to, String prenom, Long compteId) {
+        send(to, "NEO BTE — Votre compte a été clôturé",
+                EmailTemplateLoader.loadClotureApprovedTemplate(prenom, compteId));
+    }
 }
+// APPEND — add this method to the EmailService class body before the closing }

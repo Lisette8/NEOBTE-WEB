@@ -85,6 +85,12 @@ export class AuthView implements OnInit {
     }
 
     this.route.queryParams.subscribe(params => {
+      // ?mode=register → open register tab directly (from "Ouvrir un compte" landing CTA)
+      if (params['mode'] === 'register') {
+        this.step = 'register';
+        this.updateAuthValidators();
+      }
+      // ?ref=CODE → referral link, switch to register and pre-fill code
       if (params['ref']) {
         this.prefillReferralCode = params['ref'];
         this.step = 'register';
@@ -231,7 +237,15 @@ export class AuthView implements OnInit {
   backToPin() { this.step = 'pin'; this.error = ''; }
   backToLogin() { this.step = 'login'; this.error = ''; this.pinTempToken = ''; }
 
-  // ── Forgot Password ───────────────────────────────────────────────────────
+  // Strip anything that isn't a digit or leading +
+  sanitizePhone(event: Event, form: FormGroup, field: string) {
+    const input = event.target as HTMLInputElement;
+    let val = input.value.replace(/[^\d+]/g, '');
+    // Only allow + at the start
+    if (val.indexOf('+') > 0) val = val.replace(/\+/g, '');
+    input.value = val;
+    form.get(field)?.setValue(val, { emitEvent: false });
+  }
 
   goToForgot() { this.step = 'forgot'; this.error = ''; this.forgotForm.reset(); }
 

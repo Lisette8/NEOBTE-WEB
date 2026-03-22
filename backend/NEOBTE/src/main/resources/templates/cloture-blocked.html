@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f6f8; padding: 30px; margin: 0; }
+        .container { max-width: 560px; margin: 0 auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,0.08); }
+        .header { background: linear-gradient(135deg, #1a3a5c, #0d6efd); padding: 32px 28px; text-align: center; }
+        .header h1 { color: white; margin: 0; font-size: 20px; font-weight: 600; }
+        .body { padding: 32px 28px; }
+        .badge { display: inline-block; background: #fff3cd; color: #856404; padding: 6px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; margin-bottom: 20px; }
+        .body p { color: #444; line-height: 1.7; margin: 0 0 14px; }
+        .amount-box { background: #fff8e1; border: 2px solid #ff9800; border-radius: 12px; padding: 20px; text-align: center; margin: 24px 0; }
+        .amount { font-size: 32px; font-weight: 800; color: #e65100; font-family: monospace; }
+        .amount-label { font-size: 13px; color: #888; margin-top: 6px; }
+        .steps { background: #f0f7ff; border-radius: 10px; padding: 18px 20px; margin: 20px 0; }
+        .steps ol { margin: 8px 0 0; padding-left: 20px; color: #444; font-size: 14px; line-height: 1.8; }
+        .warning { background: #fff8e1; border-left: 4px solid #ffc107; padding: 12px 16px; border-radius: 6px; font-size: 13px; color: #555; margin: 20px 0; }
+        .footer { background: #f8f9fa; padding: 18px 28px; text-align: center; font-size: 12px; color: #999; border-top: 1px solid #eee; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header"><h1>NEO BTE — Banque de Tunisie et des Émirats</h1></div>
+    <div class="body">
+        <div class="badge">⚠️ Clôture en attente</div>
+        <p>Bonjour <strong>{{prenom}}</strong>,</p>
+        <p>Votre demande de clôture du compte <strong>#{{compteId}}</strong> a bien été reçue et traitée par notre équipe. Cependant, la clôture ne peut pas être finalisée car votre compte présente encore un solde positif :</p>
+        <div class="amount-box">
+            <div class="amount">{{solde}} TND</div>
+            <div class="amount-label">Solde restant sur le compte #{{compteId}}</div>
+        </div>
+        <p>Votre compte a été <strong>temporairement bloqué</strong> dans l'attente de la régularisation du solde. Pour finaliser la clôture :</p>
+        <div class="steps">
+            <ol>
+                <li>Connectez-vous à votre espace NEO BTE</li>
+                <li>Effectuez un virement du solde restant vers un autre compte</li>
+                <li>Soumettez une nouvelle demande de clôture une fois le solde à zéro</li>
+            </ol>
+        </div>
+        <div class="warning">⚠️ Tant que le solde n'est pas vidé, le compte restera bloqué. Si vous avez besoin d'aide, contactez notre support.</div>
+        <p>L'équipe NEO BTE</p>
+    </div>
+    <div class="footer">Message automatique — ne pas répondre directement.<br>Banque de Tunisie et des Émirats © 2026 — Boulevard Beji Caid Essebsi, 1082 Tunis</div>
+</div>
+</body>
+</html>

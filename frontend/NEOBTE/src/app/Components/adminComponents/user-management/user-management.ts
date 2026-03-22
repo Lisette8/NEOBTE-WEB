@@ -168,6 +168,23 @@ export class UserManagement implements OnInit, OnDestroy {
     this.userForm.reset({ pays: 'Tunisie' });
   }
 
+  // ── Input sanitizers ───────────────────────────────────────────────────────
+
+  sanitizePhone(event: Event) {
+    const input = event.target as HTMLInputElement;
+    let val = input.value.replace(/[^\d+]/g, '');
+    if (val.indexOf('+') > 0) val = val.replace(/\+/g, '');
+    input.value = val;
+    this.userForm.get('telephone')?.setValue(val, { emitEvent: false });
+  }
+
+  sanitizeDigits(event: Event, field: string) {
+    const input = event.target as HTMLInputElement;
+    const val = input.value.replace(/\D/g, '');
+    input.value = val;
+    this.userForm.get(field)?.setValue(val, { emitEvent: false });
+  }
+
   togglePremium(user: UserListDTO) {
     const nextPremium = !(user.premium ?? false);
     // Optimistic UI update
@@ -195,4 +212,3 @@ export class UserManagement implements OnInit, OnDestroy {
   }
 
 }
-

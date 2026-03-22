@@ -79,7 +79,8 @@
           </div>
           <div class="field">
             <label>Téléphone</label>
-            <input [(ngModel)]="form.telephone" placeholder="Ex: 20123456" />
+            <input [(ngModel)]="form.telephone" placeholder="Ex: +21620123456" type="tel" maxlength="15" inputmode="tel"
+              (input)="sanitizePhoneInput($event)" />
           </div>
           <div class="field">
             <label>Profession</label>
@@ -103,7 +104,8 @@
           </div>
           <div class="field">
             <label>Code postal</label>
-            <input [(ngModel)]="form.codePostal" />
+            <input [(ngModel)]="form.codePostal" maxlength="4" inputmode="numeric"
+              (input)="sanitizePostalCode($event)" />
           </div>
         </div>
 

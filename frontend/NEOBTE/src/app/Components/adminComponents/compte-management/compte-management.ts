@@ -44,8 +44,9 @@ export class CompteManagement implements OnInit, OnDestroy {
   clotureCommentaire = '';
   clotureSubmitting = false;
   clotureError = '';
+  clotureOutcome: { blocked: boolean; message: string } | null = null;
 
-  readonly statuts = ['ACTIVE', 'SUSPENDED', 'BLOCKED', 'CLOSED'];
+  readonly statuts = ['ACTIVE', 'SUSPENDU', 'BLOQUE', 'CLOTURE'];
 
   constructor(
     private compteService: CompteService,
@@ -152,17 +153,30 @@ export class CompteManagement implements OnInit, OnDestroy {
       : this.compteService.rejeterCloture(this.clotureActionId!, this.clotureCommentaire);
 
     call.subscribe({
-      next: () => { this.clotureSubmitting = false; this.cancelClotureAction(); this.loadClotures(); },
-      error: (err) => { this.clotureError = err?.error?.message || 'Échec.'; this.clotureSubmitting = false; }
+      next: (res: any) => {
+        this.clotureSubmitting = false;
+        this.cancelClotureAction();
+        // Check if account was blocked instead of closed (non-zero balance)
+        const isBlocked = res?.commentaireAdmin?.includes('solde non nul');
+        if (this.clotureActionType === 'approve') {
+          this.clotureOutcome = isBlocked
+            ? { blocked: true, message: `⚠️ Compte #${res.compteId} bloqué — solde non nul (${res.soldeAtDemande} TND). Le client doit vider son compte avant la clôture définitive.` }
+            : { blocked: false, message: `✓ Compte #${res.compteId} clôturé avec succès.` };
+        }
+        this.loadClotures();
+        this.loadComptes();
+        setTimeout(() => this.clotureOutcome = null, 8000);
+      },
+      error: (err: any) => { this.clotureError = err?.error?.message || 'Échec.'; this.clotureSubmitting = false; }
     });
   }
 
   getStatutClass(s: string): string {
     switch (s) {
       case 'ACTIVE': return 'badge-green';
-      case 'SUSPENDED': return 'badge-amber';
-      case 'BLOCKED': return 'badge-amber';
-      case 'CLOSED': return 'badge-red';
+      case 'SUSPENDU': return 'badge-amber';
+      case 'BLOQUE': return 'badge-amber';
+      case 'CLOTURE': return 'badge-red';
       default: return 'badge-gray';
     }
   }

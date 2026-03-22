@@ -18,6 +18,8 @@ public class SupportResponseDTO {
     private String reponseAdmin;
     private String status;
     private LocalDateTime dateCreation;
-    private String clientEmail;
-
+    private String clientEmail;   // registered user email (null for guests)
+    private String guestEmail;    // guest email from contact form
+    private String guestName;     // guest name from contact form
+    private boolean guest;        // true = came from public contact form
 }

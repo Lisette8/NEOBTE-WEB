@@ -1,5 +1,6 @@
 package com.sesame.neobte.Services;
 
+import com.sesame.neobte.DTO.Requests.Contact.ContactCreateDTO;
 import com.sesame.neobte.DTO.Requests.Support.SupportCreateDTO;
 import com.sesame.neobte.DTO.Responses.Support.SupportResponseDTO;
 import com.sesame.neobte.Entities.Class.Support;
@@ -25,32 +26,20 @@ public class SupportServiceImpl implements SupportService {
     private final SimpMessagingTemplate messagingTemplate;
     private EmailService emailService;
 
-
     @Override
     public List<SupportResponseDTO> getMyTickets(Long userId) {
-        List<Support> tickets = supportRepository.findByUtilisateurIdUtilisateur(userId);
-
-        return tickets.stream()
-                .map(this::mapToResponseDTO)
-                .toList();
+        return supportRepository.findByUtilisateurIdUtilisateur(userId)
+                .stream().map(this::mapToResponseDTO).toList();
     }
-
 
     @Override
     public List<SupportResponseDTO> getAllTickets() {
-        List<Support> tickets = supportRepository.findAll();
-
-        return tickets.stream()
-                .map(this::mapToResponseDTO)
-                .toList();
+        return supportRepository.findAll()
+                .stream().map(this::mapToResponseDTO).toList();
     }
-
-
-    //crud support
 
     @Override
     public SupportResponseDTO createTicket(Long userId, SupportCreateDTO dto) {
-
         Utilisateur user = utilisateurRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
@@ -62,58 +51,65 @@ public class SupportServiceImpl implements SupportService {
         support.setDateCreation(LocalDateTime.now());
 
         Support saved = supportRepository.save(support);
-
-        // broadcast full ticket DTO so the admin panel can parse it directly
         messagingTemplate.convertAndSend("/topic/support", mapToResponseDTO(saved));
-
         return mapToResponseDTO(saved);
     }
 
+    @Override
+    public SupportResponseDTO createGuestTicket(ContactCreateDTO dto) {
+        Support support = new Support();
+        support.setSujet(dto.getSujet());
+        support.setMessage(dto.getMessage());
+        support.setStatus(SupportStatus.OPEN);
+        support.setGuestEmail(dto.getEmail());
+        support.setGuestName(dto.getNom());
+        support.setUtilisateur(null);
+        support.setDateCreation(LocalDateTime.now());
+
+        Support saved = supportRepository.save(support);
+        // Broadcast to admin WebSocket panel so it appears live
+        messagingTemplate.convertAndSend("/topic/support", mapToResponseDTO(saved));
+        return mapToResponseDTO(saved);
+    }
 
     @Override
     public SupportResponseDTO updateStatus(Long id, String response, String status) {
-
         Support support = supportRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Ticket not found"));
 
         support.setReponseAdmin(response);
         support.setStatus(SupportStatus.valueOf(status.toUpperCase()));
-
         Support saved = supportRepository.save(support);
 
-        // send email to client
-        String clientEmail = support.getUtilisateur().getEmail();
-        String subject = "Response to your support ticket";
-        String message =
-                "Hello,\n\n" +
-                        "Our support team replied to your ticket:\n\n" +
-                        "Subject: " + support.getSujet() + "\n\n" +
-                        "Admin response:\n" +
-                        response +
-                        "\n\nBest regards,\nSupport Team";
+        // Reply by email — use guest email if no registered user
+        String replyTo = support.getUtilisateur() != null
+                ? support.getUtilisateur().getEmail()
+                : support.getGuestEmail();
 
-        emailService.sendSupportResponseEmail(clientEmail, subject, message);
+        if (replyTo != null && !replyTo.isBlank()) {
+            emailService.sendSupportResponseEmail(replyTo, support.getSujet(), response);
+        }
 
         return mapToResponseDTO(saved);
     }
-
 
     @Override
     public void deleteTicket(Long id) {
         supportRepository.deleteById(id);
     }
 
-
-    //private functions
     private SupportResponseDTO mapToResponseDTO(Support support) {
-        return new SupportResponseDTO(
-                support.getIdSupport(),
-                support.getSujet(),
-                support.getMessage(),
-                support.getReponseAdmin(),
-                support.getStatus().name(),
-                support.getDateCreation(),
-                support.getUtilisateur().getEmail()
-        );
+        return SupportResponseDTO.builder()
+                .idSupport(support.getIdSupport())
+                .sujet(support.getSujet())
+                .message(support.getMessage())
+                .reponseAdmin(support.getReponseAdmin())
+                .status(support.getStatus().name())
+                .dateCreation(support.getDateCreation())
+                .clientEmail(support.getUtilisateur() != null ? support.getUtilisateur().getEmail() : null)
+                .guestEmail(support.getGuestEmail())
+                .guestName(support.getGuestName())
+                .guest(support.getUtilisateur() == null)
+                .build();
     }
 }

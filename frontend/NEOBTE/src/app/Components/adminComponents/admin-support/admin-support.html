@@ -12,17 +12,20 @@
 
       <div class="ticket-top">
         <div class="ticket-meta">
-          <div class="ticket-subject">{{ ticket.sujet }}</div>
+          <div class="ticket-subject">
+            {{ ticket.sujet }}
+            <span class="guest-badge" *ngIf="ticket.guest">Contact public</span>
+          </div>
           <div class="ticket-info">
-            <span class="ticket-email">{{ ticket.clientEmail }}</span>
+            <span class="ticket-email">
+              {{ ticket.guest ? (ticket.guestName + ' — ' + ticket.guestEmail) : ticket.clientEmail }}
+            </span>
             <span class="sep">·</span>
             <span class="ticket-date">{{ ticket.dateCreation | date:'MMM d, y · HH:mm' }}</span>
           </div>
         </div>
-        <span class="status-pill"
-          [class.pill-open]="ticket.status === 'OPEN'"
-          [class.pill-progress]="ticket.status === 'IN_PROGRESS'"
-          [class.pill-resolved]="ticket.status === 'RESOLVED'"
+        <span class="status-pill" [class.pill-open]="ticket.status === 'OPEN'"
+          [class.pill-progress]="ticket.status === 'IN_PROGRESS'" [class.pill-resolved]="ticket.status === 'RESOLVED'"
           [class.pill-closed]="ticket.status === 'CLOSED'">
           {{ ticket.status }}
         </span>
@@ -32,9 +35,7 @@
 
       <div class="ticket-reply">
         <label class="reply-label">Admin Response</label>
-        <textarea
-          class="reply-textarea"
-          placeholder="Write your response to this ticket..."
+        <textarea class="reply-textarea" placeholder="Write your response to this ticket..."
           [(ngModel)]="responseText[ticket.idSupport]">
         </textarea>
       </div>

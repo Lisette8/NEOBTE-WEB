@@ -15,6 +15,8 @@ import { ClientInsightsData, PremiumStatus } from '../../../Entities/Interfaces/
 import { AccountPhysicalCard } from '../../account-physical-card/account-physical-card';
 import { interval, Subscription } from 'rxjs';
 
+
+
 @Component({
   selector: 'app-home-view',
   standalone: true,
@@ -105,8 +107,8 @@ export class HomeView implements OnInit, OnDestroy {
 
   get visibleComptes(): Compte[] {
     return this.comptes.filter(c =>
-      c.statutCompte !== 'CLOSED' &&
-      !(c.statutCompte === 'SUSPENDED' && c.dateSuppressionPrevue)
+      c.statutCompte !== 'CLOTURE' &&
+      !(c.statutCompte === 'SUSPENDU' && c.dateSuppressionPrevue)
     );
   }
 

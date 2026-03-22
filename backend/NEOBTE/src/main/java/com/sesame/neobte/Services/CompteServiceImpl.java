@@ -7,6 +7,7 @@ import com.sesame.neobte.DTO.Responses.Compte.CompteResponseDTO;
 import com.sesame.neobte.DTO.Responses.DemandeClotureCompte.DemandeClotureResponseDTO;
 import com.sesame.neobte.Entities.Class.Compte;
 import com.sesame.neobte.Entities.Class.DemandeClotureCompte;
+import com.sesame.neobte.Entities.Enumeration.NotificationType;
 import com.sesame.neobte.Entities.Enumeration.StatutCompte;
 import com.sesame.neobte.Entities.Class.Utilisateur;
 import com.sesame.neobte.Entities.Enumeration.StatutDemande;
@@ -15,6 +16,8 @@ import com.sesame.neobte.Exceptions.customExceptions.ResourceNotFoundException;
 import com.sesame.neobte.Repositories.ICompteRepository;
 import com.sesame.neobte.Repositories.IDemandeClotureCompteRepository;
 import com.sesame.neobte.Repositories.IUtilisateurRepository;
+import com.sesame.neobte.Services.Other.EmailService;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +34,8 @@ public class CompteServiceImpl implements CompteService {
     private final ICompteRepository compteRepository;
     private final IUtilisateurRepository utilisateurRepository;
     private final IDemandeClotureCompteRepository demandeClotureRepository;
+    private final NotificationService notificationService;
+    private final EmailService emailService;
 
     // ── Basic CRUD ─────────────────────────────────────────────────────────
 
@@ -183,15 +188,34 @@ public class CompteServiceImpl implements CompteService {
             throw new BadRequestException("Cette demande a déjà été traitée.");
 
         Compte compte = demande.getCompte();
+        Utilisateur user = compte.getUtilisateur();
 
         if (compte.getSolde() != null && compte.getSolde() > 0) {
             compte.setStatutCompte(StatutCompte.BLOQUE);
-            demande.setCommentaireAdmin(
-                    (commentaire != null ? commentaire + " — " : "") +
-                            "Clôture impossible : solde non nul (" + compte.getSolde() + " TND). Veuillez vider le compte.");
+            String adminNote = (commentaire != null ? commentaire + " — " : "")
+                    + "Clôture impossible : solde non nul (" + compte.getSolde() + " TND). Veuillez vider le compte.";
+            demande.setCommentaireAdmin(adminNote);
+
+            // Notify client — account blocked, needs to empty it first
+            String clientMsg = String.format(
+                    "Votre demande de clôture du compte #%d a été traitée, mais le compte contient encore %.3f TND. " +
+                            "Il a été bloqué temporairement. Veuillez effectuer un virement pour vider votre solde, puis resoumettez votre demande de clôture.",
+                    compte.getIdCompte(), compte.getSolde());
+            notifyClientAsync(user.getIdUtilisateur(), NotificationType.TRANSFER_SENT,
+                    "Clôture impossible — solde non nul", clientMsg, "/account/" + compte.getIdCompte());
+            sendClotureBlockedEmailAsync(user.getEmail(), user.getPrenom(), compte.getIdCompte(), compte.getSolde());
+
         } else {
             compte.setStatutCompte(StatutCompte.CLOTURE);
             demande.setCommentaireAdmin(commentaire);
+
+            // Notify client — account successfully closed
+            String clientMsg = String.format(
+                    "Votre demande de clôture du compte #%d a été approuvée. Le compte est maintenant clôturé.",
+                    compte.getIdCompte());
+            notifyClientAsync(user.getIdUtilisateur(), NotificationType.TRANSFER_SENT,
+                    "Compte clôturé", clientMsg, "/compte-view");
+            sendClotureApprovedEmailAsync(user.getEmail(), user.getPrenom(), compte.getIdCompte());
         }
 
         compteRepository.save(compte);
@@ -272,5 +296,23 @@ public class CompteServiceImpl implements CompteService {
             dto.setUtilisateurEmail(u.getEmail());
         }
         return dto;
+    }
+
+    @Async
+    protected void notifyClientAsync(Long userId, NotificationType type, String titre, String message, String lien) {
+        try { notificationService.notifyUser(userId, type, titre, message, lien); }
+        catch (Exception e) { log.error("[COMPTE] Failed to notify user {}: {}", userId, e.getMessage()); }
+    }
+
+    @Async
+    protected void sendClotureBlockedEmailAsync(String email, String prenom, Long compteId, Double solde) {
+        try { emailService.sendClotureBlockedEmail(email, prenom, compteId, solde); }
+        catch (Exception e) { log.error("[COMPTE] Failed to send cloture-blocked email to {}: {}", email, e.getMessage()); }
+    }
+
+    @Async
+    protected void sendClotureApprovedEmailAsync(String email, String prenom, Long compteId) {
+        try { emailService.sendClotureApprovedEmail(email, prenom, compteId); }
+        catch (Exception e) { log.error("[COMPTE] Failed to send cloture-approved email to {}: {}", email, e.getMessage()); }
     }
 }

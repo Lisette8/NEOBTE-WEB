@@ -6,6 +6,8 @@ import { CommonModule } from '@angular/common';
 import { filter } from 'rxjs';
 import { ConfirmModal } from './Components/Shared/confirm-modal/confirm-modal';
 
+export type HeaderMode = 'landing' | 'app' | 'hidden';
+
 @Component({
   selector: 'app-root',
   standalone: true,
@@ -15,18 +17,36 @@ import { ConfirmModal } from './Components/Shared/confirm-modal/confirm-modal';
 })
 export class App {
   protected readonly title = signal('NEOBTE');
-  showLayout = true;
- 
-  // Routes that should NOT show the header/footer (admin dashboard has its own chrome)
-  private readonly noLayoutRoutes = ['admin-dashboard', 'admin-support', 'actualite-management', 'compte-management', 'user-management', 'virement-management'];
- 
+
+  headerMode: HeaderMode = 'landing';
+  showFooter = true;
+
+  // Admin routes — hide everything (they have their own layout)
+  private readonly adminRoutes = [
+    'admin-dashboard', 'admin-support', 'actualite-management',
+    'compte-management', 'user-management', 'virement-management',
+    'demande-management', 'fraude-management', 'treasury-component', 'ai-analytics'
+  ];
+
+  // Public/landing routes — use dark landing nav (no client chrome)
+  private readonly publicRoutes = ['landing-view', 'contact', 'auth-view', 'pricing-view'];
+
   constructor(private router: Router) {
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
       const url: string = event.urlAfterRedirects || event.url;
-      // Hide header/footer only for admin routes — show for all client-facing routes
-      this.showLayout = !this.noLayoutRoutes.some(route => url.includes(route));
+
+      if (this.adminRoutes.some(r => url.includes(r))) {
+        this.headerMode = 'hidden';
+        this.showFooter = false;
+      } else if (this.publicRoutes.some(r => url.includes(r))) {
+        this.headerMode = 'landing';
+        this.showFooter = url.includes('landing-view'); // footer only on landing
+      } else {
+        this.headerMode = 'app';
+        this.showFooter = false; // client app has no footer
+      }
     });
   }
 }

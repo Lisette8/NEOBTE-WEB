@@ -33,4 +33,8 @@ public class Support implements Serializable {
 
     @ManyToOne
     private Utilisateur utilisateur;
+
+    /** For unauthenticated contact form submissions — null when sent by a registered user. */
+    private String guestEmail;
+    private String guestName;
 }

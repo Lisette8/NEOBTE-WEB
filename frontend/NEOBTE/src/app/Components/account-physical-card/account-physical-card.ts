@@ -36,12 +36,9 @@ export class AccountPhysicalCard {
   get statusLabel(): string {
     switch (this.compte.statutCompte) {
       case 'ACTIVE': return 'Actif';
-      case 'SUSPENDU':
-      case 'SUSPENDED': return 'Suspendu';
-      case 'BLOQUE':
-      case 'BLOCKED': return 'Bloqué';
-      case 'CLOTURE':
-      case 'CLOSED': return 'Clôturé';
+      case 'SUSPENDU': return 'Suspendu';
+      case 'BLOQUE': return 'Bloqué';
+      case 'CLOTURE': return 'Clôturé';
       default: return this.compte.statutCompte;
     }
   }

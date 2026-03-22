@@ -1,5 +1,10 @@
-<app-header *ngIf="showLayout"></app-header>
-<router-outlet></router-outlet>
-<app-footer *ngIf="showLayout"></app-footer>
+<!-- Landing-mode nav: dark, public-facing, shown on landing/contact/auth -->
+<app-header [mode]="headerMode" *ngIf="headerMode !== 'hidden'"></app-header>
 
+<!-- Client app: add padding-top so header doesn't overlap content -->
+<div [class.app-body]="headerMode === 'app'">
+    <router-outlet></router-outlet>
+</div>
+
+<app-footer *ngIf="showFooter"></app-footer>
 <app-confirm-modal></app-confirm-modal>

@@ -20,6 +20,7 @@ import { TreasuryComponent } from './Components/adminComponents/treasury-compone
 import { PricingView } from './Components/Views/pricing-view/pricing-view';
 import { SettingsView } from './Components/Views/settings-view/settings-view';
 import { NotificationsView } from './Components/Views/notifications-view/notifications-view';
+import { ContactView } from './Components/Views/contact-view/contact-view';
 
 export const routes: Routes = [
   {
@@ -57,9 +58,12 @@ export const routes: Routes = [
     component: LandingView,
   },
   {
+    path: 'contact',
+    component: ContactView,
+  },
+  {
     path: 'pricing-view',
     component: PricingView,
-    canActivate: [authGuard],
   },
   {
     path: 'settings-view',
@@ -84,7 +88,6 @@ export const routes: Routes = [
   {
     path: 'actualite-view',
     component: ActualiteView,
-    canActivate: [authGuard],
   },
   {
     path: 'compte-view',

@@ -42,28 +42,56 @@ public class DemandeCompteServiceImpl implements DemandeCompteService {
         Utilisateur user = utilisateurRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
-        // Validate KYC fields based on account type
-        validateKycForType(dto);
+        // Resolve CIN — use profile value if already set, otherwise require it from the DTO
+        String resolvedCin = user.getCin() != null ? user.getCin() : dto.getCin();
+        if (resolvedCin == null || resolvedCin.isBlank())
+            throw new BadRequestException("CIN est requis pour ouvrir un compte bancaire.");
+        if (!resolvedCin.matches("^[0-9]{8}$"))
+            throw new BadRequestException("CIN invalide — 8 chiffres requis.");
 
-        // Guard 1: user already has an active/existing account of this type
-        boolean alreadyOwns = compteRepository
-                .existsByUtilisateur_IdUtilisateurAndTypeCompte(userId, dto.getTypeCompte());
-        if (alreadyOwns) {
-            throw new BadRequestException(
-                    "You already have a " + dto.getTypeCompte() + " account. Only one account per type is allowed.");
+        // Resolve dateNaissance — same logic
+        java.time.LocalDate resolvedDob = user.getDateNaissance() != null
+                ? user.getDateNaissance()
+                : dto.getDateNaissance();
+        if (resolvedDob == null)
+            throw new BadRequestException("Date de naissance requise pour ouvrir un compte bancaire.");
+
+        // Resolve adresse — profile first, then DTO
+        String resolvedAdresse = (user.getAdresse() != null && !user.getAdresse().isBlank())
+                ? user.getAdresse() : dto.getAdresse();
+
+        // Resolve job — profile first, then DTO
+        String resolvedJob = (user.getJob() != null && !user.getJob().isBlank())
+                ? user.getJob() : dto.getJob();
+
+        // Validate type-specific required fields
+        if (dto.getTypeCompte() == TypeCompte.COURANT || dto.getTypeCompte() == TypeCompte.PROFESSIONNEL) {
+            if (resolvedAdresse == null || resolvedAdresse.isBlank())
+                throw new BadRequestException("Adresse requise pour ce type de compte.");
+            if (resolvedJob == null || resolvedJob.isBlank())
+                throw new BadRequestException("Profession requise pour ce type de compte.");
+        }
+        if (dto.getTypeCompte() == TypeCompte.PROFESSIONNEL) {
+            if (dto.getNomEntreprise() == null || dto.getNomEntreprise().isBlank())
+                throw new BadRequestException("Nom de l'entreprise requis pour un compte professionnel.");
         }
 
-        // Guard 2: user already has a pending request for this type
-        boolean alreadyPending = demandeRepository
-                .existsByUtilisateur_IdUtilisateurAndTypeCompteAndStatutDemande(
-                        userId, dto.getTypeCompte(), StatutDemande.EN_ATTENTE);
-        if (alreadyPending) {
-            throw new BadRequestException(
-                    "You already have a pending request for a " + dto.getTypeCompte() + " account.");
-        }
+        // Guard: already owns this account type
+        if (compteRepository.existsByUtilisateur_IdUtilisateurAndTypeCompte(userId, dto.getTypeCompte()))
+            throw new BadRequestException("You already have a " + dto.getTypeCompte() + " account.");
 
-        // Persist KYC fields onto the user profile (won't overwrite if already set)
-        updateUserKyc(user, dto);
+        // Guard: already has a pending request for this type
+        if (demandeRepository.existsByUtilisateur_IdUtilisateurAndTypeCompteAndStatutDemande(
+                userId, dto.getTypeCompte(), StatutDemande.EN_ATTENTE))
+            throw new BadRequestException("You already have a pending request for a " + dto.getTypeCompte() + " account.");
+
+        // Persist any new KYC data onto the user profile
+        if (user.getCin() == null) user.setCin(resolvedCin);
+        if (user.getDateNaissance() == null) user.setDateNaissance(resolvedDob);
+        if ((user.getAdresse() == null || user.getAdresse().isBlank()) && resolvedAdresse != null)
+            user.setAdresse(resolvedAdresse);
+        if ((user.getJob() == null || user.getJob().isBlank()) && resolvedJob != null)
+            user.setJob(resolvedJob);
         utilisateurRepository.save(user);
 
         DemandeCompte demande = new DemandeCompte();
@@ -73,47 +101,9 @@ public class DemandeCompteServiceImpl implements DemandeCompteService {
         demande.setStatutDemande(StatutDemande.EN_ATTENTE);
 
         DemandeCompte saved = demandeRepository.save(demande);
-
         sendConfirmationEmailAsync(user.getEmail(), user.getPrenom(), dto.getTypeCompte().name());
-
-        log.info("New account request: demandeId={}, userId={}, type={}",
-                saved.getIdDemande(), userId, dto.getTypeCompte());
-
+        log.info("New account request: demandeId={}, userId={}, type={}", saved.getIdDemande(), userId, dto.getTypeCompte());
         return mapToDTO(saved);
-    }
-
-    private void validateKycForType(DemandeCompteCreateDTO dto) {
-        // CIN and dateNaissance required for ALL account types
-        if (dto.getCin() == null || dto.getCin().isBlank())
-            throw new BadRequestException("CIN is required to open any bank account");
-        if (dto.getDateNaissance() == null)
-            throw new BadRequestException("Date of birth is required to open any bank account");
-
-        if (dto.getTypeCompte() == TypeCompte.COURANT || dto.getTypeCompte() == TypeCompte.PROFESSIONNEL) {
-            if (dto.getAdresse() == null || dto.getAdresse().isBlank())
-                throw new BadRequestException("Address is required for " + dto.getTypeCompte() + " accounts");
-            if (dto.getJob() == null || dto.getJob().isBlank())
-                throw new BadRequestException("Profession is required for " + dto.getTypeCompte() + " accounts");
-        }
-
-        if (dto.getTypeCompte() == TypeCompte.PROFESSIONNEL) {
-            if (dto.getNomEntreprise() == null || dto.getNomEntreprise().isBlank())
-                throw new BadRequestException("Company name is required for PROFESSIONNEL accounts");
-        }
-    }
-
-    private void updateUserKyc(Utilisateur user, DemandeCompteCreateDTO dto) {
-        // Only write fields that haven't been set yet — don't overwrite existing verified data
-        if (user.getCin() == null) user.setCin(dto.getCin());
-        if (user.getDateNaissance() == null) user.setDateNaissance(dto.getDateNaissance());
-        if (user.getAdresse() == null && dto.getAdresse() != null) user.setAdresse(dto.getAdresse());
-        if (user.getJob() == null && dto.getJob() != null) user.setJob(dto.getJob());
-        // nomEntreprise stored in job field for PRO accounts if not already set
-        if (dto.getTypeCompte() == TypeCompte.PROFESSIONNEL
-                && dto.getNomEntreprise() != null
-                && user.getJob() == null) {
-            user.setJob(dto.getJob() + " @ " + dto.getNomEntreprise());
-        }
     }
 
     @Override

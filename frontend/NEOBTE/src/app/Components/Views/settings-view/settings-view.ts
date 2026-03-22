@@ -356,6 +356,21 @@ export class SettingsView implements OnInit {
     });
   }
 
+  sanitizePhoneInput(event: Event) {
+    const input = event.target as HTMLInputElement;
+    let val = input.value.replace(/[^\d+]/g, '');
+    if (val.indexOf('+') > 0) val = val.replace(/\+/g, '');
+    input.value = val;
+    this.form.telephone = val;
+  }
+
+  sanitizePostalCode(event: Event) {
+    const input = event.target as HTMLInputElement;
+    const val = input.value.replace(/\D/g, '');
+    input.value = val;
+    this.form.codePostal = val;
+  }
+
   private extractErrorMessage(err: any): string {
     const e = err?.error;
     if (!e) return '';

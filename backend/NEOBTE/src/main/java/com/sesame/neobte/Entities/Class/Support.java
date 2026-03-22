@@ -23,6 +23,7 @@ public class Support implements Serializable {
 
     private String sujet;
     private String message;
+    @Column(length = 2000)
     private String reponseAdmin;
 
     @Enumerated(EnumType.STRING)

@@ -21,14 +21,12 @@ export class App {
   headerMode: HeaderMode = 'landing';
   showFooter = true;
 
-  // Admin routes — hide everything (they have their own layout)
   private readonly adminRoutes = [
     'admin-dashboard', 'admin-support', 'actualite-management',
     'compte-management', 'user-management', 'virement-management',
     'demande-management', 'fraude-management', 'treasury-component', 'ai-analytics'
   ];
 
-  // Public/landing routes — use dark landing nav (no client chrome)
   private readonly publicRoutes = ['landing-view', 'contact', 'auth-view', 'pricing-view'];
 
   constructor(private router: Router) {
@@ -42,10 +40,10 @@ export class App {
         this.showFooter = false;
       } else if (this.publicRoutes.some(r => url.includes(r))) {
         this.headerMode = 'landing';
-        this.showFooter = url.includes('landing-view'); // footer only on landing
+        this.showFooter = url.includes('landing-view');
       } else {
         this.headerMode = 'app';
-        this.showFooter = false; // client app has no footer
+        this.showFooter = false;
       }
     });
   }

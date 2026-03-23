@@ -4,14 +4,17 @@
     <input class="form-control" formControlName="username" placeholder="Username *">
     <input class="form-control" formControlName="nom" placeholder="Nom *">
     <input class="form-control" formControlName="prenom" placeholder="Prénom *">
-    <input class="form-control" formControlName="cin" placeholder="CIN (8 chiffres)" maxlength="8" inputmode="numeric"
+    <input class="form-control" formControlName="cin" placeholder="CIN (8 chiffres)"
+      maxlength="8" inputmode="numeric"
       (input)="sanitizeDigits($event, 'cin')">
-    <input class="form-control" formControlName="telephone" placeholder="Téléphone (ex: +21620123456)" type="tel"
-      maxlength="15" inputmode="tel" (input)="sanitizePhone($event)">
+    <input class="form-control" formControlName="telephone" placeholder="Téléphone (ex: +21620123456)"
+      type="tel" maxlength="15" inputmode="tel"
+      (input)="sanitizePhone($event)">
     <input class="form-control" formControlName="dateNaissance" type="date" placeholder="Date de naissance">
     <input class="form-control" formControlName="job" placeholder="Profession">
     <input class="form-control" formControlName="adresse" placeholder="Adresse">
-    <input class="form-control" formControlName="codePostal" placeholder="Code postal" maxlength="4" inputmode="numeric"
+    <input class="form-control" formControlName="codePostal" placeholder="Code postal"
+      maxlength="4" inputmode="numeric"
       (input)="sanitizeDigits($event, 'codePostal')">
     <input class="form-control" formControlName="pays" placeholder="Pays">
     <select class="form-control" formControlName="genre">
@@ -34,8 +37,7 @@
     <h2>Users Management</h2>
     <div class="header-right">
       <div class="tabs-container">
-        <button class="tab-btn" [class.active]="currentTab === 'CLIENTS'"
-          (click)="switchTab('CLIENTS')">Clients</button>
+        <button class="tab-btn" [class.active]="currentTab === 'CLIENTS'" (click)="switchTab('CLIENTS')">Clients</button>
         <button class="tab-btn" [class.active]="currentTab === 'ADMINS'" (click)="switchTab('ADMINS')">Admins</button>
       </div>
       <button class="btn btn-save" (click)="showForm = true; isEditMode = false; resetForm()">+ New User</button>
@@ -76,8 +78,13 @@
           <td>{{ user.role }}</td>
           <td class="font-mono">{{ user.totalSolde | number:'1.2-2' }} TND</td>
           <td class="text-center" *ngIf="currentTab === 'CLIENTS'">
-            <button class="premium-toggle" [class.on]="user.premium" (click)="togglePremium(user)" type="button"
-              title="Toggle Premium">
+            <button
+              class="premium-toggle"
+              [class.on]="user.premium"
+              (click)="togglePremium(user)"
+              type="button"
+              title="Toggle Premium"
+            >
               {{ user.premium ? 'ON' : 'OFF' }}
             </button>
           </td>

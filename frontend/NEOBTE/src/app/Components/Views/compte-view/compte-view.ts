@@ -22,7 +22,6 @@ export class CompteView implements OnInit, OnDestroy {
 
   comptes: Compte[] = [];
   demandes: DemandeCompte[] = [];
-  profile: ClientProfile | null = null;
   loading = false;
   error = '';
 
@@ -33,23 +32,30 @@ export class CompteView implements OnInit, OnDestroy {
   submitSuccess = '';
   submitError = '';
 
+  // Profile KYC pre-fill — fields already on record are locked
+  profile: ClientProfile | null = null;
+  lockedCin = false;
+  lockedDob = false;
+  lockedAdresse = false;
+  lockedJob = false;
+
   private pollSub?: Subscription;
 
   readonly accountTypes = [
     {
       type: 'COURANT' as const, label: 'Compte Chèque',
       desc: 'Opérations quotidiennes — dépôts, retraits, virements',
-      icon: 'card'
+      needs: 'CIN · Date de naissance · Adresse · Profession'
     },
     {
       type: 'EPARGNE' as const, label: 'Compte Épargne',
       desc: 'Faites fructifier votre épargne avec des intérêts',
-      icon: 'savings'
+      needs: 'CIN · Date de naissance'
     },
     {
       type: 'PROFESSIONNEL' as const, label: 'Compte Professionnel',
       desc: "Banque d'affaires pour professionnels et indépendants",
-      icon: 'business'
+      needs: "CIN · Date de naissance · Adresse · Profession · Nom de l'entreprise"
     }
   ];
 
@@ -69,7 +75,9 @@ export class CompteView implements OnInit, OnDestroy {
     this.pollSub = interval(50000).subscribe(() => this.loadData());
   }
 
-  ngOnDestroy(): void { this.pollSub?.unsubscribe(); }
+  ngOnDestroy(): void {
+    this.pollSub?.unsubscribe();
+  }
 
   loadData() {
     const userId = this.authService.getUserId();
@@ -83,9 +91,9 @@ export class CompteView implements OnInit, OnDestroy {
       next: (data) => this.demandes = data,
       error: () => { }
     });
-    // Load profile to pre-fill KYC fields
+    // Load profile for KYC pre-fill
     this.authService.getCurrentUser().subscribe({
-      next: (p) => this.profile = p,
+      next: (p) => { this.profile = p; },
       error: () => { }
     });
   }
@@ -96,51 +104,35 @@ export class CompteView implements OnInit, OnDestroy {
     this.step = 'fill-kyc';
   }
 
-  /**
-   * Build form with only the fields that are missing from the profile.
-   * Known fields are pre-filled and locked (disabled).
-   */
   private buildKycForm(type: 'COURANT' | 'EPARGNE' | 'PROFESSIONNEL') {
     const p = this.profile;
-    const hasCin = !!p?.cin;
-    const hasDob = !!p?.dateNaissance;
-    const hasAdresse = !!p?.adresse;
-    const hasJob = !!p?.job;
 
-    const cinCtrl = hasCin
-      ? [{ value: p!.cin, disabled: true }]
-      : ['', [Validators.required, Validators.pattern(/^[0-9]{8}$/)]];
+    // Determine which fields are already on the profile
+    this.lockedCin = !!p?.cin;
+    this.lockedDob = !!p?.dateNaissance;
+    this.lockedAdresse = !!p?.adresse;
+    this.lockedJob = !!p?.job;
 
-    const dobCtrl = hasDob
-      ? [{ value: p!.dateNaissance, disabled: true }]
-      : ['', Validators.required];
+    // Build form — locked fields still need a control but we disable them
+    const cinCtrl = [{ value: p?.cin || '', disabled: this.lockedCin },
+    [Validators.required, Validators.pattern(/^[0-9]{8}$/)]];
+    const dobCtrl = [{ value: p?.dateNaissance || '', disabled: this.lockedDob },
+    Validators.required];
+    const adresseCtrl = [{ value: p?.adresse || '', disabled: this.lockedAdresse },
+    Validators.required];
+    const jobCtrl = [{ value: p?.job || '', disabled: this.lockedJob },
+    Validators.required];
 
     const base = { cin: cinCtrl, dateNaissance: dobCtrl, motif: [''] };
 
-    if (type === 'COURANT') {
-      const adresseCtrl = hasAdresse
-        ? [{ value: p!.adresse, disabled: true }]
-        : ['', Validators.required];
-      const jobCtrl = hasJob
-        ? [{ value: p!.job, disabled: true }]
-        : ['', Validators.required];
-      this.kycForm = this.fb.group({ ...base, adresse: adresseCtrl, job: jobCtrl });
-
-    } else if (type === 'EPARGNE') {
+    if (type === 'EPARGNE') {
       this.kycForm = this.fb.group(base);
-
-    } else { // PROFESSIONNEL
-      const adresseCtrl = hasAdresse
-        ? [{ value: p!.adresse, disabled: true }]
-        : ['', Validators.required];
-      const jobCtrl = hasJob
-        ? [{ value: p!.job, disabled: true }]
-        : ['', Validators.required];
+    } else if (type === 'COURANT') {
+      this.kycForm = this.fb.group({ ...base, adresse: adresseCtrl, job: jobCtrl });
+    } else {
       this.kycForm = this.fb.group({
-        ...base,
-        adresse: adresseCtrl,
-        job: jobCtrl,
-        nomEntreprise: ['', Validators.required],
+        ...base, adresse: adresseCtrl, job: jobCtrl,
+        nomEntreprise: ['', Validators.required]
       });
     }
   }
@@ -150,20 +142,17 @@ export class CompteView implements OnInit, OnDestroy {
     this.submitting = true;
     this.submitError = '';
 
-    // getRawValue() includes disabled fields
+    // getRawValue() includes disabled (locked) controls
     const v = this.kycForm.getRawValue();
-
     const dto: DemandeCompteCreateDTO = {
       typeCompte: this.selectedType!,
+      cin: v.cin,
+      dateNaissance: v.dateNaissance,
       motif: v.motif || undefined,
-      // Only send cin/dob if they were editable (not already on profile)
-      cin: this.profile?.cin ? undefined : v.cin,
-      dateNaissance: this.profile?.dateNaissance ? undefined : v.dateNaissance,
-      adresse: this.profile?.adresse ? undefined : v.adresse || undefined,
-      job: this.profile?.job ? undefined : v.job || undefined,
+      adresse: v.adresse || undefined,
+      job: v.job || undefined,
       nomEntreprise: v.nomEntreprise || undefined,
     };
-
     this.compteService.submitDemandeCompte(dto).subscribe({
       next: () => {
         this.submitting = false;
@@ -178,20 +167,9 @@ export class CompteView implements OnInit, OnDestroy {
     });
   }
 
-  sanitizeCin(event: Event) {
-    const input = event.target as HTMLInputElement;
-    const val = input.value.replace(/\D/g, '');
-    input.value = val;
-    this.kycForm?.get('cin')?.setValue(val, { emitEvent: false });
-  }
-
   fieldInvalid(field: string): boolean {
     const ctrl = this.kycForm?.get(field);
     return !!(ctrl?.invalid && ctrl?.touched);
-  }
-
-  isLocked(field: string): boolean {
-    return this.kycForm?.get(field)?.disabled ?? false;
   }
 
   cancelRequest() { this.step = 'select-type'; this.selectedType = null; this.submitError = ''; }

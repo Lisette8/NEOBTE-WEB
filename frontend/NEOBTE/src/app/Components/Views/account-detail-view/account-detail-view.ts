@@ -8,7 +8,7 @@ import { VirementService } from '../../../Services/virement.service';
 import { AuthService } from '../../../Services/auth-service';
 import { ConfirmModalService } from '../../../Services/SharedServices/confirm-modal.service';
 import { FormsModule } from '@angular/forms';
-import { Subscription, interval } from 'rxjs';
+import { Subscription, interval} from 'rxjs';
 import { switchMap, startWith } from 'rxjs/operators';
 import { BalanceChart } from '../../balance-chart/balance-chart';
 import { AccountPhysicalCard } from '../../account-physical-card/account-physical-card';
@@ -21,24 +21,24 @@ import { AccountPhysicalCard } from '../../account-physical-card/account-physica
   styleUrl: './account-detail-view.css',
 })
 export class AccountDetailView implements OnInit, OnDestroy {
-
+ 
   compte: Compte | null = null;
   history: Virement[] = [];
   loading = true;
   historyLoading = true;
-
+ 
   private pollSub?: Subscription;
   private readonly POLL_INTERVAL = 30_000; // 30s live refresh
-
+ 
   showClotureForm = false;
   clotureMotif = '';
   actionLoading = false;
   actionError = '';
   actionSuccess = '';
-
+ 
   private compteId!: number;
   private userId!: number;
-
+ 
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -46,8 +46,8 @@ export class AccountDetailView implements OnInit, OnDestroy {
     private virementService: VirementService,
     private authService: AuthService,
     private modalService: ConfirmModalService,
-  ) { }
-
+  ) {}
+ 
   ngOnInit() {
     this.compteId = Number(this.route.snapshot.paramMap.get('id'));
     this.userId = this.authService.getUserId()!;
@@ -55,11 +55,11 @@ export class AccountDetailView implements OnInit, OnDestroy {
     this.loadCompte();
     this.startPolling();
   }
-
+ 
   ngOnDestroy() {
     this.pollSub?.unsubscribe();
   }
-
+ 
   private startPolling() {
     this.pollSub = interval(this.POLL_INTERVAL).pipe(
       startWith(0),
@@ -78,7 +78,7 @@ export class AccountDetailView implements OnInit, OnDestroy {
       error: () => { this.historyLoading = false; }
     });
   }
-
+ 
   loadCompte() {
     this.loading = true;
     this.compteService.getUserAccounts(this.userId).subscribe({
@@ -90,34 +90,34 @@ export class AccountDetailView implements OnInit, OnDestroy {
       error: () => { this.loading = false; }
     });
   }
-
+ 
   get accountLabel(): string {
     switch (this.compte?.typeCompte) {
-      case 'COURANT': return 'Compte Chèque';
-      case 'EPARGNE': return 'Compte Épargne';
+      case 'COURANT':       return 'Compte Chèque';
+      case 'EPARGNE':       return 'Compte Épargne';
       case 'PROFESSIONNEL': return 'Compte Professionnel';
-      default: return this.compte?.typeCompte ?? '';
+      default:              return this.compte?.typeCompte ?? '';
     }
   }
-
+ 
   get statutLabel(): string {
     switch (this.compte?.statutCompte) {
-      case 'ACTIVE': return 'Actif';
-      case 'SUSPENDU': return this.compte?.dateSuppressionPrevue ? 'Clôture planifiée' : 'En pause';
-      case 'BLOQUE': return 'Bloqué';
-      case 'CLOTURE': return 'Clôturé';
-      default: return this.compte?.statutCompte ?? '';
+      case 'ACTIVE':    return 'Actif';
+      case 'SUSPENDED': return this.compte?.dateSuppressionPrevue ? 'Clôture planifiée' : 'En pause';
+      case 'BLOCKED':   return 'Bloqué';
+      case 'CLOSED':    return 'Clôturé';
+      default:          return this.compte?.statutCompte ?? '';
     }
   }
-
+ 
   isOutgoing(v: Virement): boolean {
     return v.compteSourceId === this.compte?.idCompte;
   }
-
-  sendMoney() { this.router.navigate(['/virement-view']); }
+ 
+  sendMoney()    { this.router.navigate(['/virement-view']); }
   receiveMoney() { this.router.navigate(['/receive'], { queryParams: { compteId: this.compteId } }); }
-  goBack() { this.router.navigate(['/home-view']); }
-
+  goBack()       { this.router.navigate(['/home-view']); }
+ 
   suspendre() {
     this.actionLoading = true;
     this.actionError = '';
@@ -134,7 +134,7 @@ export class AccountDetailView implements OnInit, OnDestroy {
       }
     });
   }
-
+ 
   reactiver() {
     this.actionLoading = true;
     this.actionError = '';
@@ -151,7 +151,7 @@ export class AccountDetailView implements OnInit, OnDestroy {
       }
     });
   }
-
+ 
   submitCloture() {
     if (!this.clotureMotif.trim()) return;
     this.actionLoading = true;
@@ -171,7 +171,7 @@ export class AccountDetailView implements OnInit, OnDestroy {
       }
     });
   }
-
+ 
   annulerCloture() {
     this.actionLoading = true;
     this.actionError = '';
@@ -188,4 +188,4 @@ export class AccountDetailView implements OnInit, OnDestroy {
       }
     });
   }
-} 
+}

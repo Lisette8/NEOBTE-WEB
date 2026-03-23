@@ -21,9 +21,7 @@
     </div>
 
     <div class="loading-state" *ngIf="accountsLoading">Chargement...</div>
-    <div class="empty-state" *ngIf="!accountsLoading && comptes.length === 0">
-      <p>Aucun compte trouvé.</p>
-    </div>
+    <div class="empty-state" *ngIf="!accountsLoading && comptes.length === 0"><p>Aucun compte trouvé.</p></div>
 
     <div class="table-wrap" *ngIf="!accountsLoading && comptes.length > 0">
       <table>
@@ -46,9 +44,9 @@
               <td>
                 <span class="badge" [ngClass]="getStatutClass(compte.statutCompte)">
                   {{ compte.statutCompte === 'ACTIVE' ? 'Actif' :
-                  compte.statutCompte === 'SUSPENDU' ? 'Suspendu' :
-                  compte.statutCompte === 'BLOQUE' ? 'Bloqué' :
-                  compte.statutCompte === 'CLOTURE' ? 'Clôturé' : compte.statutCompte }}
+                     compte.statutCompte === 'SUSPENDU' ? 'Suspendu' :
+                     compte.statutCompte === 'BLOQUE' ? 'Bloqué' :
+                     compte.statutCompte === 'CLOTURE' ? 'Clôturé' : compte.statutCompte }}
                 </span>
               </td>
               <td class="muted">#{{ compte.utilisateurId }}</td>
@@ -76,8 +74,7 @@
                     </div>
                     <div style="flex:1">
                       <label class="iap-label">Commentaire (facultatif)</label>
-                      <input type="text" [(ngModel)]="actionCommentaire" class="iap-input"
-                        placeholder="Raison du changement...">
+                      <input type="text" [(ngModel)]="actionCommentaire" class="iap-input" placeholder="Raison du changement...">
                     </div>
                   </div>
                   <p class="action-error" *ngIf="actionError">{{ actionError }}</p>
@@ -112,15 +109,14 @@
     </div>
 
     <!-- Outcome banner -->
-    <div *ngIf="clotureOutcome" class="outcome-banner" [class.outcome-blocked]="clotureOutcome.blocked"
+    <div *ngIf="clotureOutcome" class="outcome-banner"
+      [class.outcome-blocked]="clotureOutcome.blocked"
       [class.outcome-closed]="!clotureOutcome.blocked">
       {{ clotureOutcome.message }}
     </div>
 
     <div class="loading-state" *ngIf="cloturesLoading">Chargement...</div>
-    <div class="empty-state" *ngIf="!cloturesLoading && demandes.length === 0">
-      <p>Aucune demande pour ce filtre.</p>
-    </div>
+    <div class="empty-state" *ngIf="!cloturesLoading && demandes.length === 0"><p>Aucune demande pour ce filtre.</p></div>
 
     <div class="demandes-list" *ngIf="!cloturesLoading && demandes.length > 0">
       <div class="demande-row" *ngFor="let d of demandes">
@@ -154,7 +150,7 @@
         <div class="demande-actions" *ngIf="d.statut === 'EN_ATTENTE'">
           <ng-container *ngIf="clotureActionId !== d.id">
             <button class="btn-approve" (click)="openClotureAction(d.id, 'approve')">✓ Approuver</button>
-            <button class="btn-reject" (click)="openClotureAction(d.id, 'reject')">✕ Rejeter</button>
+            <button class="btn-reject"  (click)="openClotureAction(d.id, 'reject')">✕ Rejeter</button>
           </ng-container>
 
           <div class="decision-panel" *ngIf="clotureActionId === d.id">

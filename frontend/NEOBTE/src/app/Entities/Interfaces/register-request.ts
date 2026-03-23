@@ -4,4 +4,5 @@ export interface RegisterRequest {
   prenom: string;
   nom: string;
   telephone: string;
+  referralCode?: string;
 }

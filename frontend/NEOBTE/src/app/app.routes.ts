@@ -4,6 +4,7 @@ import { AuthView } from './Components/Views/auth-view/auth-view';
 import { AdminDashboard } from './Components/adminComponents/admin-dashboard/admin-dashboard';
 import { UserManagement } from './Components/adminComponents/user-management/user-management';
 import { LandingView } from './Components/Views/landing-view/landing-view';
+import { ContactView } from './Components/Views/contact-view/contact-view';
 import { adminGuard } from './Security/Guards/AdminGuard';
 import { authGuard } from './Security/Guards/AuthGuard';
 import { loginGuard } from './Security/Guards/LoginGuard';
@@ -20,7 +21,6 @@ import { TreasuryComponent } from './Components/adminComponents/treasury-compone
 import { PricingView } from './Components/Views/pricing-view/pricing-view';
 import { SettingsView } from './Components/Views/settings-view/settings-view';
 import { NotificationsView } from './Components/Views/notifications-view/notifications-view';
-import { ContactView } from './Components/Views/contact-view/contact-view';
 
 export const routes: Routes = [
   {

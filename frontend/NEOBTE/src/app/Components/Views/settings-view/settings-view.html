@@ -79,8 +79,7 @@
           </div>
           <div class="field">
             <label>Téléphone</label>
-            <input [(ngModel)]="form.telephone" placeholder="Ex: +21620123456" type="tel" maxlength="15" inputmode="tel"
-              (input)="sanitizePhoneInput($event)" />
+            <input [(ngModel)]="form.telephone" placeholder="Ex: 20123456" />
           </div>
           <div class="field">
             <label>Profession</label>
@@ -104,8 +103,7 @@
           </div>
           <div class="field">
             <label>Code postal</label>
-            <input [(ngModel)]="form.codePostal" maxlength="4" inputmode="numeric"
-              (input)="sanitizePostalCode($event)" />
+            <input [(ngModel)]="form.codePostal" />
           </div>
         </div>
 
@@ -228,126 +226,111 @@
 
         <div class="divider"></div>
 
-        <!-- ── PIN 2FA ── -->
-        <div class="card-hd" style="margin-top:8px">
-          <h3 style="font-size:15px;font-weight:600;margin:0">Double authentification (PIN)</h3>
-          <p style="font-size:13px;color:#666;margin:4px 0 0">
-            Protégez votre compte avec un code PIN demandé à chaque connexion.
-          </p>
+        <!-- PIN 2FA -->
+        <div class="card-hd" style="padding-top:0">
+          <h2 style="font-size:1rem">Code PIN (2FA)</h2>
+          <p>Sécurisez votre connexion avec un code PIN à 4–6 chiffres.</p>
         </div>
 
         <p class="hint ok" *ngIf="pinSuccess">{{ pinSuccess }}</p>
-        <p class="hint error" *ngIf="pinError">{{ pinError }}</p>
+        <p class="hint error" *ngIf="pinError && pinSection === 'menu'">{{ pinError }}</p>
 
-        <!-- PIN disabled — offer to enable -->
-        <ng-container *ngIf="!profile?.pinEnabled">
-          <p class="hint" style="margin-bottom:12px">
-            Le PIN n'est pas activé. Définissez un code PIN de 4 à 6 chiffres pour sécuriser vos connexions.
-          </p>
-          <div class="form" *ngIf="pinSection === 'enable'">
+        <!-- MENU -->
+        <ng-container *ngIf="pinSection === 'menu'">
+          <div class="callout" *ngIf="pinEnabled">
+            <p class="callout-title">PIN actif</p>
+            <p class="callout-body">Un code PIN est demandé à chaque connexion.</p>
+          </div>
+          <div class="actions" style="flex-wrap:wrap">
+            <button class="btn primary" type="button" *ngIf="!pinEnabled" (click)="openPinSection('enable')">Activer le
+              PIN</button>
+            <button class="btn" type="button" *ngIf="pinEnabled" (click)="openPinSection('change')">Modifier le
+              PIN</button>
+            <button class="btn" type="button" *ngIf="pinEnabled" (click)="openPinSection('disable')"
+              style="color:var(--red)">Désactiver</button>
+            <button class="btn" type="button" *ngIf="pinEnabled" (click)="sendPinResetCode()" [disabled]="pinLoading">
+              {{ pinLoading ? 'Envoi…' : 'PIN oublié ?' }}
+            </button>
+          </div>
+        </ng-container>
+
+        <!-- ENABLE -->
+        <ng-container *ngIf="pinSection === 'enable'">
+          <div class="form">
             <div class="field wide">
-              <label>Nouveau PIN (4 à 6 chiffres)</label>
-              <input type="password" [(ngModel)]="pinInput" placeholder="••••••" maxlength="6" inputmode="numeric" />
+              <label>Nouveau PIN (4–6 chiffres)</label>
+              <input type="password" [(ngModel)]="pinInput" placeholder="••••" maxlength="6" inputmode="numeric" />
             </div>
             <div class="field wide">
               <label>Confirmer le PIN</label>
-              <input type="password" [(ngModel)]="pinConfirm" placeholder="••••••" maxlength="6" inputmode="numeric" />
-            </div>
-            <div class="actions">
-              <button class="btn primary" type="button" (click)="enablePin()" [disabled]="pinLoading">
-                {{ pinLoading ? 'Activation…' : 'Activer le PIN' }}
-              </button>
-              <button class="btn" type="button" (click)="pinSection = 'idle'">Annuler</button>
+              <input type="password" [(ngModel)]="pinConfirm" placeholder="••••" maxlength="6" inputmode="numeric" />
             </div>
           </div>
-          <div class="actions" *ngIf="pinSection === 'idle'">
-            <button class="btn" type="button" (click)="pinSection = 'enable'">Activer le PIN</button>
+          <p class="hint error" *ngIf="pinError">{{ pinError }}</p>
+          <div class="actions">
+            <button class="btn primary" type="button" (click)="enablePin()" [disabled]="pinLoading">{{ pinLoading ?
+              'Activation…' : 'Activer' }}</button>
+            <button class="btn" type="button" (click)="openPinSection('menu')">Annuler</button>
           </div>
         </ng-container>
 
-        <!-- PIN enabled — offer to change or disable -->
-        <ng-container *ngIf="profile?.pinEnabled">
-          <div class="callout" style="background:#e8f5e9;border-left-color:#4caf50;margin-bottom:16px">
-            <p class="callout-title" style="color:#2e7d32">✓ PIN activé</p>
-            <p class="callout-body">Votre code PIN est actif. Il vous sera demandé à chaque connexion.</p>
-          </div>
-
-          <!-- Change PIN -->
-          <div class="form" *ngIf="pinSection === 'change'">
+        <!-- DISABLE -->
+        <ng-container *ngIf="pinSection === 'disable'">
+          <div class="form">
             <div class="field wide">
-              <label>Ancien PIN</label>
-              <input type="password" [(ngModel)]="pinOld" placeholder="••••••" maxlength="6" inputmode="numeric" />
+              <label>PIN actuel</label>
+              <input type="password" [(ngModel)]="pinInput" placeholder="••••" maxlength="6" inputmode="numeric" />
             </div>
+          </div>
+          <p class="hint error" *ngIf="pinError">{{ pinError }}</p>
+          <div class="actions">
+            <button class="btn primary" type="button" (click)="disablePin()" [disabled]="pinLoading"
+              style="background:var(--red)">{{ pinLoading ? 'Désactivation…' : 'Désactiver' }}</button>
+            <button class="btn" type="button" (click)="openPinSection('menu')">Annuler</button>
+          </div>
+        </ng-container>
+
+        <!-- CHANGE -->
+        <ng-container *ngIf="pinSection === 'change'">
+          <div class="form">
             <div class="field wide">
+              <label>PIN actuel</label>
+              <input type="password" [(ngModel)]="pinOld" placeholder="••••" maxlength="6" inputmode="numeric" />
+            </div>
+            <div class="field">
               <label>Nouveau PIN</label>
-              <input type="password" [(ngModel)]="pinInput" placeholder="••••••" maxlength="6" inputmode="numeric" />
+              <input type="password" [(ngModel)]="pinInput" placeholder="••••" maxlength="6" inputmode="numeric" />
             </div>
-            <div class="field wide">
+            <div class="field">
               <label>Confirmer</label>
-              <input type="password" [(ngModel)]="pinConfirm" placeholder="••••••" maxlength="6" inputmode="numeric" />
-            </div>
-            <div class="actions">
-              <button class="btn primary" type="button" (click)="changePin()" [disabled]="pinLoading">
-                {{ pinLoading ? 'Modification…' : 'Modifier le PIN' }}
-              </button>
-              <button class="btn" type="button" (click)="pinSection = 'idle'">Annuler</button>
+              <input type="password" [(ngModel)]="pinConfirm" placeholder="••••" maxlength="6" inputmode="numeric" />
             </div>
           </div>
-
-          <!-- Disable PIN -->
-          <div class="form" *ngIf="pinSection === 'disable'">
-            <div class="field wide">
-              <label>Saisissez votre PIN actuel pour le désactiver</label>
-              <input type="password" [(ngModel)]="pinOld" placeholder="••••••" maxlength="6" inputmode="numeric" />
-            </div>
-            <div class="actions">
-              <button class="btn" type="button" (click)="disablePin()" [disabled]="pinLoading"
-                style="border-color:#e53935;color:#e53935">
-                {{ pinLoading ? 'Désactivation…' : 'Désactiver le PIN' }}
-              </button>
-              <button class="btn" type="button" (click)="pinSection = 'idle'">Annuler</button>
-            </div>
+          <p class="hint error" *ngIf="pinError">{{ pinError }}</p>
+          <div class="actions">
+            <button class="btn primary" type="button" (click)="changePin()" [disabled]="pinLoading">{{ pinLoading ?
+              'Modification…' : 'Modifier' }}</button>
+            <button class="btn" type="button" (click)="openPinSection('menu')">Annuler</button>
           </div>
-
-          <!-- Forgot PIN from settings (send code) -->
-          <div *ngIf="pinSection === 'forgot-send'">
-            <p class="hint">Un code sera envoyé à votre adresse e-mail. Votre PIN sera désactivé après vérification.</p>
-            <div class="actions">
-              <button class="btn" type="button" (click)="sendPinResetCode()" [disabled]="pinLoading">
-                {{ pinLoading ? 'Envoi…' : 'Envoyer le code' }}
-              </button>
-              <button class="btn" type="button" (click)="pinSection = 'idle'">Annuler</button>
-            </div>
-          </div>
-
-          <!-- Forgot PIN — enter code -->
-          <div class="form" *ngIf="pinSection === 'forgot-code'">
-            <div class="field wide">
-              <label>Code reçu par e-mail</label>
-              <input [(ngModel)]="pinResetCode" placeholder="6 chiffres" inputmode="numeric" maxlength="6" />
-            </div>
-            <div class="actions">
-              <button class="btn primary" type="button" (click)="verifyPinResetCode()" [disabled]="pinLoading">
-                {{ pinLoading ? 'Vérification…' : 'Vérifier et désactiver le PIN' }}
-              </button>
-              <button class="btn" type="button" (click)="sendPinResetCode()" [disabled]="pinLoading">
-                Renvoyer
-              </button>
-            </div>
-          </div>
-
-          <div class="actions" *ngIf="pinSection === 'idle'">
-            <button class="btn" type="button" (click)="pinSection = 'change'">Modifier le PIN</button>
-            <button class="btn" type="button" (click)="pinSection = 'disable'"
-              style="border-color:#e53935;color:#e53935">
-              Désactiver
-            </button>
-          </div>
-          <button class="link" type="button" (click)="pinSection = 'forgot-send'" *ngIf="pinSection === 'idle'"
-            style="margin-top:10px">
-            PIN oublié ?
-          </button>
         </ng-container>
+
+        <!-- RESET CODE -->
+        <ng-container *ngIf="pinSection === 'reset-code'">
+          <p class="hint">Un code à 6 chiffres a été envoyé à votre adresse e-mail.</p>
+          <div class="form">
+            <div class="field wide">
+              <label>Code de vérification</label>
+              <input [(ngModel)]="pinResetCode" placeholder="000000" maxlength="6" inputmode="numeric" />
+            </div>
+          </div>
+          <p class="hint error" *ngIf="pinError">{{ pinError }}</p>
+          <div class="actions">
+            <button class="btn primary" type="button" (click)="verifyPinResetCode()" [disabled]="pinLoading">{{
+              pinLoading ? 'Vérification…' : 'Vérifier' }}</button>
+            <button class="btn" type="button" (click)="openPinSection('menu')">Annuler</button>
+          </div>
+        </ng-container>
+
       </section>
 
       <!-- Abonnement -->
@@ -440,7 +423,7 @@
               <div class="ref-stat-label">Ami{{ referral.totalReferrals !== 1 ? 's' : '' }} parraines</div>
             </div>
             <div class="ref-stat">
-              <div class="ref-stat-val">{{ referral.totalReferrals * 3 }}</div>
+              <div class="ref-stat-val">{{ referral.totalReferrals * 30 }}</div>
               <div class="ref-stat-label">Jours de Premium gagnes</div>
             </div>
             <div class="ref-stat" *ngIf="referral.premium && referral.premiumExpiresAt">
@@ -472,7 +455,7 @@
                   <polygon
                     points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
                 </svg>
-                +3j Premium
+                +30j Premium
               </div>
             </div>
           </div>

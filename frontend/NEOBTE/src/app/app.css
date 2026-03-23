@@ -1,5 +1,4 @@
-/* Client app pages sit below the fixed 60px header */
 .app-body {
-    padding-top: 60px;
-    min-height: 100vh;
+  padding-top: 60px;
+  min-height: 100vh;
 }

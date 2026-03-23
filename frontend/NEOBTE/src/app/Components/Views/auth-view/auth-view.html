@@ -88,8 +88,7 @@
                       d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.56 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
                   </svg>
                 </span>
-                <input class="input" type="tel" formControlName="telephone" placeholder="+216 XX XXX XXX" maxlength="15"
-                  inputmode="tel" (input)="sanitizePhone($event, authForm, 'telephone')">
+                <input class="input" type="tel" formControlName="telephone" placeholder="+216 XX XXX XXX">
               </div>
               <div class="field-error" *ngIf="fieldInvalid(authForm, 'telephone')">Numéro invalide.</div>
             </div>
@@ -147,104 +146,6 @@
         </div>
       </ng-container>
 
-
-      <!-- ── VÉRIFICATION PIN ── -->
-      <ng-container *ngIf="step === 'pin'">
-        <div class="step-icon-wrap">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-          </svg>
-        </div>
-        <div class="auth-head">
-          <h1>Code PIN</h1>
-          <p>Saisissez votre code PIN pour accéder à votre espace NEO BTE.</p>
-        </div>
-        <div [formGroup]="pinForm">
-          <div class="form-group">
-            <label class="label">Code PIN (4 à 6 chiffres)</label>
-            <div class="input-group">
-              <span class="input-icon">
-                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                  stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="10" />
-                  <path d="M12 8v4l3 3" />
-                </svg>
-              </span>
-              <input class="input code-input" type="password" formControlName="pin" placeholder="••••••" maxlength="6"
-                inputmode="numeric" autocomplete="off">
-            </div>
-            <div class="field-error" *ngIf="fieldInvalid(pinForm, 'pin')">PIN invalide (4 à 6 chiffres).</div>
-          </div>
-          <div class="error-box" style="margin-bottom:14px" *ngIf="error">{{ error }}</div>
-          <button class="btn-submit" (click)="submitPin()" [disabled]="loading">
-            <span *ngIf="loading" class="spinner"></span>
-            <span>Valider le PIN</span>
-          </button>
-          <div class="auth-links">
-            <button class="link-btn link-btn-primary" (click)="goToPinForgot()">PIN oublié ?</button>
-            <button class="link-btn" (click)="backToLogin()">← Retour à la connexion</button>
-          </div>
-        </div>
-      </ng-container>
-
-      <!-- ── PIN OUBLIÉ — ENVOI CODE ── -->
-      <ng-container *ngIf="step === 'pin-forgot'">
-        <div class="step-icon-wrap">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-            <polyline points="22,6 12,13 2,6" />
-          </svg>
-        </div>
-        <div class="auth-head">
-          <h1>PIN oublié</h1>
-          <p>Un code de contournement sera envoyé à votre adresse e-mail. Votre PIN sera désactivé et vous pourrez en
-            définir un nouveau.</p>
-        </div>
-        <div class="error-box" style="margin-bottom:14px" *ngIf="error">{{ error }}</div>
-        <button class="btn-submit" (click)="sendPinBypassCode()" [disabled]="loading">
-          <span *ngIf="loading" class="spinner"></span>
-          <span>Envoyer le code par e-mail</span>
-        </button>
-        <div class="auth-links">
-          <button class="link-btn" (click)="backToPin()">← Retour au PIN</button>
-        </div>
-      </ng-container>
-
-      <!-- ── PIN OUBLIÉ — SAISIE CODE ── -->
-      <ng-container *ngIf="step === 'pin-forgot-code'">
-        <div class="step-icon-wrap">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-            <polyline points="22,6 12,13 2,6" />
-          </svg>
-        </div>
-        <div class="auth-head">
-          <h1>Vérifiez vos e-mails</h1>
-          <p>Entrez le code à 6 chiffres envoyé à votre adresse e-mail. Valable 15 minutes.</p>
-        </div>
-        <div [formGroup]="pinForgotCodeForm">
-          <div class="form-group">
-            <input class="input code-input" type="text" formControlName="code" placeholder="000000" maxlength="6"
-              inputmode="numeric">
-            <div class="field-error" *ngIf="fieldInvalid(pinForgotCodeForm, 'code')">Code à 6 chiffres requis.</div>
-          </div>
-          <div class="error-box" style="margin-bottom:14px" *ngIf="error">{{ error }}</div>
-          <button class="btn-submit" (click)="submitPinBypassCode()" [disabled]="loading">
-            <span *ngIf="loading" class="spinner"></span>
-            <span>Vérifier et accéder</span>
-          </button>
-          <div class="auth-links">
-            <button class="link-btn link-btn-primary" (click)="sendPinBypassCode()" [disabled]="loading">
-              Code non reçu ? Renvoyer
-            </button>
-            <button class="link-btn" (click)="backToPin()">← Retour au PIN</button>
-          </div>
-        </div>
-      </ng-container>
 
       <!-- ── MOT DE PASSE OUBLIÉ ── -->
       <ng-container *ngIf="step === 'forgot'">
@@ -392,6 +293,91 @@
           <p>Votre mot de passe a été mis à jour avec succès.</p>
         </div>
         <button class="btn-submit" (click)="backToLogin()">Se connecter</button>
+      </ng-container>
+
+      <!-- ── PIN ── -->
+      <ng-container *ngIf="step === 'pin'">
+        <div class="step-icon-wrap">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+          </svg>
+        </div>
+        <div class="auth-head">
+          <h1>Vérification PIN</h1>
+          <p>Entrez votre code PIN pour accéder à votre compte.</p>
+        </div>
+        <div [formGroup]="pinForm">
+          <div class="form-group">
+            <label class="label">Code PIN</label>
+            <input class="input" type="password" formControlName="pin" placeholder="••••" maxlength="6" inputmode="numeric">
+            <div class="field-error" *ngIf="fieldInvalid(pinForm, 'pin')">PIN invalide.</div>
+          </div>
+          <div class="error-box" style="margin-bottom:14px" *ngIf="error">{{ error }}</div>
+          <button class="btn-submit" (click)="submitPin()" [disabled]="loading">
+            <span *ngIf="loading" class="spinner"></span>
+            <span>Valider le PIN</span>
+          </button>
+          <div class="auth-links">
+            <button class="link-btn link-btn-primary" (click)="goToPinForgot()">PIN oublié ?</button>
+            <button class="link-btn" (click)="backToLogin()">← Retour</button>
+          </div>
+        </div>
+      </ng-container>
+
+      <!-- ── PIN OUBLIÉ — ENVOI ── -->
+      <ng-container *ngIf="step === 'pin-forgot'">
+        <div class="step-icon-wrap">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+        </div>
+        <div class="auth-head">
+          <h1>PIN oublié</h1>
+          <p>Un code de contournement sera envoyé à votre adresse e-mail. Votre PIN sera désactivé.</p>
+        </div>
+        <div class="error-box" style="margin-bottom:14px" *ngIf="error">{{ error }}</div>
+        <button class="btn-submit" (click)="sendPinBypassCode()" [disabled]="loading">
+          <span *ngIf="loading" class="spinner"></span>
+          <span>Envoyer le code par e-mail</span>
+        </button>
+        <div class="auth-links">
+          <button class="link-btn" (click)="backToPin()">← Retour au PIN</button>
+        </div>
+      </ng-container>
+
+      <!-- ── PIN OUBLIÉ — SAISIE CODE ── -->
+      <ng-container *ngIf="step === 'pin-forgot-code'">
+        <div class="step-icon-wrap">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+            <polyline points="22,6 12,13 2,6"/>
+          </svg>
+        </div>
+        <div class="auth-head">
+          <h1>Vérifiez vos e-mails</h1>
+          <p>Entrez le code à 6 chiffres envoyé à votre adresse e-mail. Valable 15 minutes.</p>
+        </div>
+        <div [formGroup]="pinForgotCodeForm">
+          <div class="form-group">
+            <input class="input" type="text" formControlName="code"
+              placeholder="000000" maxlength="6" inputmode="numeric"
+              style="text-align:center;font-size:1.4rem;letter-spacing:0.2em;font-weight:700">
+            <div class="field-error" *ngIf="fieldInvalid(pinForgotCodeForm, 'code')">Code à 6 chiffres requis.</div>
+          </div>
+          <div class="error-box" style="margin-bottom:14px" *ngIf="error">{{ error }}</div>
+          <button class="btn-submit" (click)="submitPinBypassCode()" [disabled]="loading">
+            <span *ngIf="loading" class="spinner"></span>
+            <span>Vérifier et accéder</span>
+          </button>
+          <div class="auth-links">
+            <button class="link-btn link-btn-primary" (click)="sendPinBypassCode()" [disabled]="loading">Code non reçu ? Renvoyer</button>
+            <button class="link-btn" (click)="backToPin()">← Retour au PIN</button>
+          </div>
+        </div>
       </ng-container>
 
     </div>

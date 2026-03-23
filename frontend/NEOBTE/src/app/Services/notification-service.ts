@@ -8,7 +8,7 @@ import { ClientNotification } from '../Entities/Interfaces/notification';
 export class NotificationService {
   private apiClient = 'http://localhost:8080/api/v1/client/notifications';
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient) {}
 
   getMyNotifications(page = 0, size = 20, unreadOnly = false): Observable<Page<ClientNotification>> {
     return this.http.get<Page<ClientNotification>>(

@@ -9,13 +9,13 @@ import { Support } from '../Entities/Interfaces/support';
 
 export class SupportService {
 
-  private apiClient = 'http://localhost:8080/api/v1/client/support';
-  private apiAdmin = 'http://localhost:8080/api/v1/admin/support';
+    private apiClient = 'http://localhost:8080/api/v1/client/support';
+    private apiAdmin = 'http://localhost:8080/api/v1/admin/support';
 
-  constructor(private http: HttpClient) { }
+    constructor(private http: HttpClient) {}
 
 
-  // client side methods
+    // client side methods
   createTicket(data: SupportCreateDTO) {
     return this.http.post<Support>(`${this.apiClient}/add`, data);
   }

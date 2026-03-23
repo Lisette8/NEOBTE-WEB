@@ -28,7 +28,7 @@ export class AdminSupport implements OnInit, OnDestroy {
   constructor(
     private supportService: SupportService,
     private websocket: WebsocketService
-  ) { }
+  ) {}
 
   ngOnInit() {
     this.loadTickets();
@@ -52,10 +52,10 @@ export class AdminSupport implements OnInit, OnDestroy {
 
   get tabs(): { id: Tab; label: string; count: number }[] {
     return [
-      { id: 'open', label: 'Nouveaux', count: this.countByStatus('OPEN') },
-      { id: 'in_progress', label: 'En cours', count: this.countByStatus('IN_PROGRESS') },
-      { id: 'resolved', label: 'Résolus', count: this.countByStatus('RESOLVED') + this.countByStatus('CLOSED') },
-      { id: 'all', label: 'Tous', count: this.allTickets.length },
+      { id: 'open',        label: 'Nouveaux',   count: this.countByStatus('OPEN') },
+      { id: 'in_progress', label: 'En cours',   count: this.countByStatus('IN_PROGRESS') },
+      { id: 'resolved',    label: 'Résolus',    count: this.countByStatus('RESOLVED') + this.countByStatus('CLOSED') },
+      { id: 'all',         label: 'Tous',       count: this.allTickets.length },
     ];
   }
 
@@ -63,7 +63,7 @@ export class AdminSupport implements OnInit, OnDestroy {
     let list = this.allTickets;
 
     // Filter by tab
-    if (this.activeTab === 'open') list = list.filter(t => t.status === 'OPEN');
+    if (this.activeTab === 'open')        list = list.filter(t => t.status === 'OPEN');
     else if (this.activeTab === 'in_progress') list = list.filter(t => t.status === 'IN_PROGRESS');
     else if (this.activeTab === 'resolved') list = list.filter(t => t.status === 'RESOLVED' || t.status === 'CLOSED');
 
@@ -88,11 +88,11 @@ export class AdminSupport implements OnInit, OnDestroy {
   // ── Stats ────────────────────────────────────────────────────────────────────
 
   get stats() {
-    const total = this.allTickets.length;
-    const open = this.countByStatus('OPEN');
+    const total    = this.allTickets.length;
+    const open     = this.countByStatus('OPEN');
     const progress = this.countByStatus('IN_PROGRESS');
     const resolved = this.countByStatus('RESOLVED') + this.countByStatus('CLOSED');
-    const guests = this.allTickets.filter(t => t.guest).length;
+    const guests   = this.allTickets.filter(t => t.guest).length;
     return { total, open, progress, resolved, guests };
   }
 
@@ -144,11 +144,11 @@ export class AdminSupport implements OnInit, OnDestroy {
 
   statusLabel(s: string): string {
     switch (s) {
-      case 'OPEN': return 'Nouveau';
+      case 'OPEN':        return 'Nouveau';
       case 'IN_PROGRESS': return 'En cours';
-      case 'RESOLVED': return 'Résolu';
-      case 'CLOSED': return 'Fermé';
-      default: return s;
+      case 'RESOLVED':    return 'Résolu';
+      case 'CLOSED':      return 'Fermé';
+      default:            return s;
     }
   }
-} 
+}

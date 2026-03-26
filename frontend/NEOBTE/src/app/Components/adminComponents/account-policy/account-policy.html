@@ -1,0 +1,269 @@
+<div class="ap-shell" *ngIf="!loading; else skeletonTpl">
+
+    <!-- Header -->
+    <div class="ap-header">
+        <div>
+            <h2>Politique des comptes</h2>
+            <p class="ap-subtitle">Limites de transactions et taux de frais par type de compte. Les modifications
+                s'appliquent immédiatement à tous les nouveaux virements.</p>
+        </div>
+        <div class="ap-actions">
+            <button class="btn-reset" (click)="reset()" [disabled]="saving">Annuler</button>
+            <button class="btn-save" (click)="save()" [disabled]="saving || !form">
+                <span class="spinner-sm" *ngIf="saving"></span>
+                <span *ngIf="!saving">Enregistrer</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="success-bar" *ngIf="success">✓ {{ success }}</div>
+    <div class="error-bar" *ngIf="error">{{ error }}</div>
+
+    <!-- Tab switcher -->
+    <div class="ap-tabs">
+        <button class="ap-tab" [class.active]="tab==='courant'" (click)="tab='courant'">
+            <span class="tab-dot tab-dot--blue"></span> Compte Chèque
+        </button>
+        <button class="ap-tab" [class.active]="tab==='epargne'" (click)="tab='epargne'">
+            <span class="tab-dot tab-dot--green"></span> Compte Épargne
+        </button>
+        <button class="ap-tab" [class.active]="tab==='professionnel'" (click)="tab='professionnel'">
+            <span class="tab-dot tab-dot--purple"></span> Compte Professionnel
+        </button>
+        <button class="ap-tab" [class.active]="tab==='fraud'" (click)="tab='fraud'">
+            <span class="tab-dot tab-dot--red"></span> Détection fraude
+        </button>
+    </div>
+
+    <ng-container *ngIf="form">
+
+        <!-- ══ COURANT ══ -->
+        <div class="ap-panel" *ngIf="tab==='courant'">
+            <div class="panel-badge panel-badge--blue">💳 Compte Chèque — opérations quotidiennes</div>
+            <div class="fields-grid">
+                <div class="field-group">
+                    <label>Taux de frais (%)</label>
+                    <div class="input-wrap">
+                        <input type="number" step="0.01" min="0" max="10" [value]="pct(form.courantFeeRate)"
+                            (input)="setPct('courantFeeRate', $any($event.target).value)">
+                        <span class="suffix">%</span>
+                    </div>
+                    <p class="hint">Prélevé sur chaque virement sortant externe.</p>
+                </div>
+                <div class="field-group">
+                    <label>Montant max / virement (TND)</label>
+                    <div class="input-wrap">
+                        <input type="number" min="100" [(ngModel)]="form.courantMaxTransfer">
+                        <span class="suffix">TND</span>
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label>Limite journalière montant (TND)</label>
+                    <div class="input-wrap">
+                        <input type="number" min="100" [(ngModel)]="form.courantDailyAmountLimit">
+                        <span class="suffix">TND</span>
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label>Limite journalière nombre</label>
+                    <div class="input-wrap">
+                        <input type="number" min="1" [(ngModel)]="form.courantDailyCountLimit">
+                        <span class="suffix">/ jour</span>
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label>Limite mensuelle nombre</label>
+                    <div class="input-wrap">
+                        <input type="number" min="1" [(ngModel)]="form.courantMonthlyCountLimit">
+                        <span class="suffix">/ mois</span>
+                    </div>
+                </div>
+            </div>
+            <div class="summary-row">
+                <span class="sum-item sum-item--blue">Frais : {{ pct(form.courantFeeRate) }}%</span>
+                <span class="sum-item">Max/virement : {{ form.courantMaxTransfer | number:'1.0-0' }} TND</span>
+                <span class="sum-item">Jour : {{ form.courantDailyAmountLimit | number:'1.0-0' }} TND · {{
+                    form.courantDailyCountLimit }} virt.</span>
+                <span class="sum-item">Mois : {{ form.courantMonthlyCountLimit }} virt.</span>
+            </div>
+        </div>
+
+        <!-- ══ EPARGNE ══ -->
+        <div class="ap-panel" *ngIf="tab==='epargne'">
+            <div class="panel-badge panel-badge--green">🏦 Compte Épargne — retraits limités</div>
+            <div class="restriction-note">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" />
+                </svg>
+                Le compte épargne ne peut pas effectuer de virements externes. Les limites s'appliquent aux transferts
+                internes sortants uniquement.
+            </div>
+            <div class="fields-grid">
+                <div class="field-group">
+                    <label>Taux de frais retrait (%)</label>
+                    <div class="input-wrap">
+                        <input type="number" step="0.01" min="0" max="10" [value]="pct(form.epargneFeeRate)"
+                            (input)="setPct('epargneFeeRate', $any($event.target).value)">
+                        <span class="suffix">%</span>
+                    </div>
+                    <p class="hint">Pénalité appliquée sur chaque retrait pour décourager les mouvements fréquents.</p>
+                </div>
+                <div class="field-group">
+                    <label>Montant max / retrait (TND)</label>
+                    <div class="input-wrap">
+                        <input type="number" min="100" [(ngModel)]="form.epargneMaxTransfer">
+                        <span class="suffix">TND</span>
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label>Limite journalière montant (TND)</label>
+                    <div class="input-wrap">
+                        <input type="number" min="100" [(ngModel)]="form.epargneDailyAmountLimit">
+                        <span class="suffix">TND</span>
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label>Retraits max / jour</label>
+                    <div class="input-wrap">
+                        <input type="number" min="1" [(ngModel)]="form.epargneDailyCountLimit">
+                        <span class="suffix">/ jour</span>
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label>Retraits max / mois</label>
+                    <div class="input-wrap">
+                        <input type="number" min="1" [(ngModel)]="form.epargneMonthlyCountLimit">
+                        <span class="suffix">/ mois</span>
+                    </div>
+                </div>
+            </div>
+            <div class="summary-row">
+                <span class="sum-item sum-item--green">Frais retrait : {{ pct(form.epargneFeeRate) }}%</span>
+                <span class="sum-item">Max/retrait : {{ form.epargneMaxTransfer | number:'1.0-0' }} TND</span>
+                <span class="sum-item">Jour : {{ form.epargneDailyAmountLimit | number:'1.0-0' }} TND · {{
+                    form.epargneDailyCountLimit }} retrait(s)</span>
+                <span class="sum-item">Mois : {{ form.epargneMonthlyCountLimit }} retrait(s)</span>
+            </div>
+        </div>
+
+        <!-- ══ PROFESSIONNEL ══ -->
+        <div class="ap-panel" *ngIf="tab==='professionnel'">
+            <div class="panel-badge panel-badge--purple">🏢 Compte Professionnel — volumes élevés</div>
+            <div class="fields-grid">
+                <div class="field-group">
+                    <label>Taux de frais (%)</label>
+                    <div class="input-wrap">
+                        <input type="number" step="0.01" min="0" max="10" [value]="pct(form.professionnelFeeRate)"
+                            (input)="setPct('professionnelFeeRate', $any($event.target).value)">
+                        <span class="suffix">%</span>
+                    </div>
+                    <p class="hint">Taux réduit pour les gros volumes professionnels.</p>
+                </div>
+                <div class="field-group">
+                    <label>Montant max / virement (TND)</label>
+                    <div class="input-wrap">
+                        <input type="number" min="100" [(ngModel)]="form.professionnelMaxTransfer">
+                        <span class="suffix">TND</span>
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label>Limite journalière montant (TND)</label>
+                    <div class="input-wrap">
+                        <input type="number" min="100" [(ngModel)]="form.professionnelDailyAmountLimit">
+                        <span class="suffix">TND</span>
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label>Limite journalière nombre</label>
+                    <div class="input-wrap">
+                        <input type="number" min="1" [(ngModel)]="form.professionnelDailyCountLimit">
+                        <span class="suffix">/ jour</span>
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label>Limite mensuelle nombre</label>
+                    <div class="input-wrap">
+                        <input type="number" min="1" [(ngModel)]="form.professionnelMonthlyCountLimit">
+                        <span class="suffix">/ mois</span>
+                    </div>
+                </div>
+            </div>
+            <div class="summary-row">
+                <span class="sum-item sum-item--purple">Frais : {{ pct(form.professionnelFeeRate) }}%</span>
+                <span class="sum-item">Max/virement : {{ form.professionnelMaxTransfer | number:'1.0-0' }} TND</span>
+                <span class="sum-item">Jour : {{ form.professionnelDailyAmountLimit | number:'1.0-0' }} TND · {{
+                    form.professionnelDailyCountLimit }} virt.</span>
+                <span class="sum-item">Mois : {{ form.professionnelMonthlyCountLimit }} virt.</span>
+            </div>
+        </div>
+
+        <!-- ══ FRAUD ══ -->
+        <div class="ap-panel" *ngIf="tab==='fraud'">
+            <div class="panel-badge panel-badge--red">🛡️ Règles de détection de fraude</div>
+            <div class="fields-grid">
+                <div class="field-group">
+                    <label>Seuil alerte grand virement (TND)</label>
+                    <div class="input-wrap">
+                        <input type="number" min="100" [(ngModel)]="form.largeTransferThreshold">
+                        <span class="suffix">TND</span>
+                    </div>
+                    <p class="hint">Tout virement dépassant ce seuil est bloqué et déclenche une alerte.</p>
+                </div>
+                <div class="field-group">
+                    <label>Succession rapide — nombre</label>
+                    <div class="input-wrap">
+                        <input type="number" min="2" max="20" [(ngModel)]="form.rapidSuccessionCount">
+                        <span class="suffix">virt.</span>
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label>Succession rapide — fenêtre (min)</label>
+                    <div class="input-wrap">
+                        <input type="number" min="1" max="60" [(ngModel)]="form.rapidSuccessionMinutes">
+                        <span class="suffix">min</span>
+                    </div>
+                    <p class="hint">Alerte si N virements sont effectués dans cette fenêtre.</p>
+                </div>
+                <div class="field-group">
+                    <label>Heure suspecte — début</label>
+                    <div class="input-wrap">
+                        <input type="number" min="0" max="23" [(ngModel)]="form.suspiciousHourStart">
+                        <span class="suffix">h</span>
+                    </div>
+                </div>
+                <div class="field-group">
+                    <label>Heure suspecte — fin</label>
+                    <div class="input-wrap">
+                        <input type="number" min="0" max="23" [(ngModel)]="form.suspiciousHourEnd">
+                        <span class="suffix">h</span>
+                    </div>
+                    <p class="hint">Transactions entre {{ form.suspiciousHourStart }}h et {{ form.suspiciousHourEnd }}h
+                        déclenchent une alerte.</p>
+                </div>
+                <div class="field-group field-group--toggle">
+                    <label>Alertes email admin</label>
+                    <label class="toggle">
+                        <input type="checkbox" [(ngModel)]="form.emailAlertsEnabled">
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <p class="hint">Envoyer un email aux admins pour chaque nouvelle alerte.</p>
+                </div>
+            </div>
+        </div>
+
+    </ng-container>
+</div>
+
+<ng-template #skeletonTpl>
+    <div class="ap-skeleton">
+        <div class="sk-line" style="height:28px;width:40%;margin-bottom:8px"></div>
+        <div class="sk-line" style="height:14px;width:60%;margin-bottom:24px"></div>
+        <div class="sk-line" style="height:40px;width:100%;margin-bottom:16px"></div>
+        <div class="sk-grid">
+            <div class="sk-line" *ngFor="let i of [1,2,3,4,5]" style="height:72px"></div>
+        </div>
+    </div>
+</ng-template>

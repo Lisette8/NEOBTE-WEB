@@ -1,0 +1,176 @@
+<div class="im-shell">
+
+    <div class="im-success" *ngIf="success">✓ {{ success }}</div>
+    <div class="im-error" *ngIf="error && !showForm">{{ error }}</div>
+
+    <!-- Stats row -->
+    <div class="im-stats" *ngIf="!loading">
+        <div class="im-stat">
+            <p class="im-stat-num">{{ activeCount }}</p>
+            <p class="im-stat-lbl">Actifs</p>
+        </div>
+        <div class="im-stat">
+            <p class="im-stat-num">{{ fmt(totalVolume) }} TND</p>
+            <p class="im-stat-lbl">Capital bloqué</p>
+        </div>
+        <div class="im-stat">
+            <p class="im-stat-num">{{ completedCount }}</p>
+            <p class="im-stat-lbl">Complétés</p>
+        </div>
+        <div class="im-stat">
+            <p class="im-stat-num">{{ plans.length }}</p>
+            <p class="im-stat-lbl">Plans actifs</p>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="im-tabs">
+        <button class="im-tab" [class.active]="tab==='plans'" (click)="tab='plans'">Plans d'investissement</button>
+        <button class="im-tab" [class.active]="tab==='investments'" (click)="tab='investments'">
+            Investissements <span class="im-badge" *ngIf="activeCount > 0">{{ activeCount }}</span>
+        </button>
+    </div>
+
+    <!-- ══ PLANS TAB ══ -->
+    <div *ngIf="tab === 'plans'">
+        <div class="im-tab-header">
+            <p class="im-tab-sub">Gérez les plans proposés aux clients. Les taux sont fixes à la souscription.</p>
+            <button class="btn-add-plan" (click)="openNewPlan()">+ Nouveau plan</button>
+        </div>
+
+        <!-- Plan form (inline) -->
+        <div class="plan-form-card" *ngIf="showForm">
+            <div class="pf-header">
+                <h3>{{ editingPlan ? 'Modifier le plan' : 'Nouveau plan' }}</h3>
+                <button class="pf-close" (click)="closeForm()">✕</button>
+            </div>
+            <div class="im-error pf-error" *ngIf="error">{{ error }}</div>
+            <div class="pf-grid">
+                <div class="pf-field pf-full">
+                    <label>Nom du plan</label>
+                    <input type="text" [(ngModel)]="form.nom" placeholder="ex. Court terme — 3 mois">
+                </div>
+                <div class="pf-field pf-full">
+                    <label>Description</label>
+                    <textarea [(ngModel)]="form.description" rows="2"
+                        placeholder="Description affichée au client"></textarea>
+                </div>
+                <div class="pf-field">
+                    <label>Durée (mois)</label>
+                    <div class="pf-input-wrap"><input type="number" min="1" max="360"
+                            [(ngModel)]="form.dureeEnMois"><span class="pf-suffix">mois</span></div>
+                </div>
+                <div class="pf-field">
+                    <label>Taux annuel (%)</label>
+                    <div class="pf-input-wrap">
+                        <input type="number" step="0.01" min="0.1" max="100" [value]="pct(form.tauxAnnuel)"
+                            (input)="setPct($any($event.target).value)">
+                        <span class="pf-suffix">%</span>
+                    </div>
+                </div>
+                <div class="pf-field">
+                    <label>Montant min (TND)</label>
+                    <div class="pf-input-wrap"><input type="number" min="100" [(ngModel)]="form.montantMin"><span
+                            class="pf-suffix">TND</span></div>
+                </div>
+                <div class="pf-field">
+                    <label>Montant max (TND)</label>
+                    <div class="pf-input-wrap"><input type="number" min="100" [(ngModel)]="form.montantMax"><span
+                            class="pf-suffix">TND</span></div>
+                </div>
+                <div class="pf-field pf-toggle-field">
+                    <label>Plan actif (visible aux clients)</label>
+                    <label class="toggle"><input type="checkbox" [(ngModel)]="form.actif"><span
+                            class="toggle-slider"></span></label>
+                </div>
+            </div>
+            <div class="pf-actions">
+                <button class="pf-btn-cancel" (click)="closeForm()" [disabled]="saving">Annuler</button>
+                <button class="pf-btn-save" (click)="savePlan()" [disabled]="saving">
+                    <span *ngIf="saving" class="spinner-sm"></span>
+                    <span *ngIf="!saving">{{ editingPlan ? 'Enregistrer' : 'Créer le plan' }}</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Plans list -->
+        <div class="plans-list" *ngIf="!loading">
+            <div class="plan-row" *ngFor="let plan of plans">
+                <div class="pr-left">
+                    <div class="pr-rate">{{ pct(plan.tauxAnnuel) }}%</div>
+                    <div>
+                        <p class="pr-name">{{ plan.nom }}</p>
+                        <p class="pr-meta">{{ durationLabel(plan.dureeEnMois) }} · {{ fmt(plan.montantMin) }}–{{
+                            fmt(plan.montantMax) }} TND</p>
+                    </div>
+                </div>
+                <div class="pr-right">
+                    <span class="pr-badge" [class.pr-badge--on]="plan.actif" [class.pr-badge--off]="!plan.actif">
+                        {{ plan.actif ? 'Actif' : 'Inactif' }}
+                    </span>
+                    <button class="pr-btn-edit" (click)="openEditPlan(plan)">Modifier</button>
+                    <button class="pr-btn-del" (click)="deletePlan(plan)">Supprimer</button>
+                </div>
+            </div>
+            <div class="im-empty" *ngIf="plans.length === 0">Aucun plan. Créez-en un pour commencer.</div>
+        </div>
+    </div>
+
+    <!-- ══ INVESTMENTS TAB ══ -->
+    <div *ngIf="tab === 'investments'">
+        <div class="im-tab-header">
+            <p class="im-tab-sub">Tous les investissements clients, par ordre chronologique décroissant.</p>
+            <div class="im-filters">
+                <button class="im-filter" [class.active]="statusFilter==='ALL'" (click)="statusFilter='ALL'">Tous ({{
+                    investments.length }})</button>
+                <button class="im-filter" [class.active]="statusFilter==='ACTIVE'"
+                    (click)="statusFilter='ACTIVE'">Actifs</button>
+                <button class="im-filter" [class.active]="statusFilter==='COMPLETED'"
+                    (click)="statusFilter='COMPLETED'">Complétés</button>
+                <button class="im-filter" [class.active]="statusFilter==='CANCELLED'"
+                    (click)="statusFilter='CANCELLED'">Annulés</button>
+            </div>
+        </div>
+
+        <div class="inv-table-wrap" *ngIf="!loading && filteredInvestments.length > 0">
+            <table class="inv-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Plan</th>
+                        <th>Compte</th>
+                        <th>Capital</th>
+                        <th>Taux</th>
+                        <th>Intérêt</th>
+                        <th>Échéance</th>
+                        <th>Statut</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let inv of filteredInvestments">
+                        <td class="td-id">#{{ inv.id }}</td>
+                        <td class="td-plan">
+                            <p>{{ inv.planNom }}</p>
+                            <span class="td-meta">{{ durationLabel(inv.dureeEnMois) }}</span>
+                        </td>
+                        <td class="td-compte">#{{ inv.compteId }}</td>
+                        <td class="td-amount">{{ fmt(inv.montant) }} TND</td>
+                        <td class="td-rate">{{ pct(inv.tauxAnnuel) }}%</td>
+                        <td class="td-interest">+{{ fmt(inv.interetAttendu) }} TND</td>
+                        <td class="td-date">{{ inv.dateEcheance | date:'d MMM y' }}</td>
+                        <td>
+                            <span class="inv-status" [class.inv-status--active]="inv.statut==='ACTIVE'"
+                                [class.inv-status--completed]="inv.statut==='COMPLETED'"
+                                [class.inv-status--cancelled]="inv.statut==='CANCELLED'">
+                                {{ inv.statut }}
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="im-empty" *ngIf="!loading && filteredInvestments.length === 0">Aucun investissement dans cette
+            catégorie.</div>
+    </div>
+
+</div>

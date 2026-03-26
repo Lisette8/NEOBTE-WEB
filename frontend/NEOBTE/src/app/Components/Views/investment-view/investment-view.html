@@ -1,0 +1,325 @@
+<div class="iv-page">
+
+    <!-- SUCCESS BAR -->
+    <div class="iv-success" *ngIf="success">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+            stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12" />
+        </svg>
+        {{ success }}
+    </div>
+
+    <!-- ══ LIST VIEW ══ -->
+    <ng-container *ngIf="step === 'list'">
+
+        <!-- Hero stats -->
+        <div class="iv-hero" *ngIf="!loading">
+            <div class="ivh-stat">
+                <p class="ivh-label">Capital investi</p>
+                <p class="ivh-value">{{ fmt(totalLocked) }} <span class="ivh-cur">TND</span></p>
+            </div>
+            <div class="ivh-divider"></div>
+            <div class="ivh-stat">
+                <p class="ivh-label">Valeur actuelle</p>
+                <p class="ivh-value ivh-value--green">{{ fmt(totalCurrentValue) }} <span class="ivh-cur">TND</span></p>
+            </div>
+            <div class="ivh-divider"></div>
+            <div class="ivh-stat">
+                <p class="ivh-label">Intérêts attendus</p>
+                <p class="ivh-value ivh-value--accent">+{{ fmt(totalExpectedReturn) }} <span class="ivh-cur">TND</span>
+                </p>
+            </div>
+        </div>
+        <div class="iv-hero iv-hero--skeleton" *ngIf="loading"></div>
+
+        <!-- CTA -->
+        <div class="iv-cta-row">
+            <div>
+                <h1 class="iv-title">Mes investissements</h1>
+                <p class="iv-sub">{{ activeInvestments.length }} actif{{ activeInvestments.length !== 1 ? 's' : '' }}
+                </p>
+            </div>
+            <button class="btn-new-inv" (click)="goNew()">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
+                    stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                Nouvel investissement
+            </button>
+        </div>
+
+        <!-- Tabs -->
+        <div class="iv-tabs">
+            <button class="iv-tab" [class.active]="tab === 'active'" (click)="tab = 'active'">
+                Actifs <span class="iv-badge" *ngIf="activeInvestments.length > 0">{{ activeInvestments.length }}</span>
+            </button>
+            <button class="iv-tab" [class.active]="tab === 'history'" (click)="tab = 'history'">Historique</button>
+        </div>
+
+        <!-- Error -->
+        <div class="iv-error" *ngIf="error">{{ error }}</div>
+
+        <!-- Loading skeleton -->
+        <div class="iv-skeleton" *ngIf="loading">
+            <div class="ivs-card" *ngFor="let i of [1,2]"></div>
+        </div>
+
+        <!-- Active investments -->
+        <div *ngIf="!loading && tab === 'active'">
+            <div class="iv-empty" *ngIf="activeInvestments.length === 0">
+                <div class="iv-empty-icon">📈</div>
+                <p class="iv-empty-title">Aucun investissement actif</p>
+                <p class="iv-empty-sub">Faites fructifier votre épargne en souscrivant à un plan d'investissement.</p>
+                <button class="btn-new-inv" (click)="goNew()">Commencer →</button>
+            </div>
+
+            <div class="inv-card" *ngFor="let inv of activeInvestments">
+                <div class="inv-card-top">
+                    <div>
+                        <p class="inv-plan-name">{{ inv.planNom }}</p>
+                        <p class="inv-meta">{{ durationLabel(inv.dureeEnMois) }} · {{ pct(inv.tauxAnnuel) }}% / an ·
+                            Compte #{{ inv.compteId }}</p>
+                    </div>
+                    <span class="inv-badge-active">ACTIF</span>
+                </div>
+
+                <!-- Progress bar -->
+                <div class="inv-progress-wrap">
+                    <div class="inv-progress-bar">
+                        <div class="inv-progress-fill" [style.width.%]="inv.progressPct"></div>
+                    </div>
+                    <div class="inv-progress-meta">
+                        <span>{{ inv.progressPct | number:'1.0-1' }}% écoulé</span>
+                        <span>{{ inv.daysRemaining }}j restants</span>
+                    </div>
+                </div>
+
+                <!-- Amounts grid -->
+                <div class="inv-amounts">
+                    <div class="inv-amount-cell">
+                        <p class="iac-label">Capital</p>
+                        <p class="iac-value">{{ fmt(inv.montant) }} TND</p>
+                    </div>
+                    <div class="inv-amount-cell">
+                        <p class="iac-label">Valeur actuelle</p>
+                        <p class="iac-value iac-value--green">{{ fmt(inv.currentValue) }} TND</p>
+                    </div>
+                    <div class="inv-amount-cell">
+                        <p class="iac-label">Intérêt à l'échéance</p>
+                        <p class="iac-value iac-value--accent">+{{ fmt(inv.interetAttendu) }} TND</p>
+                    </div>
+                    <div class="inv-amount-cell">
+                        <p class="iac-label">Échéance</p>
+                        <p class="iac-value">{{ maturityDate(inv) }}</p>
+                    </div>
+                </div>
+
+                <!-- Cancel button -->
+                <div class="inv-card-footer">
+                    <button class="btn-breakdown-toggle" (click)="toggleBreakdown(inv.id)">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline *ngIf="expandedId !== inv.id" points="6 9 12 15 18 9" />
+                            <polyline *ngIf="expandedId === inv.id" points="18 15 12 9 6 15" />
+                        </svg>
+                        {{ expandedId === inv.id ? 'Masquer' : 'Voir le détail mensuel' }}
+                    </button>
+                    <button class="btn-cancel-inv" (click)="cancelInvestment(inv)" [disabled]="cancellingId === inv.id">
+                        <span *ngIf="cancellingId === inv.id" class="spinner-sm"></span>
+                        <span *ngIf="cancellingId !== inv.id">Annuler</span>
+                    </button>
+                </div>
+
+                <!-- Monthly breakdown -->
+                <div class="monthly-breakdown" *ngIf="expandedId === inv.id">
+                    <p class="mb-title">Calendrier des intérêts mensuels</p>
+                    <p class="mb-subtitle">Intérêt mensuel fixe : {{ fmt(inv.interetAttendu / inv.dureeEnMois) }} TND ·
+                        Total attendu : {{ fmt(inv.interetAttendu) }} TND</p>
+                    <div class="mb-table-wrap">
+                        <table class="mb-table">
+                            <thead>
+                                <tr>
+                                    <th>Mois</th>
+                                    <th>Période</th>
+                                    <th>Intérêt</th>
+                                    <th>Cumulé</th>
+                                    <th>Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr *ngFor="let e of inv.monthlyBreakdown; let i = index"
+                                    [class.mb-row--accrued]="e.accrued"
+                                    [class.mb-row--pending]="!e.accrued && inv.statut === 'ACTIVE'">
+                                    <td class="mb-num">{{ e.moisNumero }}</td>
+                                    <td class="mb-period">{{ e.moisLabel }}</td>
+                                    <td class="mb-amount">{{ fmt(e.montantInteret) }} TND</td>
+                                    <td class="mb-cumul">{{ fmt(e.montantInteret * (i + 1)) }} TND</td>
+                                    <td>
+                                        <span class="mb-badge mb-badge--accrued" *ngIf="e.accrued">✓ Acquis</span>
+                                        <span class="mb-badge mb-badge--pending"
+                                            *ngIf="!e.accrued && inv.statut === 'ACTIVE'">En attente</span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mb-footer">
+                        <div class="mbf-stat">
+                            <p class="mbf-label">Déjà acquis</p>
+                            <p class="mbf-value mbf-value--green">{{ fmt(inv.totalAccrued) }} TND</p>
+                        </div>
+                        <div class="mbf-stat">
+                            <p class="mbf-label">Reste à percevoir</p>
+                            <p class="mbf-value">{{ fmt(inv.interetAttendu - inv.totalAccrued) }} TND</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- History -->
+        <div *ngIf="!loading && tab === 'history'">
+            <div class="iv-empty" *ngIf="historyInvestments.length === 0">
+                <div class="iv-empty-icon">📋</div>
+                <p class="iv-empty-title">Aucun historique</p>
+                <p class="iv-empty-sub">Vos investissements terminés apparaîtront ici.</p>
+            </div>
+
+            <div class="inv-card inv-card--done" *ngFor="let inv of historyInvestments"
+                [class.inv-card--completed]="inv.statut === 'COMPLETED'"
+                [class.inv-card--cancelled]="inv.statut === 'CANCELLED'">
+                <div class="inv-card-top">
+                    <div>
+                        <p class="inv-plan-name">{{ inv.planNom }}</p>
+                        <p class="inv-meta">{{ durationLabel(inv.dureeEnMois) }} · {{ pct(inv.tauxAnnuel) }}% / an</p>
+                    </div>
+                    <span class="inv-badge" [class.inv-badge--completed]="inv.statut === 'COMPLETED'"
+                        [class.inv-badge--cancelled]="inv.statut === 'CANCELLED'">
+                        {{ inv.statut === 'COMPLETED' ? 'COMPLÉTÉ' : 'ANNULÉ' }}
+                    </span>
+                </div>
+                <div class="inv-amounts inv-amounts--compact">
+                    <div class="inv-amount-cell">
+                        <p class="iac-label">Capital investi</p>
+                        <p class="iac-value">{{ fmt(inv.montant) }} TND</p>
+                    </div>
+                    <div class="inv-amount-cell" *ngIf="inv.statut === 'COMPLETED'">
+                        <p class="iac-label">Intérêts reçus</p>
+                        <p class="iac-value iac-value--green">+{{ fmt(inv.interetVerse) }} TND</p>
+                    </div>
+                    <div class="inv-amount-cell" *ngIf="inv.statut === 'COMPLETED'">
+                        <p class="iac-label">Total reçu</p>
+                        <p class="iac-value iac-value--accent">{{ fmt(inv.montant + inv.interetVerse) }} TND</p>
+                    </div>
+                    <div class="inv-amount-cell">
+                        <p class="iac-label">{{ inv.statut === 'COMPLETED' ? 'Clôturé le' : 'Annulé le' }}</p>
+                        <p class="iac-value">{{ inv.dateCloture | date:'d MMM y' }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </ng-container>
+
+
+    <!-- ══ NEW INVESTMENT VIEW ══ -->
+    <ng-container *ngIf="step === 'new'">
+        <div class="iv-new-header">
+            <button class="iv-back" (click)="goList()">← Retour</button>
+            <h1>Nouvel investissement</h1>
+            <p class="iv-sub">Choisissez un plan, un compte et un montant</p>
+        </div>
+
+        <div class="iv-error" *ngIf="error">{{ error }}</div>
+
+        <!-- Step 1: Plan selection -->
+        <div class="iv-section">
+            <p class="iv-section-label">1 — Choisir un plan</p>
+
+            <div class="plans-grid" *ngIf="!plansLoading">
+                <div class="plan-card" *ngFor="let plan of plans" [class.selected]="selectedPlan?.id === plan.id"
+                    (click)="selectPlan(plan)">
+                    <div class="plan-card-top">
+                        <div class="plan-duration-badge">{{ durationLabel(plan.dureeEnMois) }}</div>
+                        <div class="plan-rate">{{ pct(plan.tauxAnnuel) }}<span class="plan-rate-unit">% / an</span>
+                        </div>
+                    </div>
+                    <p class="plan-name">{{ plan.nom }}</p>
+                    <p class="plan-desc">{{ plan.description }}</p>
+                    <div class="plan-limits">
+                        <span>Min {{ fmt(plan.montantMin) }} TND</span>
+                        <span>Max {{ fmt(plan.montantMax) }} TND</span>
+                    </div>
+                    <div class="plan-selected-check" *ngIf="selectedPlan?.id === plan.id">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="20 6 9 17 4 12" />
+                        </svg>
+                    </div>
+                </div>
+                <div class="iv-empty" *ngIf="plans.length === 0">
+                    <p class="iv-empty-title">Aucun plan disponible</p>
+                </div>
+            </div>
+            <div class="plans-grid" *ngIf="plansLoading">
+                <div class="plan-card plan-card--skeleton" *ngFor="let i of [1,2,3]"></div>
+            </div>
+        </div>
+
+        <!-- Step 2: Amount & Account -->
+        <div class="iv-section" *ngIf="selectedPlan">
+            <p class="iv-section-label">2 — Compte source et montant</p>
+
+            <div class="iv-form">
+                <div class="ivf-group">
+                    <label class="ivf-label">Compte source</label>
+                    <select class="ivf-select" [(ngModel)]="selectedCompteId">
+                        <option [ngValue]="null">Sélectionner…</option>
+                        <option *ngFor="let c of comptes" [ngValue]="c.idCompte">
+                            {{ accountLabel(c) }}
+                        </option>
+                    </select>
+                    <p class="ivf-hint" *ngIf="comptes.length === 0">Aucun compte actif disponible.</p>
+                </div>
+
+                <div class="ivf-group">
+                    <label class="ivf-label">Montant à investir</label>
+                    <div class="ivf-input-wrap">
+                        <input type="number" class="ivf-input" [(ngModel)]="montant" [min]="selectedPlan.montantMin"
+                            [max]="selectedPlan.montantMax" step="100" placeholder="{{ fmt(selectedPlan.montantMin) }}">
+                        <span class="ivf-suffix">TND</span>
+                    </div>
+                    <p class="ivf-hint">Entre {{ fmt(selectedPlan.montantMin) }} et {{ fmt(selectedPlan.montantMax) }}
+                        TND</p>
+                    <p class="ivf-hint ivf-hint--warn"
+                        *ngIf="selectedCompte && montant && montant > selectedCompte.solde">
+                        Solde insuffisant ({{ fmt(selectedCompte.solde) }} TND disponible)
+                    </p>
+                </div>
+
+                <!-- Simulation -->
+                <div class="iv-simulation" *ngIf="montant && montant > 0 && selectedPlan">
+                    <p class="ivs-title">Simulation de rendement</p>
+                    <div class="ivs-row"><span>Capital investi</span><span>{{ fmt(montant) }} TND</span></div>
+                    <div class="ivs-row ivs-row--interest"><span>Intérêts ({{ pct(selectedPlan.tauxAnnuel) }}% × {{
+                            durationLabel(selectedPlan.dureeEnMois) }})</span><span>+{{ fmt(estimatedReturn) }}
+                            TND</span></div>
+                    <div class="ivs-row ivs-row--total"><span>Total à l'échéance</span><span>{{ fmt(montant +
+                            estimatedReturn) }} TND</span></div>
+                    <div class="ivs-maturity">
+                        Échéance estimée :
+                        <strong>{{ durationLabel(selectedPlan.dureeEnMois) }} à compter d'aujourd'hui</strong>
+                    </div>
+                </div>
+
+                <button class="btn-subscribe" (click)="subscribe()" [disabled]="!canSubmit || submitting">
+                    <span *ngIf="submitting" class="spinner-sm"></span>
+                    <span *ngIf="!submitting">Confirmer l'investissement</span>
+                </button>
+            </div>
+        </div>
+
+    </ng-container>
+
+</div>

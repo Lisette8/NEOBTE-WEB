@@ -123,6 +123,26 @@
         <span class="nav-label">Security</span>
         <span class="nav-alert-badge" *ngIf="openAlertCount > 0">{{ openAlertCount }}</span>
       </button>
+      <button class="nav-item nav-item-invest" [class.active]="selectedTab === 'investments'"
+        (click)="goTo('investments')">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+            <polyline points="17 6 23 6 23 12" />
+          </svg>
+        </span>
+        <span class="nav-label">Investissements</span>
+      </button>
+
+      <button class="nav-item nav-item-policy" [class.active]="selectedTab === 'policy'" (click)="goTo('policy')">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="3" y="3" width="18" height="18" rx="2" />
+            <path d="M9 9h6M9 12h6M9 15h4" />
+          </svg>
+        </span>
+        <span class="nav-label">Account Policy</span>
+      </button>
 
     </nav>
 
@@ -415,6 +435,8 @@
       <app-actualite-management *ngIf="selectedTab === 'news'"></app-actualite-management>
       <app-treasury-component *ngIf="selectedTab === 'treasury'"></app-treasury-component>
       <app-fraude-management *ngIf="selectedTab === 'security'"></app-fraude-management>
+      <app-account-policy *ngIf="selectedTab === 'policy'"></app-account-policy>
+      <app-investment-management *ngIf="selectedTab === 'investments'"></app-investment-management>
       <app-ai-analytics *ngIf="selectedTab === 'ai'"></app-ai-analytics>
 
     </div>

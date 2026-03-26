@@ -910,3 +910,19 @@
     grid-template-columns: repeat(2, 1fr);
   }
 }
+
+.nav-item-policy.active {
+  background: rgba(59, 130, 246, 0.18) !important;
+}
+
+.nav-item-policy .nav-icon svg {
+  stroke: #93c5fd;
+}
+
+.nav-item-invest.active {
+  background: rgba(16, 185, 129, 0.18) !important;
+}
+
+.nav-item-invest .nav-icon svg {
+  stroke: #6ee7b7;
+}

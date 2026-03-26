@@ -23,17 +23,23 @@
     <p class="bh-sub">{{ activeComptes.length }} compte{{ activeComptes.length !== 1 ? 's' : '' }} actif{{
       activeComptes.length !== 1 ? 's' : '' }}</p>
 
-    <div class="usage" *ngIf="!premiumLoading && premiumStatus">
-      <div class="usage-top">
-        <span class="usage-label">Virements quotidiens</span>
-        <span class="usage-value">{{ premiumStatus.transfersThisMonth }}/{{ premiumStatus.monthlyLimit }}</span>
+    <!-- Per-account daily usage indicators -->
+    <div class="account-usage-list" *ngIf="!premiumLoading && accountUsages.length > 0">
+      <div class="au-item" *ngFor="let u of accountUsages" [class.au-item--warn]="isNearDailyLimit(u)"
+        [class.au-item--full]="isAtDailyLimit(u)">
+        <div class="au-top">
+          <span class="au-label">
+            {{ accountTypeMeta[u.typeCompte]?.icon }} {{ accountTypeMeta[u.typeCompte]?.label }}
+          </span>
+          <span class="au-count" [class.au-count--warn]="isNearDailyLimit(u)">
+            {{ u.dailyCountUsed }}/{{ u.dailyCountLimit }} aujourd'hui
+          </span>
+        </div>
+        <div class="au-bar">
+          <div class="au-fill" [style.width.%]="dailyUsagePct(u)" [class.au-fill--warn]="isNearDailyLimit(u)"
+            [class.au-fill--full]="isAtDailyLimit(u)"></div>
+        </div>
       </div>
-      <div class="usage-bar">
-        <div class="usage-fill" [style.width.%]="transferUsagePct"></div>
-      </div>
-      <button class="usage-upgrade" *ngIf="!premiumStatus.premium" (click)="openPricing()">
-        Passer à Premium →
-      </button>
     </div>
   </div>
 
@@ -57,6 +63,16 @@
         <a routerLink="/compte-view" [queryParams]="{open: 'true'}" class="btn-open-first">
           Ouvrir un compte
         </a>
+      </div>
+    </div>
+
+    <!-- Savings interest hint -->
+    <div class="savings-interest-hint" *ngIf="!loading && hasSavingsAccount && savingsBalance > 0">
+      <span class="sih-icon">🏦</span>
+      <div class="sih-text">
+        <strong>Épargne rémunérée</strong>
+        <span>Votre solde épargne ({{ savingsBalance | number:'1.3-3' }} TND) génère environ
+          <strong>+{{ projectedAnnualInterest | number:'1.3-3' }} TND</strong> / an à 4,5%</span>
       </div>
     </div>
 
@@ -85,7 +101,8 @@
       <h2>Actions rapides</h2>
     </div>
     <div class="quick-actions">
-      <a routerLink="/virement-view" class="qa-card qa-send anim-fade-up delay-1">
+      <!-- Envoyer: only show external if primary account can send externally -->
+      <a routerLink="/virement-view" class="qa-card qa-send anim-fade-up delay-1" *ngIf="canPrimarySendExternal">
         <div class="qa-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
             stroke-linejoin="round">
@@ -94,6 +111,22 @@
           </svg>
         </div>
         <span>Envoyer</span>
+      </a>
+      <!-- Savings-only: show "Transférer" (internal only) instead -->
+      <a routerLink="/virement-view" [queryParams]="{mode: 'interne'}"
+        class="qa-card qa-send qa-send--savings anim-fade-up delay-1"
+        *ngIf="!canPrimarySendExternal && activeComptes.length > 0">
+        <div class="qa-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <polyline points="17 1 21 5 17 9" />
+            <path d="M3 11V9a4 4 0 0 1 4-4h14" />
+            <polyline points="7 23 3 19 7 15" />
+            <path d="M21 13v2a4 4 0 0 1-4 4H3" />
+          </svg>
+        </div>
+        <span>Transférer</span>
+        <span class="qa-badge-savings">interne</span>
       </a>
       <a routerLink="/receive" class="qa-card qa-receive anim-fade-up delay-2">
         <div class="qa-icon">
@@ -143,6 +176,68 @@
         <span>Assistant IA</span>
         <span class="qa-lock" *ngIf="!isPremium">Premium</span>
       </button>
+
+      <a routerLink="/investment-view" class="qa-card qa-invest anim-fade-up delay-6">
+        <div class="qa-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+            stroke-linejoin="round">
+            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
+            <polyline points="17 6 23 6 23 12" />
+          </svg>
+        </div>
+        <span>Investir</span>
+      </a>
+    </div>
+  </section>
+
+
+  <!-- INVESTISSEMENTS ACTIFS -->
+  <section class="dash-section" *ngIf="!loading && activeInvestments.length > 0">
+    <div class="section-hd">
+      <h2>Mes investissements</h2>
+      <a routerLink="/investment-view" class="section-link">Tout voir →</a>
+    </div>
+
+    <div class="investments-summary">
+      <div class="inv-summary-hero">
+        <div class="ish-stat">
+          <p class="ish-label">Capital investi</p>
+          <p class="ish-value">{{ totalInvested | number:'1.3-3' }} <span class="ish-cur">TND</span></p>
+        </div>
+        <div class="ish-divider"></div>
+        <div class="ish-stat">
+          <p class="ish-label">Intérêts attendus</p>
+          <p class="ish-value ish-value--green">+{{ totalExpectedInterest | number:'1.3-3' }} <span
+              class="ish-cur">TND</span></p>
+        </div>
+        <div class="ish-divider"></div>
+        <div class="ish-stat">
+          <p class="ish-label">Placements actifs</p>
+          <p class="ish-value">{{ activeInvestments.length }}</p>
+        </div>
+      </div>
+
+      <div class="inv-summary-list">
+        <div class="inv-summary-row" *ngFor="let inv of activeInvestments">
+          <div class="isr-left">
+            <p class="isr-name">{{ inv.planNom }}</p>
+            <p class="isr-meta">{{ inv.daysRemaining }}j restants · +{{ (inv.tauxAnnuel * 100).toFixed(1) }}% / an</p>
+          </div>
+          <div class="isr-bar-wrap">
+            <div class="isr-bar">
+              <div class="isr-fill" [style.width.%]="inv.progressPct"></div>
+            </div>
+          </div>
+          <div class="isr-right">
+            <p class="isr-amount">{{ inv.montant | number:'1.3-3' }} TND</p>
+            <p class="isr-interest">+{{ inv.interetAttendu | number:'1.3-3' }}</p>
+          </div>
+        </div>
+      </div>
+
+      <a routerLink="/investment-view" class="inv-summary-cta">
+        Gérer mes investissements →
+      </a>
     </div>
   </section>
 

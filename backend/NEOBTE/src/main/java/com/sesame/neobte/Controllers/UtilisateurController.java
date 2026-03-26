@@ -21,7 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-@CrossOrigin(origins = "http://localhost:4200")
+
 @RestController
 @AllArgsConstructor
 @RequestMapping("/api/v1/client")

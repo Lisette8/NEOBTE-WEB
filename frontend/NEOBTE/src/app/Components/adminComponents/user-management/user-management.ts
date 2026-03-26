@@ -202,7 +202,7 @@ export class UserManagement implements OnInit, OnDestroy {
   }
 
   startPolling() {
-    this.pollSub = interval(5000).subscribe(() => {
+    this.pollSub = interval(60000).subscribe(() => {
       this.loadUsers();
     });
   }
@@ -212,4 +212,3 @@ export class UserManagement implements OnInit, OnDestroy {
   }
 
 }
-

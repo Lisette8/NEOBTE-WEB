@@ -1,25 +1,44 @@
+/**
+ * Per-account daily/monthly usage returned by /api/v1/client/ai/premium/status
+ * Transfer limits are now account-based, not profile-based.
+ */
+export interface AccountUsage {
+  compteId: number;
+  typeCompte: 'COURANT' | 'EPARGNE' | 'PROFESSIONNEL';
+  dailyCountUsed: number;
+  dailyCountLimit: number;
+  monthlyCountUsed: number;
+  monthlyCountLimit: number;
+  dailyAmountLimit: number;
+  maxTransferAmount: number;
+  canSendExternal: boolean;
+}
+
+/**
+ * Response from /premium/status.
+ * premium: gates AI chatbot and live market data — NOT transfer limits.
+ */
 export interface PremiumStatus {
   premium: boolean;
-  transfersThisMonth: number;
-  monthlyLimit: number;
+  accountUsages: AccountUsage[];
 }
 
 export interface ClientInsightsData {
   monthlyTransfers: {
-    labels: string[];   // e.g. ["Oct 2025", ...]
-    sent: number[];     // total amount sent
-    received: number[]; // total amount received
+    labels: string[];
+    sent: number[];
+    received: number[];
   };
   dailyBalance: {
-    labels: string[]; // e.g. ["01/03", ...]
-    values: number[]; // balance at end of day
+    labels: string[];
+    values: number[];
   };
   summary: {
     sentThisMonth: number;
     receivedThisMonth: number;
     txCountThisMonth: number;
   };
-  generatedAt: string; // ISO date
+  generatedAt: string;
 }
 
 export interface ClientChatMessage {

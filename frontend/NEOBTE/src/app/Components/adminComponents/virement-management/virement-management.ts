@@ -41,7 +41,7 @@ export class VirementManagement implements OnInit, OnDestroy {
   }
 
   startPolling() {
-    this.pollSub = interval(5000).subscribe(() => {
+    this.pollSub = interval(60000).subscribe(() => {
       this.loadVirements();
     });
   }

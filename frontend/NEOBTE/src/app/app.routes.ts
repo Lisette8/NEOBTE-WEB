@@ -21,6 +21,7 @@ import { TreasuryComponent } from './Components/adminComponents/treasury-compone
 import { PricingView } from './Components/Views/pricing-view/pricing-view';
 import { SettingsView } from './Components/Views/settings-view/settings-view';
 import { NotificationsView } from './Components/Views/notifications-view/notifications-view';
+import { InvestmentView } from './Components/Views/investment-view/investment-view';
 
 export const routes: Routes = [
   {
@@ -46,12 +47,12 @@ export const routes: Routes = [
   {
     path: 'admin-dashboard',
     component: AdminDashboard,
-    canActivate: [authGuard, adminGuard],
+    canActivate: [adminGuard],
   },
   {
     path: 'treasury-component',
     component: TreasuryComponent,
-    canActivate: [authGuard, adminGuard],
+    canActivate: [adminGuard],
   },
   {
     path: 'landing-view',
@@ -88,6 +89,11 @@ export const routes: Routes = [
   {
     path: 'actualite-view',
     component: ActualiteView,
+  },
+  {
+    path: 'investment-view',
+    component: InvestmentView,
+    canActivate: [authGuard],
   },
   {
     path: 'compte-view',

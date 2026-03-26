@@ -127,7 +127,7 @@ export class DemandeManagement implements OnInit, OnDestroy {
   }
 
   startPolling() {
-    this.pollSub = interval(3000).subscribe(() => {
+    this.pollSub = interval(30000).subscribe(() => {
       this.loadDemandes();
     });
   }

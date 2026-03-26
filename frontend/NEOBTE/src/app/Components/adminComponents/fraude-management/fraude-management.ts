@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { FilterStatutPipe } from '../../../Security/Services/FilterStatutPipe';
-import { FraudeAlerte, FraudeConfig } from '../../../Entities/Interfaces/fraude';
+import { FraudeAlerte, FraudeConfig, FraudeAlertType } from '../../../Entities/Interfaces/fraude';
 import { FraudeService } from '../../../Security/Services/FraudeService';
 import { WebsocketService } from '../../../Services/SharedServices/websocket.service';
 
@@ -121,7 +121,7 @@ export class FraudeManagement implements OnInit, OnDestroy {
     switch (s) { case 'OPEN': return 'st-open'; case 'REVIEWED': return 'st-reviewed'; case 'DISMISSED': return 'st-dismissed'; default: return ''; }
   }
 
-  typeLabel(t: string): string {
+  typeLabel(t: FraudeAlertType): string {
     switch (t) {
       case 'SUSPICIOUS_HOUR': return 'Suspicious Hour'; case 'DAILY_COUNT_EXCEEDED': return 'Daily Count Exceeded';
       case 'DAILY_AMOUNT_EXCEEDED': return 'Daily Amount Exceeded'; case 'RAPID_SUCCESSION': return 'Rapid Succession';
@@ -129,7 +129,7 @@ export class FraudeManagement implements OnInit, OnDestroy {
     }
   }
 
-  typeIcon(t: string): string {
+  typeIcon(t: FraudeAlertType): string {
     switch (t) {
       case 'SUSPICIOUS_HOUR': return 'clock'; case 'DAILY_COUNT_EXCEEDED': return 'repeat';
       case 'DAILY_AMOUNT_EXCEEDED': return 'trending-up'; case 'RAPID_SUCCESSION': return 'zap';

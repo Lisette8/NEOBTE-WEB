@@ -7,9 +7,11 @@ export interface RecipientPreview {
     photoUrl?: string | null;
     feeRate: number;
     estimatedFee: number | null;
- 
-    // Fraud limits — returned by backend so UI can warn before submitting
+
+    // Sender account-type policy limits
     largeTransferThreshold: number | null;
     dailyAmountLimit: number | null;
     dailyCountLimit: number | null;
+    monthlyCountLimit: number | null;
+    canSendExternal: boolean;
 }

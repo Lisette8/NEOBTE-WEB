@@ -11,8 +11,12 @@ import lombok.Setter;
 @NoArgsConstructor
 public class TransferConstraintsDTO {
     private Double feeRate;
-    private Double largeTransferThreshold;
+    private Double largeTransferThreshold;   // single-transfer max
     private Double dailyAmountLimit;
     private Integer dailyCountLimit;
+    private Integer monthlyCountLimit;
+    private Boolean canSendExternal;         // false for EPARGNE
+    private String  accountTypePurpose;      // human-readable purpose text
+    private String  accountTypeLabel;        // e.g. "compte épargne"
 }
 

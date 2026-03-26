@@ -10,11 +10,11 @@ import { ChangePasswordRequest, ClientProfile, UpdateClientProfileRequest } from
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private API_URL    = 'http://localhost:8080/api/v1/auth';
+  private API_URL = 'http://localhost:8080/api/v1/auth';
   private CLIENT_URL = 'http://localhost:8080/api/v1/client';
-  private ADMIN_URL  = 'http://localhost:8080/api/v1/admin';
+  private ADMIN_URL = 'http://localhost:8080/api/v1/admin';
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   login(data: LoginRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.API_URL}/login`, data).pipe(

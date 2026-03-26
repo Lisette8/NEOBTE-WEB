@@ -82,7 +82,7 @@ export class Header implements OnInit, OnDestroy {
     if (this.notificationsInitialized) return;
     this.notificationsInitialized = true;
     this.fetchNotifications();
-    this.pollSub = interval(5000).subscribe(() => this.fetchNotifications());
+    this.pollSub = interval(30000).subscribe(() => this.fetchNotifications());
   }
 
   private fetchNotifications() {

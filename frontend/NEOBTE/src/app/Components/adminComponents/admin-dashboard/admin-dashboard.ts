@@ -15,16 +15,18 @@ import { debounceTime, distinctUntilChanged, Subject, Subscription } from 'rxjs'
 import { AdminService, AdminStats, GlobalSearchResult } from '../../../Services/admin-service';
 import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { AccountPolicy } from '../account-policy/account-policy';
+import { InvestmentManagement } from '../investment-management/investment-management';
 
 
-const VALID_TABS = ['home', 'demandes', 'users', 'comptes', 'virements', 'support', 'news', 'treasury', 'security', 'ai'];
+const VALID_TABS = ['home', 'demandes', 'users', 'comptes', 'virements', 'support', 'news', 'treasury', 'security', 'ai', 'policy', 'investments'];
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
   imports: [CommonModule, FormsModule, UserManagement, AdminSupport, ActualiteManagement,
     CompteManagement, VirementManagement, DemandeManagement, TreasuryComponent,
-    FraudeManagement, AiAnalytics],
+    FraudeManagement, AiAnalytics, AccountPolicy, InvestmentManagement],
   templateUrl: './admin-dashboard.html',
   styleUrl: './admin-dashboard.css',
 })
@@ -62,7 +64,7 @@ export class AdminDashboard implements OnInit, OnDestroy {
     this.loadAlertCount();
     this.loadStats();
 
-    this.pollSub = interval(2000).subscribe(() => {
+    this.pollSub = interval(30000).subscribe(() => {
       this.loadAlertCount();
       if (this.selectedTab === 'home') this.loadStats();
     });
@@ -145,6 +147,8 @@ export class AdminDashboard implements OnInit, OnDestroy {
     news: 'Publish and manage news articles for clients',
     treasury: 'View collected service fees and transaction audit trail',
     security: 'Monitor fraud alerts, review suspicious activity and configure detection rules',
+    policy: 'Configure fee rates and transfer limits per account type',
+    investments: 'Gérer les plans d\'investissement et suivre les souscriptions clients',
     ai: 'AI-powered fraud intelligence, financial forecasts, and risk insights',
   };
 

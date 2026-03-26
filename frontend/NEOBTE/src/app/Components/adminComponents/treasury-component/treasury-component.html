@@ -1,59 +1,116 @@
 <div class="panel">
-    <div class="panel-header">
-      <div>
-        <h3>Treasury</h3>
-        <p class="panel-subtitle">Collected service fees from all transfers</p>
+  <div class="panel-header">
+    <div>
+      <h3>Trésorerie & Bilan</h3>
+      <p class="panel-subtitle">Vue complète des comptes internes de la banque</p>
+    </div>
+  </div>
+
+  <div class="loading-state" *ngIf="loading">Chargement…</div>
+  <div class="error-state" *ngIf="error">{{ error }}</div>
+
+  <ng-container *ngIf="treasury && !loading">
+
+    <!-- ══ BALANCE SHEET ══ -->
+    <div class="balance-sheet">
+
+      <!-- Revenue -->
+      <div class="bs-card bs-card--fees">
+        <div class="bsc-icon">💰</div>
+        <div class="bsc-body">
+          <p class="bsc-label">Revenus (frais)</p>
+          <p class="bsc-value">{{ treasury.totalCollected | number:'1.3-3' }} <span class="bsc-cur">TND</span></p>
+          <p class="bsc-sub">Taux moyen {{ treasury.feeRate * 100 | number:'1.2-2' }}% par virement</p>
+        </div>
+        <div class="bsc-tag bsc-tag--revenue">REVENU</div>
       </div>
-      <div class="fee-rate-badge" *ngIf="treasury">
-        Fee rate: {{ treasury.feeRate * 100 | number:'1.1-1' }}%
+
+      <!-- Investment pool (liability) -->
+      <div class="bs-card bs-card--pool">
+        <div class="bsc-icon">🏦</div>
+        <div class="bsc-body">
+          <p class="bsc-label">Pool d'investissement client</p>
+          <p class="bsc-value">{{ treasury.investmentPool | number:'1.3-3' }} <span class="bsc-cur">TND</span></p>
+          <p class="bsc-sub">{{ treasury.activeInvestments }} placement{{ treasury.activeInvestments !== 1 ? 's' : '' }}
+            actif{{ treasury.activeInvestments !== 1 ? 's' : '' }}</p>
+        </div>
+        <div class="bsc-tag bsc-tag--liability">PASSIF</div>
+      </div>
+
+      <!-- Reserves -->
+      <div class="bs-card bs-card--reserves">
+        <div class="bsc-icon">🔒</div>
+        <div class="bsc-body">
+          <p class="bsc-label">Réserves liquides</p>
+          <p class="bsc-value">{{ treasury.reserves | number:'1.3-3' }} <span class="bsc-cur">TND</span></p>
+          <p class="bsc-sub">{{ treasury.reserveRate * 100 | number:'1.0-0' }}% du pool — tampon réglementaire</p>
+        </div>
+        <div class="bsc-tag bsc-tag--reserve">RÉSERVE</div>
+      </div>
+
+      <!-- Deployed capital (asset) -->
+      <div class="bs-card bs-card--deployed">
+        <div class="bsc-icon">📈</div>
+        <div class="bsc-body">
+          <p class="bsc-label">Capital déployé</p>
+          <p class="bsc-value">{{ treasury.deployed | number:'1.3-3' }} <span class="bsc-cur">TND</span></p>
+          <p class="bsc-sub">{{ (100 - treasury.reserveRate * 100) | number:'1.0-0' }}% du pool — disponible pour les
+            prêts</p>
+        </div>
+        <div class="bsc-tag bsc-tag--asset">ACTIF</div>
+      </div>
+
+    </div>
+
+    <!-- ══ INTEREST COST ══ -->
+    <div class="interest-cost-bar">
+      <div class="icb-left">
+        <p class="icb-label">Intérêts versés aux clients (coût total)</p>
+        <p class="icb-value">{{ treasury.totalInterestPaid | number:'1.3-3' }} TND</p>
+      </div>
+      <div class="icb-right">
+        <p class="icb-label">Marge nette estimée</p>
+        <p class="icb-value icb-value--green">{{ treasury.totalCollected - treasury.totalInterestPaid | number:'1.3-3'
+          }} TND</p>
       </div>
     </div>
-  
-    <div class="loading-state" *ngIf="loading">Loading treasury data...</div>
-    <div class="error-state" *ngIf="error">{{ error }}</div>
-  
-    <ng-container *ngIf="treasury && !loading">
-  
-      <!-- Total collected hero -->
-      <div class="treasury-hero">
-        <p class="th-label">Total Collected</p>
-        <h2 class="th-amount">{{ treasury.totalCollected | number:'1.3-3' }} <span class="th-currency">TND</span></h2>
-        <p class="th-sub">From {{ treasury.recentTransactions.length }} fee transactions (last 100)</p>
-      </div>
-  
-      <!-- Fee transactions table -->
-      <div class="table-wrap" *ngIf="treasury.recentTransactions.length > 0">
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Transfer ID</th>
-              <th>Sender</th>
-              <th>Recipient</th>
-              <th>Transfer Amount</th>
-              <th>Fee Collected</th>
-              <th>Rate</th>
-              <th>Date</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let f of treasury.recentTransactions">
-              <td class="muted">#{{ f.id }}</td>
-              <td><span class="mono">#{{ f.virementId }}</span></td>
-              <td>{{ f.senderName }}</td>
-              <td>{{ f.recipientName }}</td>
-              <td class="amount">{{ f.montantVirement | number:'1.3-3' }} TND</td>
-              <td class="amount fee-amount">+ {{ f.montantFrais | number:'1.3-3' }} TND</td>
-              <td class="muted">{{ f.tauxApplique * 100 | number:'1.1-1' }}%</td>
-              <td class="muted">{{ f.date | date:'MMM d, y' }}</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-  
-      <div class="empty-state" *ngIf="treasury.recentTransactions.length === 0">
-        <p>No fee transactions yet.</p>
-      </div>
-  
-    </ng-container>
-  </div>
+
+    <!-- ══ FEE AUDIT TRAIL ══ -->
+    <div class="section-divider">
+      <p class="section-divider-label">Historique des frais de virement</p>
+    </div>
+
+    <div class="table-wrap" *ngIf="treasury.recentTransactions.length > 0">
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Virement</th>
+            <th>Émetteur</th>
+            <th>Bénéficiaire</th>
+            <th>Montant</th>
+            <th>Frais</th>
+            <th>Taux</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let f of treasury.recentTransactions">
+            <td class="muted">#{{ f.id }}</td>
+            <td><span class="mono">#{{ f.virementId }}</span></td>
+            <td>{{ f.senderName }}</td>
+            <td>{{ f.recipientName }}</td>
+            <td class="amount">{{ f.montantVirement | number:'1.3-3' }} TND</td>
+            <td class="amount fee-amount">+ {{ f.montantFrais | number:'1.3-3' }} TND</td>
+            <td class="muted">{{ f.tauxApplique * 100 | number:'1.1-1' }}%</td>
+            <td class="muted">{{ f.date | date:'d MMM y' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="empty-state" *ngIf="treasury.recentTransactions.length === 0">
+      Aucune transaction de frais pour l'instant.
+    </div>
+
+  </ng-container>
+</div>

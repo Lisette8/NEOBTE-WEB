@@ -1,5 +1,6 @@
 package com.sesame.neobte.Services;
 
+import com.sesame.neobte.Config.AccountTypePolicy;
 import com.sesame.neobte.DTO.Requests.Virement.InternalTransferCreateDTO;
 import com.sesame.neobte.DTO.Requests.Virement.VirementCreateDTO;
 import com.sesame.neobte.DTO.Responses.Virement.RecipientPreviewDTO;
@@ -27,6 +28,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.*;
 
+
 @Service
 @Slf4j
 public class VirementServiceImpl implements VirementService {
@@ -38,9 +40,6 @@ public class VirementServiceImpl implements VirementService {
     private final IFraisTransactionRepository fraisTransactionRepository;
     private final FraudeService fraudeService;
     private final NotificationService notificationService;
-
-    @Value("${neobte.transfer.fee-rate:0.005}")
-    private double feeRate;
 
     @Value("${neobte.fee-account.name:NEOBTE_FEES}")
     private String feeAccountName;
@@ -62,28 +61,24 @@ public class VirementServiceImpl implements VirementService {
         this.notificationService = notificationService;
     }
 
-    private static final int PREMIUM_DAILY_LIMIT = 50;
-
     @Override
     public RecipientPreviewDTO resolveRecipient(String identifier, Long senderUserId) {
         FraudeConfig cfg = fraudeService.getConfigEntity();
-        int effectiveDailyCountLimit = cfg.getDailyCountLimit();
-        if (senderUserId != null) {
-            Utilisateur sender = utilisateurRepository.findById(senderUserId).orElse(null);
-            if (sender != null && sender.isPremium()) {
-                effectiveDailyCountLimit = PREMIUM_DAILY_LIMIT;
-            }
-        }
+        Compte senderPrimary = getPrimaryAccount(senderUserId);
+        TypeCompte senderType = senderPrimary != null ? senderPrimary.getTypeCompte() : TypeCompte.COURANT;
+
+        double feeRate    = AccountTypePolicy.feeRate(senderType, cfg);
+        double maxXfer    = AccountTypePolicy.maxTransferAmount(senderType, cfg);
+        double dailyAmt   = AccountTypePolicy.dailyAmountLimit(senderType, cfg);
+        int    dailyCnt   = AccountTypePolicy.dailyCountLimit(senderType, cfg);
+        int    monthlyCnt = AccountTypePolicy.monthlyCountLimit(senderType, cfg);
+        boolean canSend   = AccountTypePolicy.canSendExternal(senderType);
 
         Utilisateur recipient = findByIdentifier(identifier);
-        if (recipient == null) return new RecipientPreviewDTO(
-                null, null, null, null, false, null, feeRate, null,
-                cfg.getLargeTransferThreshold(), cfg.getDailyAmountLimit(), effectiveDailyCountLimit);
+        if (recipient == null) return notFoundPreview(feeRate, maxXfer, dailyAmt, dailyCnt, monthlyCnt, canSend);
 
         Compte primary = getPrimaryAccount(recipient.getIdUtilisateur());
-        if (primary == null) return new RecipientPreviewDTO(
-                null, null, null, null, false, null, feeRate, null,
-                cfg.getLargeTransferThreshold(), cfg.getDailyAmountLimit(), effectiveDailyCountLimit);
+        if (primary == null) return notFoundPreview(feeRate, maxXfer, dailyAmt, dailyCnt, monthlyCnt, canSend);
 
         return new RecipientPreviewDTO(
                 recipient.getPrenom() + " " + recipient.getNom(),
@@ -92,68 +87,64 @@ public class VirementServiceImpl implements VirementService {
                 primary.getTypeCompte().name(),
                 true,
                 recipient.getPhotoUrl(),
-                feeRate,
-                null,  // estimated fee calculated on frontend from feeRate
-                cfg.getLargeTransferThreshold(),
-                cfg.getDailyAmountLimit(),
-                effectiveDailyCountLimit
-        );
+                feeRate, null, maxXfer, dailyAmt, dailyCnt, monthlyCnt, canSend);
     }
-
-    private static final int FREE_MONTHLY_LIMIT    = 10;
-    private static final int PREMIUM_MONTHLY_LIMIT  = 50;
 
     @Override
     public TransferConstraintsDTO getConstraints(Long senderUserId, boolean internal) {
         FraudeConfig cfg = fraudeService.getConfigEntity();
+        Compte senderPrimary = getPrimaryAccount(senderUserId);
+        TypeCompte type = senderPrimary != null ? senderPrimary.getTypeCompte() : TypeCompte.COURANT;
 
-        int effectiveDailyCountLimit = cfg.getDailyCountLimit();
-        if (senderUserId != null) {
-            Utilisateur sender = utilisateurRepository.findById(senderUserId).orElse(null);
-            if (sender != null && sender.isPremium()) {
-                effectiveDailyCountLimit = PREMIUM_DAILY_LIMIT;
-            }
-        }
+        double feeRate    = internal ? 0.0 : AccountTypePolicy.feeRate(type, cfg);
+        double maxXfer    = AccountTypePolicy.maxTransferAmount(type, cfg);
+        double dailyAmt   = AccountTypePolicy.dailyAmountLimit(type, cfg);
+        int    dailyCnt   = AccountTypePolicy.dailyCountLimit(type, cfg);
+        int    monthlyCnt = AccountTypePolicy.monthlyCountLimit(type, cfg);
+        boolean canSend   = AccountTypePolicy.canSendExternal(type);
 
-        double effectiveFeeRate = internal ? 0.0 : feeRate;
         return new TransferConstraintsDTO(
-                effectiveFeeRate,
-                cfg.getLargeTransferThreshold(),
-                cfg.getDailyAmountLimit(),
-                effectiveDailyCountLimit
-        );
+                feeRate, maxXfer, dailyAmt, dailyCnt, monthlyCnt, canSend,
+                AccountTypePolicy.purpose(type), AccountTypePolicy.label(type));
     }
 
     @Override
     @Transactional
     public VirementResponseDTO effectuerVirement(VirementCreateDTO dto, Long senderUserId) {
-
         if (dto.getMontant() <= 0) throw new BadRequestException("Le montant doit être supérieur à 0");
 
-        // Idempotency check
         Optional<Virement> existing = virementRepository.findByIdempotencyKey(dto.getIdempotencyKey());
         if (existing.isPresent()) return mapToResponseDTO(existing.get());
 
-        // ── Plan-based monthly transfer limit ─────────────────────────────
         Utilisateur sender = utilisateurRepository.findById(senderUserId)
                 .orElseThrow(() -> new ResourceNotFoundException("Expéditeur introuvable"));
-        enforceMonthlyLimit(sender);
-        // ─────────────────────────────────────────────────────────────────
 
-        // Hard fraud limits
-        // so it uses its own @Transactional(readOnly=true) and releases its connection
-        // before this write transaction acquires its locks.
         fraudeService.enforceHardLimits(senderUserId, dto.getMontant());
 
         Compte compteSource = getPrimaryAccount(senderUserId);
         if (compteSource == null)
-            throw new BadRequestException("Vous n'avez pas de compte bancaire actif. Veuillez en ouvrir un d'abord.");
+            throw new BadRequestException(
+                    "Vous n'avez pas de compte bancaire actif. Veuillez en ouvrir un d'abord.");
+
+        TypeCompte sourceType = compteSource.getTypeCompte();
+        FraudeConfig cfg = fraudeService.getConfigEntity();
+
+        AccountTypePolicy.assertCanSendExternal(sourceType);
+        AccountTypePolicy.assertMaxTransfer(sourceType, dto.getMontant(), cfg);
+
+        Date dayStart   = dayStartDate();
+        Date monthStart = monthStartDate();
+        long countToday     = virementRepository.countOutgoingFromCompteSince(compteSource.getIdCompte(), dayStart);
+        Double sentToday    = virementRepository.sumOutgoingFromCompteSince(compteSource.getIdCompte(), dayStart);
+        long countThisMonth = virementRepository.countOutgoingFromCompteSince(compteSource.getIdCompte(), monthStart);
+
+        AccountTypePolicy.assertDailyCount(sourceType, countToday, cfg);
+        AccountTypePolicy.assertDailyAmount(sourceType, sentToday != null ? sentToday : 0.0, dto.getMontant(), cfg);
+        AccountTypePolicy.assertMonthlyCount(sourceType, countThisMonth, cfg);
 
         Utilisateur recipient = findByIdentifier(dto.getRecipientIdentifier());
-
         if (recipient == null)
             throw new ResourceNotFoundException("Aucun utilisateur trouvé avec cet email ou ce numéro de téléphone");
-
         if (recipient.getIdUtilisateur().equals(senderUserId))
             throw new BadRequestException("Vous ne pouvez pas vous transférer de l'argent à vous-même");
 
@@ -161,82 +152,45 @@ public class VirementServiceImpl implements VirementService {
         if (compteDestination == null)
             throw new BadRequestException("Le bénéficiaire n'a pas de compte bancaire actif");
 
-        // Calculate tax
-        double frais = Math.round(dto.getMontant() * feeRate * 1000.0) / 1000.0;
+        double feeRate     = AccountTypePolicy.feeRate(sourceType, cfg);
+        double frais       = Math.round(dto.getMontant() * feeRate * 1000.0) / 1000.0;
         double totalDebite = dto.getMontant() + frais;
 
-        // Lock accounts in consistent order (lower id first) to prevent deadlocks
         Long lowId  = Math.min(compteSource.getIdCompte(), compteDestination.getIdCompte());
         Long highId = Math.max(compteSource.getIdCompte(), compteDestination.getIdCompte());
-
         Compte lockedLow  = compteRepository.findByIdForUpdate(lowId).orElseThrow();
         Compte lockedHigh = compteRepository.findByIdForUpdate(highId).orElseThrow();
-
-        Compte lockedSource = lockedLow.getIdCompte().equals(compteSource.getIdCompte()) ? lockedLow : lockedHigh;
+        Compte lockedSource = lockedLow.getIdCompte().equals(compteSource.getIdCompte())      ? lockedLow : lockedHigh;
         Compte lockedDest   = lockedLow.getIdCompte().equals(compteDestination.getIdCompte()) ? lockedLow : lockedHigh;
 
         if (lockedSource.getStatutCompte() != StatutCompte.ACTIVE)
             throw new BadRequestException("Votre compte n'est pas actif");
         if (lockedSource.getSolde() < totalDebite)
-            throw new BadRequestException("Solde insuffisant (montant + frais : " + totalDebite + " TND)");
+            throw new BadRequestException(String.format(
+                    "Solde insuffisant. Montant : %.3f TND + frais : %.3f TND = %.3f TND requis. " +
+                            "Solde actuel : %.3f TND.",
+                    dto.getMontant(), frais, totalDebite, lockedSource.getSolde()));
 
-        // Debit sender (amount + fee), credit receiver (amount only)
         lockedSource.setSolde(lockedSource.getSolde() - totalDebite);
         lockedDest.setSolde(lockedDest.getSolde() + dto.getMontant());
-
         compteRepository.save(lockedSource);
         compteRepository.save(lockedDest);
 
-        // Save virement
-        Virement virement = new Virement();
-        virement.setCompteDe(lockedSource);
-        virement.setCompteA(lockedDest);
-        virement.setMontant(dto.getMontant());
-        virement.setFrais(frais);
-        virement.setTauxFrais(feeRate);
-        virement.setDateDeVirement(new Date());
-        virement.setIdempotencyKey(dto.getIdempotencyKey());
-        Virement saved = virementRepository.save(virement);
+        Virement saved = saveVirement(lockedSource, lockedDest, dto.getMontant(), frais, feeRate, dto.getIdempotencyKey());
+        creditFeeAccount(frais);
+        auditFee(saved, frais, feeRate);
+        scheduleAsyncFraudCheck(saved.getIdVirement(), senderUserId);
 
-        // Credit internal fee account + audit record — all in same transaction
-        CompteInterne feeAccount = compteInterneRepository.findByNom(feeAccountName)
-                .orElseThrow(() -> new IllegalStateException("Compte interne des frais introuvable. Vérifiez DataInitializer."));
-        feeAccount.setSolde(feeAccount.getSolde() + frais);
-        compteInterneRepository.save(feeAccount);
-
-        FraisTransaction fraisTransaction = new FraisTransaction();
-        fraisTransaction.setVirement(saved);
-        fraisTransaction.setMontantFrais(frais);
-        fraisTransaction.setTauxApplique(feeRate);
-        fraisTransactionRepository.save(fraisTransaction);
-
-        // Async fraud monitoring — fires in a separate thread after commit.
-        // Uses IDs only to avoid detached-entity issues across thread boundaries.
-        // Async fraud monitoring — must fire AFTER the transaction commits so the
-        // new Virement is visible in the async thread's own DB session.
-        final Long savedId1 = saved.getIdVirement();
-        final Long senderId1 = senderUserId;
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override public void afterCommit() {
-                fraudeService.analyzeTransferAsync(savedId1, senderId1);
-            }
-        });
-
-        // Notifications (after commit via NotificationService)
-        notificationService.notifyUser(
-                senderUserId,
-                NotificationType.TRANSFER_SENT,
+        notificationService.notifyUser(senderUserId, NotificationType.TRANSFER_SENT,
                 "Virement envoyé",
-                "Vous avez envoyé " + dto.getMontant() + " TND à " + recipient.getPrenom() + " " + recipient.getNom() + ".",
-                "/virement-view"
-        );
-        notificationService.notifyUser(
-                recipient.getIdUtilisateur(),
-                NotificationType.TRANSFER_RECEIVED,
+                String.format("Vous avez envoyé %.3f TND à %s %s. Frais : %.3f TND.",
+                        dto.getMontant(), recipient.getPrenom(), recipient.getNom(), frais),
+                "/virement-view");
+        notificationService.notifyUser(recipient.getIdUtilisateur(), NotificationType.TRANSFER_RECEIVED,
                 "Virement reçu",
-                "Vous avez reçu " + dto.getMontant() + " TND de " + sender.getPrenom() + " " + sender.getNom() + ".",
-                "/virement-view"
-        );
+                String.format("Vous avez reçu %.3f TND de %s %s.",
+                        dto.getMontant(), sender.getPrenom(), sender.getNom()),
+                "/virement-view");
 
         return mapToResponseDTO(saved);
     }
@@ -244,34 +198,25 @@ public class VirementServiceImpl implements VirementService {
     @Override
     @Transactional
     public VirementResponseDTO effectuerVirementInterne(InternalTransferCreateDTO dto, Long senderUserId) {
-        if (dto.getMontant() == null || dto.getMontant() <= 0) {
+        if (dto.getMontant() == null || dto.getMontant() <= 0)
             throw new BadRequestException("Le montant doit être supérieur à 0");
-        }
-        if (dto.getCompteSourceId() == null || dto.getCompteDestinationId() == null) {
+        if (dto.getCompteSourceId() == null || dto.getCompteDestinationId() == null)
             throw new BadRequestException("Comptes source/destination invalides");
-        }
-        if (dto.getCompteSourceId().equals(dto.getCompteDestinationId())) {
+        if (dto.getCompteSourceId().equals(dto.getCompteDestinationId()))
             throw new BadRequestException("Veuillez sélectionner deux comptes différents");
-        }
-        if (dto.getIdempotencyKey() == null || dto.getIdempotencyKey().isBlank()) {
+        if (dto.getIdempotencyKey() == null || dto.getIdempotencyKey().isBlank())
             throw new BadRequestException("Clé d'idempotence invalide");
-        }
 
         Optional<Virement> existing = virementRepository.findByIdempotencyKey(dto.getIdempotencyKey());
         if (existing.isPresent()) return mapToResponseDTO(existing.get());
 
-        Utilisateur sender = utilisateurRepository.findById(senderUserId)
-                .orElseThrow(() -> new ResourceNotFoundException("Expéditeur introuvable"));
-        enforceMonthlyLimit(sender);
-
-        // Hard fraud limits still apply
         fraudeService.enforceHardLimits(senderUserId, dto.getMontant());
 
-        // Lock accounts in consistent order (lower id first) to prevent deadlocks
+        FraudeConfig cfg = fraudeService.getConfigEntity();
+
         Long lowId  = Math.min(dto.getCompteSourceId(), dto.getCompteDestinationId());
         Long highId = Math.max(dto.getCompteSourceId(), dto.getCompteDestinationId());
-
-        Compte lockedLow = compteRepository.findByIdForUpdate(lowId)
+        Compte lockedLow  = compteRepository.findByIdForUpdate(lowId)
                 .orElseThrow(() -> new ResourceNotFoundException("Compte introuvable"));
         Compte lockedHigh = compteRepository.findByIdForUpdate(highId)
                 .orElseThrow(() -> new ResourceNotFoundException("Compte introuvable"));
@@ -279,53 +224,38 @@ public class VirementServiceImpl implements VirementService {
         Compte lockedSource = lockedLow.getIdCompte().equals(dto.getCompteSourceId()) ? lockedLow : lockedHigh;
         Compte lockedDest   = lockedLow.getIdCompte().equals(dto.getCompteDestinationId()) ? lockedLow : lockedHigh;
 
-        if (lockedSource.getUtilisateur() == null || !Objects.equals(lockedSource.getUtilisateur().getIdUtilisateur(), senderUserId)) {
+        if (!Objects.equals(lockedSource.getUtilisateur().getIdUtilisateur(), senderUserId))
             throw new BadRequestException("Compte source invalide");
-        }
-        if (lockedDest.getUtilisateur() == null || !Objects.equals(lockedDest.getUtilisateur().getIdUtilisateur(), senderUserId)) {
+        if (!Objects.equals(lockedDest.getUtilisateur().getIdUtilisateur(), senderUserId))
             throw new BadRequestException("Compte destination invalide");
-        }
-        if (lockedSource.getStatutCompte() != StatutCompte.ACTIVE || lockedDest.getStatutCompte() != StatutCompte.ACTIVE) {
-            throw new BadRequestException("Vos comptes doivent être actifs pour effectuer un transfert interne");
-        }
+        if (lockedSource.getStatutCompte() != StatutCompte.ACTIVE || lockedDest.getStatutCompte() != StatutCompte.ACTIVE)
+            throw new BadRequestException("Vos deux comptes doivent être actifs pour effectuer un transfert interne");
 
-        double montant = dto.getMontant();
-        if (lockedSource.getSolde() < montant) {
-            throw new BadRequestException("Solde insuffisant (montant : " + montant + " TND)");
-        }
+        TypeCompte sourceType = lockedSource.getTypeCompte();
+        AccountTypePolicy.assertMaxTransfer(sourceType, dto.getMontant(), cfg);
 
-        lockedSource.setSolde(lockedSource.getSolde() - montant);
-        lockedDest.setSolde(lockedDest.getSolde() + montant);
+        Date monthStart = monthStartDate();
+        long countThisMonth = virementRepository.countOutgoingFromCompteSince(lockedSource.getIdCompte(), monthStart);
+        AccountTypePolicy.assertMonthlyCount(sourceType, countThisMonth, cfg);
+
+        if (lockedSource.getSolde() < dto.getMontant())
+            throw new BadRequestException(String.format(
+                    "Solde insuffisant sur le compte source. Requis : %.3f TND. Disponible : %.3f TND.",
+                    dto.getMontant(), lockedSource.getSolde()));
+
+        lockedSource.setSolde(lockedSource.getSolde() - dto.getMontant());
+        lockedDest.setSolde(lockedDest.getSolde() + dto.getMontant());
         compteRepository.save(lockedSource);
         compteRepository.save(lockedDest);
 
-        Virement virement = new Virement();
-        virement.setCompteDe(lockedSource);
-        virement.setCompteA(lockedDest);
-        virement.setMontant(montant);
-        virement.setFrais(0.0);
-        virement.setTauxFrais(0.0);
-        virement.setDateDeVirement(new Date());
-        virement.setIdempotencyKey(dto.getIdempotencyKey());
-        Virement saved = virementRepository.save(virement);
+        Virement saved = saveVirement(lockedSource, lockedDest, dto.getMontant(), 0.0, 0.0, dto.getIdempotencyKey());
+        scheduleAsyncFraudCheck(saved.getIdVirement(), senderUserId);
 
-        // Async fraud monitoring — must fire AFTER the transaction commits
-        final Long savedId2 = saved.getIdVirement();
-        final Long senderId2 = senderUserId;
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override public void afterCommit() {
-                fraudeService.analyzeTransferAsync(savedId2, senderId2);
-            }
-        });
-
-        notificationService.notifyUser(
-                senderUserId,
-                NotificationType.TRANSFER_SENT,
+        notificationService.notifyUser(senderUserId, NotificationType.TRANSFER_SENT,
                 "Transfert interne effectué",
-                "Vous avez transféré " + montant + " TND du compte #" + lockedSource.getIdCompte()
-                        + " vers le compte #" + lockedDest.getIdCompte() + ".",
-                "/virement-view"
-        );
+                String.format("%.3f TND transférés du compte #%d vers le compte #%d.",
+                        dto.getMontant(), lockedSource.getIdCompte(), lockedDest.getIdCompte()),
+                "/virement-view");
 
         return mapToResponseDTO(saved);
     }
@@ -334,13 +264,11 @@ public class VirementServiceImpl implements VirementService {
     public List<VirementResponseDTO> getVirementsUtilisateur(Long userId) {
         List<Long> compteIds = compteRepository.findByUtilisateur_IdUtilisateur(userId)
                 .stream().map(Compte::getIdCompte).toList();
-
         return virementRepository.findAll().stream()
                 .filter(v -> compteIds.contains(v.getCompteDe().getIdCompte())
                         || compteIds.contains(v.getCompteA().getIdCompte()))
                 .sorted(Comparator.comparing(Virement::getDateDeVirement).reversed())
-                .map(this::mapToResponseDTO)
-                .toList();
+                .map(this::mapToResponseDTO).toList();
     }
 
     @Override
@@ -354,13 +282,15 @@ public class VirementServiceImpl implements VirementService {
                 .orElseThrow(() -> new ResourceNotFoundException("Virement introuvable")));
     }
 
-    // ── Helpers ──
+    // ── Helpers ───────────────────────────────────────────────────────────
 
     private Compte getPrimaryAccount(Long userId) {
-        List<Compte> courants = compteRepository
-                .findByUtilisateur_IdUtilisateurAndTypeCompteAndStatutCompteOrderByDateCreationAsc(
-                        userId, TypeCompte.COURANT, StatutCompte.ACTIVE);
-        if (!courants.isEmpty()) return courants.get(0);
+        for (TypeCompte type : List.of(TypeCompte.COURANT, TypeCompte.PROFESSIONNEL, TypeCompte.EPARGNE)) {
+            List<Compte> list = compteRepository
+                    .findByUtilisateur_IdUtilisateurAndTypeCompteAndStatutCompteOrderByDateCreationAsc(
+                            userId, type, StatutCompte.ACTIVE);
+            if (!list.isEmpty()) return list.get(0);
+        }
         List<Compte> any = compteRepository
                 .findByUtilisateur_IdUtilisateurAndStatutCompteOrderByDateCreationAsc(userId, StatutCompte.ACTIVE);
         return any.isEmpty() ? null : any.get(0);
@@ -368,9 +298,9 @@ public class VirementServiceImpl implements VirementService {
 
     private Utilisateur findByIdentifier(String identifier) {
         if (identifier == null) return null;
-        String trimmed = identifier.trim();
-        Utilisateur byEmail = utilisateurRepository.findByEmail(trimmed);
-        return byEmail != null ? byEmail : utilisateurRepository.findByTelephone(trimmed);
+        String t = identifier.trim();
+        Utilisateur u = utilisateurRepository.findByEmail(t);
+        return u != null ? u : utilisateurRepository.findByTelephone(t);
     }
 
     private String maskIdentifier(String identifier) {
@@ -378,25 +308,48 @@ public class VirementServiceImpl implements VirementService {
         if (identifier.contains("@")) {
             int at = identifier.indexOf('@');
             String local = identifier.substring(0, at);
-            String domain = identifier.substring(at);
-            return (local.length() <= 2 ? local : local.substring(0, 2)) + "***" + domain;
+            return (local.length() <= 2 ? local : local.substring(0, 2)) + "***" + identifier.substring(at);
         }
         return identifier.length() <= 4 ? "****"
                 : "*".repeat(identifier.length() - 4) + identifier.substring(identifier.length() - 4);
     }
 
-    private void enforceMonthlyLimit(Utilisateur sender) {
-        Date monthStart = Date.from(LocalDate.now().withDayOfMonth(1)
-                .atStartOfDay(ZoneId.systemDefault()).toInstant());
-        long usedThisMonth = virementRepository.countOutgoingSince(sender.getIdUtilisateur(), monthStart);
-        int limit = sender.isPremium() ? PREMIUM_MONTHLY_LIMIT : FREE_MONTHLY_LIMIT;
-        if (usedThisMonth >= limit) {
-            throw new BadRequestException(
-                    "Limite mensuelle de virements atteinte (" + usedThisMonth + "/" + limit + "). "
-                            + (sender.isPremium()
-                            ? "Vous êtes abonné Premium. Merci de contacter la BTE pour plus d'assistance."
-                            : "Passez à Premium pour 50 virements par mois. Rendez-vous dans l'agence BTE la plus proche."));
-        }
+    private Date dayStartDate() {
+        return Date.from(LocalDate.now().atStartOfDay(ZoneId.systemDefault()).toInstant());
+    }
+
+    private Date monthStartDate() {
+        return Date.from(LocalDate.now().withDayOfMonth(1).atStartOfDay(ZoneId.systemDefault()).toInstant());
+    }
+
+    private Virement saveVirement(Compte src, Compte dst, double montant,
+                                  double frais, double taux, String key) {
+        Virement v = new Virement();
+        v.setCompteDe(src); v.setCompteA(dst);
+        v.setMontant(montant); v.setFrais(frais); v.setTauxFrais(taux);
+        v.setDateDeVirement(new Date()); v.setIdempotencyKey(key);
+        return virementRepository.save(v);
+    }
+
+    private void creditFeeAccount(double frais) {
+        if (frais <= 0) return;
+        CompteInterne fee = compteInterneRepository.findByNom(feeAccountName)
+                .orElseThrow(() -> new IllegalStateException("Compte interne des frais introuvable."));
+        fee.setSolde(fee.getSolde() + frais);
+        compteInterneRepository.save(fee);
+    }
+
+    private void auditFee(Virement saved, double frais, double taux) {
+        if (frais <= 0) return;
+        FraisTransaction ft = new FraisTransaction();
+        ft.setVirement(saved); ft.setMontantFrais(frais); ft.setTauxApplique(taux);
+        fraisTransactionRepository.save(ft);
+    }
+
+    private void scheduleAsyncFraudCheck(Long savedId, Long senderId) {
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override public void afterCommit() { fraudeService.analyzeTransferAsync(savedId, senderId); }
+        });
     }
 
     private VirementResponseDTO mapToResponseDTO(Virement v) {
@@ -405,16 +358,16 @@ public class VirementServiceImpl implements VirementService {
         double frais = v.getFrais() != null ? v.getFrais() : 0.0;
         return new VirementResponseDTO(
                 v.getIdVirement(),
-                v.getCompteDe().getIdCompte(),
-                v.getCompteA().getIdCompte(),
+                v.getCompteDe().getIdCompte(), v.getCompteA().getIdCompte(),
                 recipient != null ? recipient.getPrenom() + " " + recipient.getNom() : "—",
                 sender    != null ? sender.getPrenom()    + " " + sender.getNom()    : "—",
-                v.getMontant(),
-                frais,
-                v.getMontant() + frais,
-                v.getTauxFrais(),
-                v.getDateDeVirement(),
-                v.getIdempotencyKey()
-        );
+                v.getMontant(), frais, v.getMontant() + frais, v.getTauxFrais(),
+                v.getDateDeVirement(), v.getIdempotencyKey());
+    }
+
+    private RecipientPreviewDTO notFoundPreview(double feeRate, double maxXfer, double dailyAmt,
+                                                int dailyCnt, int monthlyCnt, boolean canSend) {
+        return new RecipientPreviewDTO(null, null, null, null, false, null,
+                feeRate, null, maxXfer, dailyAmt, dailyCnt, monthlyCnt, canSend);
     }
 }

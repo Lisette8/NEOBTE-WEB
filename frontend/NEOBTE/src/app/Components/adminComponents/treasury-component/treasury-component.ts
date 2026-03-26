@@ -23,7 +23,7 @@ export class TreasuryComponent implements OnInit, OnDestroy {
 
   ngOnInit() {
     this.loadTreasury();
-    this.pollSub = interval(5000).subscribe(() => this.loadTreasury());
+    this.pollSub = interval(60000).subscribe(() => this.loadTreasury());
   }
 
   ngOnDestroy() {

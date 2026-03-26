@@ -12,17 +12,19 @@ import lombok.Setter;
 public class RecipientPreviewDTO {
     private String displayName;
     private String maskedIdentifier;
-    private Long primaryCompteId;
+    private Long   primaryCompteId;
     private String primaryCompteType;
     private boolean found;
     private String photoUrl;
 
-    // Fee info
+    // Fee info (based on SENDER's account type)
     private Double feeRate;
     private Double estimatedFee;
 
-    // Fraud limits — surfaced to the client so the UI can warn before submitting
-    private Double largeTransferThreshold;
-    private Double dailyAmountLimit;
+    // Sender account-type limits (surfaced so UI can warn before submit)
+    private Double  largeTransferThreshold;
+    private Double  dailyAmountLimit;
     private Integer dailyCountLimit;
+    private Integer monthlyCountLimit;
+    private Boolean canSendExternal;
 }

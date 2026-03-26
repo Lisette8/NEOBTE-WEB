@@ -29,7 +29,7 @@ export class SupportView implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.loadTickets();
-    this.pollSub = interval(2000).subscribe(() => this.loadTickets());
+    this.pollSub = interval(30000).subscribe(() => this.loadTickets());
   }
 
   ngOnDestroy(): void {

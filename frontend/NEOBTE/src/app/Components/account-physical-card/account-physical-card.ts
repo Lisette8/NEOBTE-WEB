@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, Input } from '@angular/core';
 import { RouterModule } from '@angular/router';
-import { Compte } from '../../Entities/Interfaces/compte';
+import { ACCOUNT_TYPE_META, Compte } from '../../Entities/Interfaces/compte';
 
 @Component({
   selector: 'app-account-physical-card',
@@ -16,12 +16,7 @@ export class AccountPhysicalCard {
   @Input() showCta = true;
 
   get label(): string {
-    switch (this.compte.typeCompte) {
-      case 'COURANT': return 'Compte Chèque';
-      case 'EPARGNE': return 'Compte Épargne';
-      case 'PROFESSIONNEL': return 'Compte Professionnel';
-      default: return this.compte.typeCompte;
-    }
+    return ACCOUNT_TYPE_META[this.compte.typeCompte]?.label ?? this.compte.typeCompte;
   }
 
   get themeClass(): string {
@@ -44,6 +39,20 @@ export class AccountPhysicalCard {
       case 'CLOSED': return 'Clôturé';
       default: return this.compte.statutCompte;
     }
+  }
+
+  /** Savings accounts display their annual interest rate on the card */
+  get interestRate(): number {
+    return ACCOUNT_TYPE_META[this.compte.typeCompte]?.interestRate ?? 0;
+  }
+
+  /** Show a small restriction badge on the card for savings */
+  get isSavings(): boolean {
+    return this.compte.typeCompte === 'EPARGNE';
+  }
+
+  get isPro(): boolean {
+    return this.compte.typeCompte === 'PROFESSIONNEL';
   }
 
   maskAccountId(): string {

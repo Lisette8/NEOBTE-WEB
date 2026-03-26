@@ -27,7 +27,7 @@ export class NotificationsView implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.load();
-    this.pollSub = interval(2000).subscribe(() => this.load());
+    this.pollSub = interval(30000).subscribe(() => this.load());
   }
 
   ngOnDestroy(): void {

@@ -154,7 +154,7 @@ export class ActualiteManagement implements OnInit, OnDestroy {
 
 
   startPolling() {
-    this.pollSub = interval(5000).subscribe(() => {
+    this.pollSub = interval(60000).subscribe(() => {
       this.loadActualites();
     });
   }

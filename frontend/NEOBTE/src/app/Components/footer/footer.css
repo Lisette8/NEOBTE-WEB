@@ -15,19 +15,26 @@
 }
 
 .footer-brand {
-  display: flex; align-items: center; gap: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .footer-mark {
-  width: 28px; height: 28px;
+  width: 28px;
+  height: 28px;
   background: var(--blue);
   border-radius: 8px;
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .footer-brand-name {
-  font-size: 0.85rem; font-weight: 700;
-  color: var(--text-1); letter-spacing: -0.02em;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-1);
+  letter-spacing: -0.02em;
 }
 
 .footer-copy {
@@ -37,7 +44,8 @@
 }
 
 .footer-links {
-  display: flex; gap: 16px;
+  display: flex;
+  gap: 16px;
 }
 
 .footer-links a {
@@ -46,9 +54,20 @@
   text-decoration: none;
   transition: color var(--t-fast);
 }
-.footer-links a:hover { color: var(--blue); opacity: 1; }
+
+.footer-links a:hover {
+  color: var(--blue);
+  opacity: 1;
+}
 
 @media (max-width: 600px) {
-  .footer-copy { margin-left: 0; order: 3; width: 100%; }
-  .footer-links { order: 2; }
+  .footer-copy {
+    margin-left: 0;
+    order: 3;
+    width: 100%;
+  }
+
+  .footer-links {
+    order: 2;
+  }
 }

@@ -160,7 +160,7 @@ export class CompteManagement implements OnInit, OnDestroy {
         const isBlocked = res?.commentaireAdmin?.includes('solde non nul');
         if (this.clotureActionType === 'approve') {
           this.clotureOutcome = isBlocked
-            ? { blocked: true, message: `⚠️ Compte #${res.compteId} bloqué — solde non nul (${res.soldeAtDemande} TND). Le client doit vider son compte avant la clôture définitive.` }
+            ? { blocked: true,  message: `⚠️ Compte #${res.compteId} bloqué — solde non nul (${res.soldeAtDemande} TND). Le client doit vider son compte avant la clôture définitive.` }
             : { blocked: false, message: `✓ Compte #${res.compteId} clôturé avec succès.` };
         }
         this.loadClotures();
@@ -173,11 +173,11 @@ export class CompteManagement implements OnInit, OnDestroy {
 
   getStatutClass(s: string): string {
     switch (s) {
-      case 'ACTIVE': return 'badge-green';
+      case 'ACTIVE':   return 'badge-green';
       case 'SUSPENDU': return 'badge-amber';
-      case 'BLOQUE': return 'badge-amber';
-      case 'CLOTURE': return 'badge-red';
-      default: return 'badge-gray';
+      case 'BLOQUE':   return 'badge-amber';
+      case 'CLOTURE':  return 'badge-red';
+      default:         return 'badge-gray';
     }
   }
 

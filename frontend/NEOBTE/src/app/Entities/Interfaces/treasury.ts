@@ -24,4 +24,3 @@ export interface Treasury {
   // Audit
   recentTransactions: FraisEntry[];
 }
-  

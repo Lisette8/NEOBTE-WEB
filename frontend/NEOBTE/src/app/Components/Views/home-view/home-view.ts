@@ -15,7 +15,9 @@ import { AccountUsage, ClientInsightsData, PremiumStatus } from '../../../Entiti
 import { AccountPhysicalCard } from '../../account-physical-card/account-physical-card';
 import { interval, Subscription } from 'rxjs';
 import { Investment } from '../../../Entities/Interfaces/investment';
-import { InvestmentService } from '../../../Services/investment-service';
+import { InvestmentService } from '../../../Services/investment.service';
+
+
 
 @Component({
   selector: 'app-home-view',

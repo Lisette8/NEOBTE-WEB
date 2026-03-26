@@ -347,94 +347,15 @@ textarea.input {
     vertical-align: middle;
 }
 
-.input-locked {
-    background: var(--bg) !important;
-    color: var(--text-2) !important;
-    cursor: not-allowed !important;
-    opacity: 0.75;
-    border-style: dashed !important;
-}
-
-/* ── Account type card enhancements ───────────────────────────── */
-.tc-header {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 8px;
-}
-
-.tc-header h3 {
-    margin: 0;
-}
-
-.tc-icon--epargne {
-    background: #d1fae5 !important;
-    color: #059669 !important;
-}
-
-.tc-icon--pro {
-    background: #ede9fe !important;
-    color: #7c3aed !important;
-}
-
-/* Capability rules list */
-.tc-rules {
-    display: flex;
-    flex-direction: column;
-    gap: 5px;
-    margin: 10px 0 12px;
-    padding: 10px 12px;
-    background: var(--bg);
-    border-radius: var(--r-md);
-    border: 1px solid var(--border-soft);
-}
-
-.tc-rule {
+.kyc-prefill-info {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 0.75rem;
-    color: var(--text-2);
-}
-
-.tcr-ok {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: #dcfce7;
-    color: #15803d;
-    font-size: 0.7rem;
-    font-weight: 700;
-    flex-shrink: 0;
-}
-
-.tcr-warn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: #fef3c7;
-    color: #b45309;
-    font-size: 0.7rem;
-    font-weight: 700;
-    flex-shrink: 0;
-}
-
-.tcr-info {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 16px;
-    height: 16px;
-    border-radius: 50%;
-    background: #dbeafe;
-    color: #1d4ed8;
-    font-size: 0.7rem;
-    font-weight: 700;
-    flex-shrink: 0;
+    background: #e8f4fd;
+    border-left: 3px solid var(--blue, #0000A0);
+    padding: 10px 14px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    color: #1a3a5c;
+    margin-bottom: 18px;
 }

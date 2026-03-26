@@ -83,41 +83,6 @@
           <h3>{{ t.label }}</h3>
         </div>
         <p>{{ t.desc }}</p>
-
-        <!-- Per-type capability grid -->
-        <div class="tc-rules">
-          <div class="tc-rule" *ngIf="t.type === 'COURANT'">
-            <span class="tcr-ok">✓</span> Virements externes
-          </div>
-          <div class="tc-rule" *ngIf="t.type === 'COURANT'">
-            <span class="tcr-ok">✓</span> 5 000 TND / virement · 10 000 TND / jour
-          </div>
-          <div class="tc-rule" *ngIf="t.type === 'COURANT'">
-            <span class="tcr-info">i</span> Frais 0,5% par virement
-          </div>
-
-          <div class="tc-rule" *ngIf="t.type === 'EPARGNE'">
-            <span class="tcr-ok">✓</span> Intérêts annuels : 4,5%
-          </div>
-          <div class="tc-rule" *ngIf="t.type === 'EPARGNE'">
-            <span class="tcr-warn">!</span> Max 1 000 TND / retrait · 5 retraits / mois
-          </div>
-          <div class="tc-rule" *ngIf="t.type === 'EPARGNE'">
-            <span class="tcr-warn">!</span> Pas de virement externe direct
-          </div>
-
-          <div class="tc-rule" *ngIf="t.type === 'PROFESSIONNEL'">
-            <span class="tcr-ok">✓</span> Virements jusqu'à 50 000 TND
-          </div>
-          <div class="tc-rule" *ngIf="t.type === 'PROFESSIONNEL'">
-            <span class="tcr-ok">✓</span> 100 000 TND / jour · 50 virt./jour
-          </div>
-          <div class="tc-rule" *ngIf="t.type === 'PROFESSIONNEL'">
-            <span class="tcr-info">i</span> Frais réduits 0,3% par virement
-          </div>
-        </div>
-
-        <p class="tc-needs"><strong>Requis :</strong> {{ t.needs }}</p>
       </div>
     </div>
 

@@ -207,7 +207,9 @@ export class VirementView implements OnInit, OnDestroy {
   }
 
   accountTypeLabel(type: string): string { return this.accountTypeMeta[type]?.label ?? type; }
-  accountTypeIcon(type: string): string { return this.accountTypeMeta[type]?.icon ?? '🏦'; }
+  accountTypeIconClass(type: string): string {
+    return this.accountTypeMeta[type]?.icon ?? 'fa-solid fa-building-columns';
+  }
   accountTypeColor(type: string): string { return this.accountTypeMeta[type]?.color ?? '#6b7280'; }
 
   // ── Limit warning (soft, inline, before submit) ─────────────────────────

@@ -1,7 +1,7 @@
 .news-shell {
-  padding: 90px 24px 120px;
-  max-width: 920px;
-  margin: 0 auto;
+  padding: 0;
+  max-width: 1200px;
+  margin: 0;
 }
 
 .news-top { margin-bottom: 18px; }
@@ -78,7 +78,7 @@
 }
 .rx:hover { transform: translateY(-1px); border-color: #c4c6e0; box-shadow: var(--shadow-sm); }
 .rx.active { background: var(--blue-light); border-color: #c7d2fe; }
-.emoji { line-height: 1; font-size: 1rem; }
+.rx-icon { line-height: 1; font-size: 0.95rem; color: #0a0a14; }
 .rx-label { line-height: 1; }
 .count { color: var(--text-2); font-variant-numeric: tabular-nums; }
 

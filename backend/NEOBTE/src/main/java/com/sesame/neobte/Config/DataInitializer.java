@@ -2,13 +2,16 @@ package com.sesame.neobte.Config;
 
 import com.sesame.neobte.Entities.Class.CompteInterne;
 import com.sesame.neobte.Entities.Class.Fraude.FraudeConfig;
-import com.sesame.neobte.Entities.Class.Investment.InvestmentPlan;
 import com.sesame.neobte.Entities.Class.Utilisateur;
 import com.sesame.neobte.Entities.Enumeration.Genre;
 import com.sesame.neobte.Entities.Enumeration.Role;
 import com.sesame.neobte.Repositories.Fraude.IFraudeConfigRepository;
 import com.sesame.neobte.Repositories.ICompteInterneRepository;
 import com.sesame.neobte.Repositories.IUtilisateurRepository;
+import com.sesame.neobte.Entities.Class.Investment.InvestmentPlan;
+import com.sesame.neobte.Entities.Class.Loan.LoanProduct;
+import com.sesame.neobte.Entities.Enumeration.Loan.LoanType;
+import com.sesame.neobte.Repositories.Loan.ILoanProductRepository;
 import com.sesame.neobte.Repositories.Investment.IInvestmentPlanRepository;
 import lombok.AllArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
@@ -30,6 +33,7 @@ public class DataInitializer implements CommandLineRunner {
     private IFraudeConfigRepository fraudeConfigRepository;
     private PasswordEncoder passwordEncoder;
     private IInvestmentPlanRepository investmentPlanRepository;
+    private ILoanProductRepository loanProductRepository;
 
     @Override
     public void run(String... args) throws Exception {
@@ -107,12 +111,58 @@ public class DataInitializer implements CommandLineRunner {
                     "Le meilleur taux pour les investisseurs patients. Capital protégé, rendement élevé.", 24, 0.095, 5000, 500000));
             System.out.println(">>> Default investment plans initialized");
         }
+
+        // Seed NEOBTE_LOANS internal account
+        if (compteInterneRepository.findByNom("NEOBTE_LOANS").isEmpty()) {
+            CompteInterne loans = new CompteInterne();
+            loans.setNom("NEOBTE_LOANS");
+            loans.setSolde(0.0);
+            compteInterneRepository.save(loans);
+            System.out.println(">>> Loan tracking account (NEOBTE_LOANS) initialized");
+        }
+
+        // Seed default loan products
+        if (loanProductRepository.count() == 0) {
+            loanProductRepository.save(lp("Prêt personnel court",
+                    "Financement rapide pour vos besoins personnels.", LoanType.PERSONNEL, 12, 0.13, 500, 10000));
+            loanProductRepository.save(lp("Prêt personnel moyen",
+                    "Couvrez vos projets personnels sur 2 ans.", LoanType.PERSONNEL, 24, 0.12, 2000, 30000));
+            loanProductRepository.save(lp("Prêt auto",
+                    "Financez votre véhicule neuf ou d'occasion.", LoanType.AUTO, 48, 0.11, 5000, 80000));
+            loanProductRepository.save(lp("Prêt immobilier",
+                    "Réalisez votre projet immobilier.", LoanType.IMMOBILIER, 120, 0.085, 20000, 500000));
+            loanProductRepository.save(lp("Prêt professionnel",
+                    "Développez votre activité professionnelle.", LoanType.PROFESSIONNEL, 60, 0.10, 5000, 200000));
+            System.out.println(">>> Default loan products initialized");
+        }
     }
 
     private InvestmentPlan plan(String nom, String desc, int mois, double taux, double min, double max) {
         InvestmentPlan p = new InvestmentPlan();
-        p.setNom(nom); p.setDescription(desc); p.setDureeEnMois(mois);
-        p.setTauxAnnuel(taux); p.setMontantMin(min); p.setMontantMax(max); p.setActif(true);
+        p.setNom(nom);
+        p.setDescription(desc);
+        p.setDureeEnMois(mois);
+        p.setTauxAnnuel(taux);
+        p.setMontantMin(min);
+        p.setMontantMax(max);
+        p.setActif(true);
+        return p;
+    }
+
+    private LoanProduct lp(String nom, String desc, LoanType type, int mois, double taux, double min, double max) {
+        LoanProduct p = new LoanProduct();
+        p.setNom(nom);
+        p.setDescription(desc);
+        p.setType(type);
+        p.setDureeEnMois(mois);
+        p.setTauxAnnuel(taux);
+        p.setMontantMin(min);
+        p.setMontantMax(max);
+        p.setGracePeriodDays(2);
+        p.setPenaltyRate(0.05);
+        p.setPenaltyFixedFee(15.0);
+        p.setDefaultThreshold(3);
+        p.setActif(true);
         return p;
     }
 }

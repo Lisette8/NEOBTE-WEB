@@ -204,7 +204,7 @@ export class AccountDetailView implements OnInit, OnDestroy {
   }
 
   get accountTypeIcon(): string {
-    return ACCOUNT_TYPE_META[this.compte?.typeCompte ?? '']?.icon ?? '🏦';
+    return ACCOUNT_TYPE_META[this.compte?.typeCompte ?? '']?.icon ?? 'fa-solid fa-building-columns';
   }
 
   get accountTypeColor(): string {

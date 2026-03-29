@@ -21,12 +21,12 @@ export class ActualiteView implements OnInit {
 
   readonly reactions = [
     // "Sérieux" façon LinkedIn (icône + libellé), sans réactions moqueuses/tristes/colère
-    { key: 'LIKE', emoji: '👍', label: "J’aime" },
-    { key: 'CELEBRATE', emoji: '👏', label: 'Bravo' },
-    { key: 'SUPPORT', emoji: '🤝', label: 'Soutien' },
-    { key: 'LOVE', emoji: '❤️', label: "J’adore" },
-    { key: 'INSIGHTFUL', emoji: '💡', label: 'Pertinent' },
-    { key: 'CURIOUS', emoji: '🤔', label: 'Intéressant' },
+    { key: 'LIKE', iconClass: 'fa-regular fa-thumbs-up', label: "J’aime" },
+    { key: 'CELEBRATE', iconClass: 'fa-solid fa-hands-clapping', label: 'Bravo' },
+    { key: 'SUPPORT', iconClass: 'fa-solid fa-handshake', label: 'Soutien' },
+    { key: 'LOVE', iconClass: 'fa-solid fa-heart', label: "J’adore" },
+    { key: 'INSIGHTFUL', iconClass: 'fa-regular fa-lightbulb', label: 'Pertinent' },
+    { key: 'CURIOUS', iconClass: 'fa-solid fa-circle-question', label: 'Intéressant' },
   ] as const;
 
   constructor(private actualiteService: ActualiteService) {}

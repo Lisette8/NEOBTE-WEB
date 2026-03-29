@@ -1,276 +1,250 @@
-<div class="dashboard">
+<!-- Header -->
+<header class="neo-header">
+  <div>
+    <p class="neo-kicker">{{ getTimeOfDay() }},</p>
+    <h1 class="neo-title">{{ userName || 'Bienvenue' }}</h1>
+    <p class="neo-sub">Votre activité est à jour. Consultez vos soldes, investissements et limites.</p>
+  </div>
 
-  <!-- TOP BAR -->
-  <div class="dash-top">
-    <div>
-      <p class="dash-greeting-label">{{ getTimeOfDay() }},</p>
-      <h1 class="dash-greeting-name">{{ userName || 'Bienvenue' }}</h1>
-    </div>
-    <a routerLink="/compte-view" [queryParams]="{open: 'true'}" class="btn-new-account">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-        stroke-linecap="round" stroke-linejoin="round">
-        <line x1="12" y1="5" x2="12" y2="19" />
-        <line x1="5" y1="12" x2="19" y2="12" />
-      </svg>
+  <div class="neo-header-actions">
+    <a routerLink="/compte-view" [queryParams]="{ open: 'true' }" class="neo-btn neo-btn--primary">
+      <i class="fa-solid fa-plus"></i>
       Nouveau compte
     </a>
+    <a routerLink="/virement-view" class="neo-btn">
+      <i class="fa-solid fa-paper-plane"></i>
+      Envoyer
+    </a>
+  </div>
+</header>
+
+<!-- KPIs -->
+<section class="neo-kpis">
+  <div class="neo-card neo-kpi" *ngIf="!loading; else kpiSkel">
+    <p class="neo-kpi-label">Solde total</p>
+    <p class="neo-kpi-value">{{ totalBalance | number : '1.3-3' }} <span class="neo-kpi-cur">TND</span></p>
+    <p class="neo-kpi-sub">
+      {{ activeComptes.length }} compte{{ activeComptes.length !== 1 ? 's' : '' }} actif{{
+        activeComptes.length !== 1 ? 's' : ''
+      }}
+    </p>
   </div>
 
-  <!-- BALANCE HERO -->
-  <div class="balance-hero" [class.loading]="loading" *ngIf="!loading">
-    <p class="bh-label">Solde total</p>
-    <div class="bh-amount">{{ totalBalance | number:'1.3-3' }}<span class="bh-currency">TND</span></div>
-    <p class="bh-sub">{{ activeComptes.length }} compte{{ activeComptes.length !== 1 ? 's' : '' }} actif{{
-      activeComptes.length !== 1 ? 's' : '' }}</p>
+  <ng-template #kpiSkel>
+    <div class="neo-card neo-kpi neo-skel" style="min-height: 104px"></div>
+  </ng-template>
 
-    <!-- Per-account daily usage indicators -->
-    <div class="account-usage-list" *ngIf="!premiumLoading && accountUsages.length > 0">
-      <div class="au-item" *ngFor="let u of accountUsages" [class.au-item--warn]="isNearDailyLimit(u)"
-        [class.au-item--full]="isAtDailyLimit(u)">
-        <div class="au-top">
-          <span class="au-label">
-            {{ accountTypeMeta[u.typeCompte]?.icon }} {{ accountTypeMeta[u.typeCompte]?.label }}
-          </span>
-          <span class="au-count" [class.au-count--warn]="isNearDailyLimit(u)">
-            {{ u.dailyCountUsed }}/{{ u.dailyCountLimit }} aujourd'hui
-          </span>
-        </div>
-        <div class="au-bar">
-          <div class="au-fill" [style.width.%]="dailyUsagePct(u)" [class.au-fill--warn]="isNearDailyLimit(u)"
-            [class.au-fill--full]="isAtDailyLimit(u)"></div>
-        </div>
-      </div>
-    </div>
+  <div class="neo-card neo-kpi" *ngIf="!loading">
+    <p class="neo-kpi-label">Épargne (projection)</p>
+    <p class="neo-kpi-value">+{{ projectedAnnualInterest | number : '1.3-3' }} <span class="neo-kpi-cur">TND</span></p>
+    <p class="neo-kpi-sub" *ngIf="hasSavingsAccount; else noSav">
+      ≈ 4,5% / an sur {{ savingsBalance | number : '1.3-3' }} TND
+    </p>
+    <ng-template #noSav>
+      <p class="neo-kpi-sub">Ouvrez un compte épargne pour profiter du rendement</p>
+    </ng-template>
   </div>
 
-  <div class="balance-hero loading skeleton-pulse" *ngIf="loading" style="min-height:130px"></div>
+  <div class="neo-card neo-kpi" *ngIf="!loading">
+    <p class="neo-kpi-label">Investissements actifs</p>
+    <p class="neo-kpi-value">{{ activeInvestments.length }}</p>
+    <p class="neo-kpi-sub">Intérêts attendus: +{{ totalExpectedInterest | number : '1.3-3' }} TND</p>
+  </div>
 
-  <!-- COMPTES -->
-  <section class="dash-section">
-    <div class="section-hd">
-      <h2>Mes comptes</h2>
-      <a routerLink="/compte-view" [queryParams]="{open: 'true'}" class="section-link">Ouvrir →</a>
+  <div class="neo-card neo-kpi" *ngIf="!premiumLoading; else premSkel">
+    <p class="neo-kpi-label">Premium IA</p>
+    <p class="neo-kpi-value" [class.neo-kpi-value--ok]="isPremium" [class.neo-kpi-value--muted]="!isPremium">
+      {{ isPremium ? 'Actif' : 'Inactif' }}
+    </p>
+    <p class="neo-kpi-sub" *ngIf="isPremium; else upgrade">Insights + Marchés + Chatbot</p>
+    <ng-template #upgrade>
+      <a routerLink="/pricing-view" class="neo-link">Passer Premium →</a>
+    </ng-template>
+  </div>
+  <ng-template #premSkel>
+    <div class="neo-card neo-kpi neo-skel" style="min-height: 104px"></div>
+  </ng-template>
+</section>
+
+<!-- Main grid -->
+<section class="neo-grid">
+  <div class="neo-card neo-card--pad">
+    <div class="neo-card-hd">
+      <h2>Compte principal</h2>
+      <a routerLink="/compte-view" class="neo-link">Voir tous →</a>
     </div>
 
-    <div class="accounts-row" *ngIf="!loading">
-      <div class="phys-row" *ngIf="visibleComptes.length > 0">
-        <app-account-physical-card class="phys-item anim-fade-up delay-{{ i+1 }}"
-          *ngFor="let compte of visibleComptes; let i = index" [compte]="compte" />
+    <div *ngIf="!loading && primaryAccount as primary; else noPrimary">
+      <app-account-physical-card [compte]="primary" />
+    </div>
+    <ng-template #noPrimary>
+      <div class="neo-empty">
+        <p class="neo-muted">Aucun compte actif</p>
+        <a routerLink="/compte-view" [queryParams]="{ open: 'true' }" class="neo-btn neo-btn--primary">Ouvrir un compte</a>
       </div>
+    </ng-template>
+  </div>
 
-      <div class="no-accounts" *ngIf="visibleComptes.length === 0">
-        <p>Aucun compte pour l'instant</p>
-        <a routerLink="/compte-view" [queryParams]="{open: 'true'}" class="btn-open-first">
-          Ouvrir un compte
-        </a>
-      </div>
+  <div class="neo-card neo-card--pad">
+    <div class="neo-card-hd">
+      <h2>Limites quotidiennes</h2>
+      <a routerLink="/virement-view" class="neo-link">Voir détails →</a>
     </div>
 
-    <!-- Savings interest hint -->
-    <div class="savings-interest-hint" *ngIf="!loading && hasSavingsAccount && savingsBalance > 0">
-      <span class="sih-icon">🏦</span>
-      <div class="sih-text">
-        <strong>Épargne rémunérée</strong>
-        <span>Votre solde épargne ({{ savingsBalance | number:'1.3-3' }} TND) génère environ
-          <strong>+{{ projectedAnnualInterest | number:'1.3-3' }} TND</strong> / an à 4,5%</span>
+    <div class="neo-limits" *ngIf="!premiumLoading && accountUsages.length > 0; else limitsEmpty">
+      <div class="neo-limit" *ngFor="let u of accountUsages">
+        <div class="neo-limit-top">
+          <span class="neo-limit-name">
+            <i class="fa-solid fa-shield-halved"></i>
+            {{ accountTypeMeta[u.typeCompte]?.label }}
+          </span>
+          <span class="neo-limit-val">{{ u.dailyCountUsed }}/{{ u.dailyCountLimit }}</span>
+        </div>
+        <div class="neo-bar">
+          <div
+            class="neo-bar-fill"
+            [style.width.%]="dailyUsagePct(u)"
+            [class.neo-bar-fill--warn]="isNearDailyLimit(u)"
+            [class.neo-bar-fill--full]="isAtDailyLimit(u)"
+          ></div>
+        </div>
+        <p class="neo-limit-sub">Max transfert: {{ u.maxTransferAmount | number : '1.0-0' }} TND</p>
       </div>
     </div>
+    <ng-template #limitsEmpty>
+      <p class="neo-muted">Chargement des limites…</p>
+    </ng-template>
+  </div>
+</section>
 
-    <!-- Skeleton -->
-    <div class="accounts-row skeleton-pulse" *ngIf="loading">
-      <div class="account-card" *ngFor="let i of [1,2]" style="min-height:160px">
-        <div class="sk sk-h12" style="width:60%;margin-bottom:12px"></div>
-        <div class="sk sk-h28" style="width:80%;margin-bottom:8px"></div>
-        <div class="sk sk-h12" style="width:40%"></div>
-      </div>
+<!-- Secondary grid -->
+<section class="neo-grid neo-grid--2">
+  <div class="neo-card neo-card--pad">
+    <div class="neo-card-hd">
+      <h2>Performance (solde)</h2>
+      <span class="neo-badge" *ngIf="!isPremium">Premium</span>
     </div>
 
-    <div class="pending-banner" *ngIf="pendingDemandes.length > 0">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-        stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10" />
-        <polyline points="12 6 12 12 16 14" />
+    <div class="neo-chart">
+      <svg viewBox="0 0 640 220" preserveAspectRatio="none" *ngIf="balanceChartPoints; else chartPlaceholder">
+        <polyline class="neo-chart-line" [attr.points]="balanceChartPoints"></polyline>
       </svg>
-      {{ pendingDemandes.length }} demande{{ pendingDemandes.length > 1 ? 's' : '' }} en cours d'examen
+      <ng-template #chartPlaceholder>
+        <div class="neo-chart-placeholder">
+          <p class="neo-muted">Activez Premium pour voir votre courbe de solde (7 jours).</p>
+          <button type="button" class="neo-btn neo-btn--primary" (click)="openPricing()">Découvrir Premium</button>
+        </div>
+      </ng-template>
     </div>
-  </section>
+  </div>
 
-  <!-- ACTIONS RAPIDES -->
-  <section class="dash-section">
-    <div class="section-hd">
+  <div class="neo-card neo-card--pad">
+    <div class="neo-card-hd">
       <h2>Actions rapides</h2>
-    </div>
-    <div class="quick-actions">
-      <!-- Envoyer: only show external if primary account can send externally -->
-      <a routerLink="/virement-view" class="qa-card qa-send anim-fade-up delay-1" *ngIf="canPrimarySendExternal">
-        <div class="qa-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-            stroke-linejoin="round">
-            <line x1="22" y1="2" x2="11" y2="13" />
-            <polygon points="22 2 15 22 11 13 2 9 22 2" />
-          </svg>
-        </div>
-        <span>Envoyer</span>
-      </a>
-      <!-- Savings-only: show "Transférer" (internal only) instead -->
-      <a routerLink="/virement-view" [queryParams]="{mode: 'interne'}"
-        class="qa-card qa-send qa-send--savings anim-fade-up delay-1"
-        *ngIf="!canPrimarySendExternal && activeComptes.length > 0">
-        <div class="qa-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-            stroke-linejoin="round">
-            <polyline points="17 1 21 5 17 9" />
-            <path d="M3 11V9a4 4 0 0 1 4-4h14" />
-            <polyline points="7 23 3 19 7 15" />
-            <path d="M21 13v2a4 4 0 0 1-4 4H3" />
-          </svg>
-        </div>
-        <span>Transférer</span>
-        <span class="qa-badge-savings">interne</span>
-      </a>
-      <a routerLink="/receive" class="qa-card qa-receive anim-fade-up delay-2">
-        <div class="qa-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-            stroke-linejoin="round">
-            <polyline points="8 17 12 21 16 17" />
-            <line x1="12" y1="12" x2="12" y2="21" />
-            <path d="M20.88 18.09A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.29" />
-          </svg>
-        </div>
-        <span>Recevoir</span>
-      </a>
-      <a routerLink="/support-view" class="qa-card qa-support anim-fade-up delay-3">
-        <div class="qa-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-            stroke-linejoin="round">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-          </svg>
-        </div>
-        <span>Support</span>
-      </a>
-      <a routerLink="/actualite-view" class="qa-card qa-news anim-fade-up delay-4">
-        <div class="qa-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-            stroke-linejoin="round">
-            <path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2z" />
-            <line x1="8" y1="6" x2="16" y2="6" />
-            <line x1="8" y1="10" x2="16" y2="10" />
-            <line x1="8" y1="14" x2="12" y2="14" />
-          </svg>
-        </div>
-        <span>Actualités</span>
-      </a>
-
-      <button class="qa-card qa-ai anim-fade-up delay-5" (click)="goToAiSection()">
-        <div class="qa-icon">
-          <svg *ngIf="isPremium" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
-          </svg>
-          <svg *ngIf="!isPremium" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-            stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="11" width="18" height="11" rx="2" />
-            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-          </svg>
-        </div>
-        <span>Assistant IA</span>
-        <span class="qa-lock" *ngIf="!isPremium">Premium</span>
-      </button>
-
-      <a routerLink="/investment-view" class="qa-card qa-invest anim-fade-up delay-6">
-        <div class="qa-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-            stroke-linejoin="round">
-            <polyline points="23 6 13.5 15.5 8.5 10.5 1 18" />
-            <polyline points="17 6 23 6 23 12" />
-          </svg>
-        </div>
-        <span>Investir</span>
-      </a>
-    </div>
-  </section>
-
-
-  <!-- INVESTISSEMENTS ACTIFS -->
-  <section class="dash-section" *ngIf="!loading && activeInvestments.length > 0">
-    <div class="section-hd">
-      <h2>Mes investissements</h2>
-      <a routerLink="/investment-view" class="section-link">Tout voir →</a>
+      <a routerLink="/support-view" class="neo-link">Besoin d'aide ? →</a>
     </div>
 
-    <div class="investments-summary">
-      <div class="inv-summary-hero">
-        <div class="ish-stat">
-          <p class="ish-label">Capital investi</p>
-          <p class="ish-value">{{ totalInvested | number:'1.3-3' }} <span class="ish-cur">TND</span></p>
-        </div>
-        <div class="ish-divider"></div>
-        <div class="ish-stat">
-          <p class="ish-label">Intérêts attendus</p>
-          <p class="ish-value ish-value--green">+{{ totalExpectedInterest | number:'1.3-3' }} <span
-              class="ish-cur">TND</span></p>
-        </div>
-        <div class="ish-divider"></div>
-        <div class="ish-stat">
-          <p class="ish-label">Placements actifs</p>
-          <p class="ish-value">{{ activeInvestments.length }}</p>
-        </div>
-      </div>
-
-      <div class="inv-summary-list">
-        <div class="inv-summary-row" *ngFor="let inv of activeInvestments">
-          <div class="isr-left">
-            <p class="isr-name">{{ inv.planNom }}</p>
-            <p class="isr-meta">{{ inv.daysRemaining }}j restants · +{{ (inv.tauxAnnuel * 100).toFixed(1) }}% / an</p>
-          </div>
-          <div class="isr-bar-wrap">
-            <div class="isr-bar">
-              <div class="isr-fill" [style.width.%]="inv.progressPct"></div>
-            </div>
-          </div>
-          <div class="isr-right">
-            <p class="isr-amount">{{ inv.montant | number:'1.3-3' }} TND</p>
-            <p class="isr-interest">+{{ inv.interetAttendu | number:'1.3-3' }}</p>
-          </div>
-        </div>
-      </div>
-
-      <a routerLink="/investment-view" class="inv-summary-cta">
-        Gérer mes investissements →
-      </a>
-    </div>
-  </section>
-
-  <!-- PREMIUM SECTION -->
-  <section class="dash-section" id="premium-section">
-    <div class="section-hd">
-      <h2>Premium</h2>
-      <a routerLink="/pricing-view" class="section-link" *ngIf="!isPremium">Plans →</a>
-    </div>
-
-    <div class="premium-grid">
-      <app-client-insights [isPremium]="isPremium" [insights]="insights" [loading]="insightsLoading"
-        [error]="insightsError" />
-      <app-client-market-rates [isPremium]="isPremium" />
-      <app-client-chatbot [isPremium]="isPremium" />
-    </div>
-  </section>
-
-  <!-- ACTUALITÉS -->
-  <section class="dash-section" *ngIf="actualites.length > 0">
-    <div class="section-hd">
-      <h2>Actualités BTE</h2>
-      <a routerLink="/actualite-view" class="section-link">Tout voir →</a>
-    </div>
-    <div class="news-list">
-      <div class="news-item" *ngFor="let act of actualites">
-        <div class="ni-bar"></div>
+    <div class="neo-quick">
+      <a routerLink="/virement-view" class="neo-quick-item" *ngIf="canPrimarySendExternal">
+        <span class="neo-quick-ic"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
         <div>
-          <p class="ni-title">{{ act.titre }}</p>
-          <p class="ni-date">{{ act.dateCreationActualite | date:'d MMM yyyy' }}</p>
+          <p class="neo-quick-title">Envoyer</p>
+          <p class="neo-quick-sub">Virement externe</p>
+        </div>
+      </a>
+      <a
+        routerLink="/virement-view"
+        [queryParams]="{ mode: 'interne' }"
+        class="neo-quick-item"
+        *ngIf="!canPrimarySendExternal && activeComptes.length > 0"
+      >
+        <span class="neo-quick-ic"><i class="fa-solid fa-arrows-rotate"></i></span>
+        <div>
+          <p class="neo-quick-title">Transférer</p>
+          <p class="neo-quick-sub">Entre vos comptes</p>
+        </div>
+      </a>
+      <a routerLink="/receive" class="neo-quick-item">
+        <span class="neo-quick-ic"><i class="fa-solid fa-qrcode"></i></span>
+        <div>
+          <p class="neo-quick-title">Recevoir</p>
+          <p class="neo-quick-sub">RIB & QR</p>
+        </div>
+      </a>
+      <a routerLink="/investment-view" class="neo-quick-item">
+        <span class="neo-quick-ic"><i class="fa-solid fa-chart-simple"></i></span>
+        <div>
+          <p class="neo-quick-title">Investir</p>
+          <p class="neo-quick-sub">Nouveaux plans</p>
+        </div>
+      </a>
+      <a routerLink="/loan-view" class="neo-quick-item">
+        <span class="neo-quick-ic"><i class="fa-solid fa-hand-holding-dollar"></i></span>
+        <div>
+          <p class="neo-quick-title">Prêts</p>
+          <p class="neo-quick-sub">Simuler & suivre</p>
+        </div>
+      </a>
+      <button type="button" class="neo-quick-item" (click)="goToAiSection()">
+        <span class="neo-quick-ic"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+        <div>
+          <p class="neo-quick-title">Assistant IA</p>
+          <p class="neo-quick-sub">{{ isPremium ? 'Disponible' : 'Premium requis' }}</p>
+        </div>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- Activity -->
+<section class="neo-grid neo-grid--2">
+  <div class="neo-card neo-card--pad">
+    <div class="neo-card-hd">
+      <h2>Investissements récents</h2>
+      <a routerLink="/investment-view" class="neo-link">Voir tout →</a>
+    </div>
+
+    <div class="neo-list" *ngIf="recentInvestments.length > 0; else invEmpty">
+      <div class="neo-row" *ngFor="let inv of recentInvestments">
+        <div class="neo-row-ic"><i class="fa-solid fa-thumbtack"></i></div>
+        <div class="neo-row-main">
+          <p class="neo-row-title">{{ inv.planNom }}</p>
+          <p class="neo-row-sub">Échéance: {{ formatDateShort(inv.dateEcheance) }} · {{ inv.daysRemaining }}j</p>
+        </div>
+        <div class="neo-row-val">
+          <p class="neo-row-amt">{{ inv.montant | number : '1.3-3' }} TND</p>
+          <p class="neo-row-meta">+{{ inv.interetAttendu | number : '1.3-3' }}</p>
         </div>
       </div>
     </div>
-  </section>
+    <ng-template #invEmpty>
+      <p class="neo-muted">Aucun investissement actif pour le moment.</p>
+    </ng-template>
+  </div>
 
-</div>
+  <div class="neo-card neo-card--pad">
+    <div class="neo-card-hd">
+      <h2>Actualités</h2>
+      <a routerLink="/actualite-view" class="neo-link">Voir tout →</a>
+    </div>
+
+    <div class="neo-list" *ngIf="recentActualites.length > 0; else newsEmpty">
+      <div class="neo-row" *ngFor="let a of recentActualites">
+        <div class="neo-row-ic"><i class="fa-regular fa-newspaper"></i></div>
+        <div class="neo-row-main">
+          <p class="neo-row-title">{{ a.titre }}</p>
+          <p class="neo-row-sub">{{ formatDateShort(a.dateCreationActualite) }}</p>
+        </div>
+      </div>
+    </div>
+    <ng-template #newsEmpty>
+      <p class="neo-muted">Aucune actualité pour le moment.</p>
+    </ng-template>
+  </div>
+</section>
+
+<!-- Premium section (kept for now; anchored by quick action) -->
+<section class="neo-premium" id="premium-section">
+  <app-client-insights [isPremium]="isPremium" [insights]="insights" [loading]="insightsLoading" [error]="insightsError" />
+</section>
+

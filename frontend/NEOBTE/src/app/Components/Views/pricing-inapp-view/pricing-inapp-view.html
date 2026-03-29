@@ -1,0 +1,143 @@
+<div class="pricing-app anim-fade-up">
+  <div class="pricing-top neo-card neo-card--pad">
+    <div>
+      <h1 class="pricing-title">Plan & Tarification</h1>
+      <p class="pricing-sub">Choisissez l’offre adaptée à votre usage. Aucun frais caché.</p>
+    </div>
+    <div class="pricing-top-actions">
+      <a class="neo-btn" routerLink="/settings-view">
+        <i class="fa-solid fa-gear"></i>
+        Retour aux paramètres
+      </a>
+    </div>
+  </div>
+
+  <div class="pricing-grid">
+    <section class="neo-card neo-card--pad pricing-main">
+      <div class="plans">
+        <div class="plan">
+          <div class="plan-hd">
+            <span class="chip"><i class="fa-regular fa-circle"></i> Essentiel</span>
+            <div class="price">
+              <span class="amt">0</span>
+              <span class="unit">TND / mois</span>
+            </div>
+          </div>
+          <p class="tagline">L’essentiel pour gérer vos comptes au quotidien.</p>
+          <ul class="features">
+            <li><i class="fa-solid fa-check"></i> Comptes & solde en temps réel</li>
+            <li><i class="fa-solid fa-check"></i> Virements (selon limites)</li>
+            <li><i class="fa-solid fa-check"></i> Support & tickets</li>
+            <li><i class="fa-solid fa-check"></i> Actualités BTE</li>
+            <li class="no"><i class="fa-solid fa-minus"></i> Assistant IA</li>
+            <li class="no"><i class="fa-solid fa-minus"></i> Insights & tableaux avancés</li>
+          </ul>
+          <div class="actions">
+            <button class="neo-btn" type="button" disabled>Offre actuelle</button>
+          </div>
+        </div>
+
+        <div class="plan recommended">
+          <div class="recommended-badge">Recommandé</div>
+          <div class="plan-hd">
+            <span class="chip premium"><i class="fa-regular fa-gem"></i> Premium</span>
+            <div class="price">
+              <span class="amt">—</span>
+              <span class="unit">sur demande</span>
+            </div>
+          </div>
+          <p class="tagline">IA, insights, UX plus fluide — pensée pour une expérience fintech premium.</p>
+          <ul class="features">
+            <li><i class="fa-solid fa-check"></i> Assistant IA (budget, conseils, explications)</li>
+            <li><i class="fa-solid fa-check"></i> Graphiques (solde, dépenses, tendances)</li>
+            <li><i class="fa-solid fa-check"></i> Notifications prioritaires & son configurable</li>
+            <li><i class="fa-solid fa-check"></i> Support accéléré</li>
+            <li><i class="fa-solid fa-check"></i> Accès bêta aux nouveautés</li>
+          </ul>
+          <div class="actions">
+            <button class="neo-btn neo-btn--primary" type="button" (click)="openAgencyModal()">
+              <i class="fa-solid fa-sparkles"></i>
+              Obtenir Premium
+            </button>
+          </div>
+        </div>
+
+        <div class="plan">
+          <div class="plan-hd">
+            <span class="chip"><i class="fa-solid fa-building"></i> Entreprise</span>
+            <div class="price">
+              <span class="amt">—</span>
+              <span class="unit">devis</span>
+            </div>
+          </div>
+          <p class="tagline">Pour les professionnels : contrôle, audit et accompagnement dédié.</p>
+          <ul class="features">
+            <li><i class="fa-solid fa-check"></i> Droits & profils multiples</li>
+            <li><i class="fa-solid fa-check"></i> Exports & rapports</li>
+            <li><i class="fa-solid fa-check"></i> Seuils personnalisés</li>
+            <li><i class="fa-solid fa-check"></i> Suivi et support dédié</li>
+          </ul>
+          <div class="actions">
+            <a class="neo-btn" href="https://www.bte.com.tn/fr/" target="_blank" rel="noopener noreferrer">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i>
+              Contacter BTE
+            </a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <aside class="neo-card neo-card--pad pricing-side">
+      <h3>Ce que vous gagnez</h3>
+      <p class="neo-muted">Une interface plus riche (tableaux de bord, cartes, listes) et plus de confort au quotidien.</p>
+
+      <div class="side-box">
+        <p class="box-title">Chatbot client</p>
+        <p class="box-sub">Toujours accessible en bas à droite. Premium active les réponses IA.</p>
+      </div>
+
+      <div class="side-box">
+        <p class="box-title">Sécurité</p>
+        <p class="box-sub">PIN 2FA, alertes et contrôle des accès intégrés.</p>
+      </div>
+
+      <div class="side-box">
+        <p class="box-title">Transparence</p>
+        <p class="box-sub">Aucun prélèvement automatique : activation en agence selon conditions.</p>
+      </div>
+    </aside>
+  </div>
+
+  <div class="modal-backdrop" *ngIf="showAgencyModal" (click)="closeAgencyModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-top">
+        <h3 class="modal-title">Activation en agence BTE</h3>
+        <button class="modal-close" type="button" (click)="closeAgencyModal()" aria-label="Fermer">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <p class="modal-body">
+        Pour souscrire à <strong>NeoBTE Premium</strong>, rendez‑vous dans une agence
+        <strong>Banque de Tunisie et des Emirats (BTE)</strong>. Un conseiller activera l’abonnement sur votre compte.
+      </p>
+      <div class="steps">
+        <div class="step">
+          <span class="num">1</span>
+          <span>Apportez votre CIN et les informations de votre compte NeoBTE.</span>
+        </div>
+        <div class="step">
+          <span class="num">2</span>
+          <span>Demandez l’activation de l’abonnement <strong>Premium</strong>.</span>
+        </div>
+        <div class="step">
+          <span class="num">3</span>
+          <span>Les fonctionnalités Premium sont disponibles immédiatement.</span>
+        </div>
+      </div>
+      <div class="actions" style="justify-content: flex-end">
+        <button class="neo-btn" type="button" (click)="closeAgencyModal()">Compris</button>
+      </div>
+    </div>
+  </div>
+</div>
+

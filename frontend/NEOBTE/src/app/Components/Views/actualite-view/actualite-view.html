@@ -35,7 +35,7 @@
             [class.active]="act.myReaction === r.key"
             type="button"
           >
-            <span class="emoji" aria-hidden="true">{{ r.emoji }}</span>
+            <span class="rx-icon" aria-hidden="true"><i [class]="r.iconClass"></i></span>
             <span class="rx-label">{{ r.label }}</span>
             <span class="count" *ngIf="reactionCount(act, r.key) > 0">{{ reactionCount(act, r.key) }}</span>
           </button>

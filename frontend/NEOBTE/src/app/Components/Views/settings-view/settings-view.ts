@@ -1,10 +1,12 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, DestroyRef, OnDestroy, OnInit, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { RouterModule } from '@angular/router';
 import { AuthService } from '../../../Services/auth-service';
 import { ChangePasswordRequest, ClientProfile, UpdateClientProfileRequest } from '../../../Entities/Interfaces/client-profile';
 import { ReferralDashboard, ReferralService } from '../../../Services/SharedServices/Referral.service';
+import { UiPreferencesService } from '../../../Services/ui-preferences.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-settings-view',
@@ -13,7 +15,9 @@ import { ReferralDashboard, ReferralService } from '../../../Services/SharedServ
   templateUrl: './settings-view.html',
   styleUrl: './settings-view.css',
 })
-export class SettingsView implements OnInit {
+export class SettingsView implements OnInit, OnDestroy {
+  private destroyRef = inject(DestroyRef);
+
   profile: ClientProfile | null = null;
   loading = true;
   error = '';
@@ -35,6 +39,8 @@ export class SettingsView implements OnInit {
   photoFile: File | null = null;
   uploadingPhoto = false;
   photoError = '';
+  private previewBlobUrl: string | null = null;
+  private previewTriedBlob = false;
 
   // Password
   oldPassword = '';
@@ -57,9 +63,6 @@ export class SettingsView implements OnInit {
   fpError = '';
   fpSuccess = '';
 
-  loggingOut = false;
-  logoutError = '';
-
   // Referral
   referral: ReferralDashboard | null = null;
   referralLoading = false;
@@ -77,14 +80,22 @@ export class SettingsView implements OnInit {
   pinSuccess = '';
   pinError = '';
 
+  notifSoundEnabled = true;
+
   constructor(
     private authService: AuthService,
-    private router: Router,
-    private referralService: ReferralService
+    private referralService: ReferralService,
+    private uiPrefs: UiPreferencesService
   ) { }
 
   ngOnInit(): void {
+    this.notifSoundEnabled = this.uiPrefs.notifSoundEnabled;
+    this.uiPrefs.notifSoundEnabled$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(v => (this.notifSoundEnabled = v));
     this.loadProfile();
+  }
+
+  ngOnDestroy(): void {
+    if (this.previewBlobUrl) URL.revokeObjectURL(this.previewBlobUrl);
   }
 
   setSection(section: SettingsView['section']) {
@@ -106,6 +117,9 @@ export class SettingsView implements OnInit {
           job: p.job ?? '', genre: (p.genre as any) ?? null,
           adresse: p.adresse ?? '', codePostal: p.codePostal ?? '', pays: p.pays ?? 'Tunisie',
         };
+        this.previewTriedBlob = false;
+        if (this.previewBlobUrl) URL.revokeObjectURL(this.previewBlobUrl);
+        this.previewBlobUrl = null;
         this.photoPreviewUrl = p.photoUrl ? this.mediaUrl(p.photoUrl) : null;
         this.fpEmail = p.email ?? '';
         this.pinEnabled = p.pinEnabled ?? false;
@@ -149,19 +163,35 @@ export class SettingsView implements OnInit {
 
   // ── Profile ───────────────────────────────────────────────────────────────
 
-  logout() {
-    this.logoutError = '';
-    this.loggingOut = true;
-    this.authService.logout().subscribe({
-      next: () => { this.loggingOut = false; this.router.navigate(['/auth-view']); },
-      error: () => { this.loggingOut = false; this.logoutError = 'Impossible de se déconnecter.'; },
+  mediaUrl(url?: string | null): string {
+    if (!url) return '';
+    const base = url.startsWith('http') ? url : `http://localhost:8080${url}`;
+    const b = this.authService.getPhotoCacheBuster();
+    return `${base}${base.includes('?') ? '&' : '?'}v=${b}`;
+  }
+
+  onPreviewImgError() {
+    if (this.photoFile) return; // local preview selected by user
+    const url = this.profile?.photoUrl ?? null;
+    if (!url || this.previewTriedBlob) {
+      this.photoPreviewUrl = null;
+      return;
+    }
+    this.previewTriedBlob = true;
+    this.authService.fetchMediaBlob(url).subscribe({
+      next: (blob) => {
+        if (this.previewBlobUrl) URL.revokeObjectURL(this.previewBlobUrl);
+        this.previewBlobUrl = URL.createObjectURL(blob);
+        this.photoPreviewUrl = this.previewBlobUrl;
+      },
+      error: () => {
+        this.photoPreviewUrl = null;
+      },
     });
   }
 
-  mediaUrl(url?: string | null): string {
-    if (!url) return '';
-    if (url.startsWith('http')) return url;
-    return `http://localhost:8080${url}`;
+  setNotifSoundEnabled(v: boolean) {
+    this.uiPrefs.setNotifSoundEnabled(v);
   }
 
   onSelectPhoto(ev: Event) {
@@ -169,6 +199,9 @@ export class SettingsView implements OnInit {
     const file = input.files?.[0] ?? null;
     this.photoFile = file;
     this.photoError = '';
+    this.previewTriedBlob = false;
+    if (this.previewBlobUrl) URL.revokeObjectURL(this.previewBlobUrl);
+    this.previewBlobUrl = null;
     this.photoPreviewUrl = file ? URL.createObjectURL(file) : (this.profile?.photoUrl ? this.mediaUrl(this.profile.photoUrl) : null);
   }
 
@@ -179,6 +212,9 @@ export class SettingsView implements OnInit {
     this.authService.uploadProfilePhoto(this.photoFile).subscribe({
       next: (p) => {
         this.profile = p; this.photoFile = null;
+        this.previewTriedBlob = false;
+        if (this.previewBlobUrl) URL.revokeObjectURL(this.previewBlobUrl);
+        this.previewBlobUrl = null;
         this.photoPreviewUrl = p.photoUrl ? this.mediaUrl(p.photoUrl) : null;
         this.uploadingPhoto = false;
       },

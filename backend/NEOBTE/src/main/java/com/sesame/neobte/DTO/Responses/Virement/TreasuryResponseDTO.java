@@ -7,7 +7,10 @@ import lombok.Setter;
 
 import java.util.*;
 
-@Getter @Setter @NoArgsConstructor @AllArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class TreasuryResponseDTO {
 
     // Revenue
@@ -22,7 +25,14 @@ public class TreasuryResponseDTO {
 
     // Investment stats
     private Long   activeInvestments;
-    private Double totalInterestPaid;  // cumulative interest paid out at maturity
+    private Double totalInterestPaid;
+
+    // Loan stats
+    private Long   activeLoans;
+    private Double totalLentOutstanding; // current outstanding loan principal
+    private Double totalLoanRepaid;      // cumulative repaid
+    private Double totalLoanPenalties;   // cumulative penalties collected
+    private Double loanPoolBalance;      // NEOBTE_LOANS tracking account  // cumulative interest paid out at maturity
 
     private List<FraisEntryDTO> recentTransactions;
 

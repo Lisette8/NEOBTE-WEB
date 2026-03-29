@@ -64,4 +64,46 @@ export class NotificationsView implements OnInit, OnDestroy {
 
   nextPage() { if (this.page < this.totalPages - 1) { this.page++; this.load(); } }
   previousPage() { if (this.page > 0) { this.page--; this.load(); } }
+
+  iconClass(type: ClientNotification['type']): string {
+    switch (type) {
+      case 'TRANSFER_SENT':
+        return 'fa-solid fa-arrow-up-right-from-square';
+      case 'TRANSFER_RECEIVED':
+        return 'fa-solid fa-arrow-down';
+      case 'PASSWORD_CHANGED':
+        return 'fa-solid fa-key';
+      case 'ACTUALITE_CREATED':
+      case 'ACTUALITE_UPDATED':
+        return 'fa-regular fa-newspaper';
+      case 'REFERRAL_REWARD':
+        return 'fa-solid fa-user-group';
+      case 'INVESTMENT_CREATED':
+        return 'fa-solid fa-chart-line';
+      case 'INVESTMENT_MATURED':
+        return 'fa-solid fa-coins';
+      default:
+        return 'fa-regular fa-bell';
+    }
+  }
+
+  typeLabel(type: ClientNotification['type']): string {
+    switch (type) {
+      case 'TRANSFER_SENT':
+      case 'TRANSFER_RECEIVED':
+        return 'Virement';
+      case 'PASSWORD_CHANGED':
+        return 'Sécurité';
+      case 'ACTUALITE_CREATED':
+      case 'ACTUALITE_UPDATED':
+        return 'Actualité';
+      case 'REFERRAL_REWARD':
+        return 'Parrainage';
+      case 'INVESTMENT_CREATED':
+      case 'INVESTMENT_MATURED':
+        return 'Investissement';
+      default:
+        return 'Notification';
+    }
+  }
 }

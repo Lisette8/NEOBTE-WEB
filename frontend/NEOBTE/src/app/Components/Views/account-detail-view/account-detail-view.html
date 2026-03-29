@@ -26,7 +26,7 @@
   <div class="type-info-panel" [class.tip--savings]="compte.typeCompte === 'EPARGNE'"
     [class.tip--pro]="compte.typeCompte === 'PROFESSIONNEL'">
     <div class="tip-header">
-      <span class="tip-icon">{{ accountTypeIcon }}</span>
+      <span class="tip-icon"><i [class]="accountTypeIcon"></i></span>
       <div>
         <p class="tip-title">{{ accountTypeLabel }}</p>
         <p class="tip-purpose">{{ accountTypePurpose }}</p>

@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
 import { RegisterRequest } from '../Entities/Interfaces/register-request';
 import { AuthResponse } from '../Entities/Interfaces/auth-response';
 import { LoginRequest } from '../Entities/Interfaces/login-request';
@@ -16,6 +16,14 @@ export class AuthService {
 
   constructor(private http: HttpClient) {}
 
+  private currentUserSubject = new BehaviorSubject<ClientProfile | null>(null);
+  readonly currentUser$ = this.currentUserSubject.asObservable();
+
+  private photoCacheBuster = Date.now();
+  getPhotoCacheBuster(): number {
+    return this.photoCacheBuster;
+  }
+
   login(data: LoginRequest): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.API_URL}/login`, data).pipe(
       tap(res => { if (res.token) localStorage.setItem('token', res.token); })
@@ -30,7 +38,10 @@ export class AuthService {
 
   logout(): Observable<any> {
     return this.http.post(`${this.API_URL}/logout`, {}, { responseType: 'text' }).pipe(
-      tap(() => localStorage.removeItem('token'))
+      tap(() => {
+        localStorage.removeItem('token');
+        this.currentUserSubject.next(null);
+      })
     );
   }
 
@@ -90,8 +101,20 @@ export class AuthService {
     return this.http.get<ClientProfile>(`${this.CLIENT_URL}/current`);
   }
 
+  refreshCurrentUser(): Observable<ClientProfile> {
+    return this.getCurrentUser().pipe(
+      tap((u) => {
+        const prev = this.currentUserSubject.value;
+        if ((prev?.photoUrl ?? null) !== (u?.photoUrl ?? null)) this.photoCacheBuster = Date.now();
+        this.currentUserSubject.next(u);
+      })
+    );
+  }
+
   updateProfile(dto: UpdateClientProfileRequest): Observable<ClientProfile> {
-    return this.http.put<ClientProfile>(`${this.CLIENT_URL}/current`, dto);
+    return this.http.put<ClientProfile>(`${this.CLIENT_URL}/current`, dto).pipe(
+      tap((u) => this.currentUserSubject.next(u))
+    );
   }
 
   changePassword(dto: ChangePasswordRequest): Observable<string> {
@@ -101,7 +124,12 @@ export class AuthService {
   uploadProfilePhoto(image: File): Observable<ClientProfile> {
     const fd = new FormData();
     fd.append('image', image);
-    return this.http.put<ClientProfile>(`${this.CLIENT_URL}/photo`, fd);
+    return this.http.put<ClientProfile>(`${this.CLIENT_URL}/photo`, fd).pipe(
+      tap((u) => {
+        this.photoCacheBuster = Date.now();
+        this.currentUserSubject.next(u);
+      })
+    );
   }
 
   getMyRib(): Observable<Rib> {
@@ -129,4 +157,10 @@ export class AuthService {
   }
 
   isLoggedIn(): boolean { return this.getToken() != null; }
+
+  /** Useful when `photoUrl` is behind auth and `<img>` cannot send Authorization headers. */
+  fetchMediaBlob(url: string): Observable<Blob> {
+    const full = url.startsWith('http') ? url : `http://localhost:8080${url}`;
+    return this.http.get(full, { responseType: 'blob' });
+  }
 }

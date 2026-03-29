@@ -20,7 +20,7 @@ export const ACCOUNT_TYPE_META: Record<string, {
     COURANT: {
         label: 'Compte Chèque',
         purpose: 'Opérations quotidiennes — paiements, virements, retraits.',
-        icon: '💳',
+        icon: 'fa-solid fa-credit-card',
         color: '#3b82f6',
         canSendExternal: true,
         interestRate: 0,
@@ -29,7 +29,7 @@ export const ACCOUNT_TYPE_META: Record<string, {
     EPARGNE: {
         label: 'Compte Épargne',
         purpose: 'Épargne rémunérée. Retraits limités pour favoriser l\'accumulation.',
-        icon: '🏦',
+        icon: 'fa-solid fa-building-columns',
         color: '#10b981',
         canSendExternal: false,
         interestRate: 4.5,
@@ -38,7 +38,7 @@ export const ACCOUNT_TYPE_META: Record<string, {
     PROFESSIONNEL: {
         label: 'Compte Professionnel',
         purpose: 'Activité professionnelle à fort volume. Limites élevées.',
-        icon: '🏢',
+        icon: 'fa-solid fa-building',
         color: '#8b5cf6',
         canSendExternal: true,
         interestRate: 0,

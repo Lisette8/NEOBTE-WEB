@@ -40,9 +40,11 @@ export class App {
         this.showFooter = false;
       } else if (this.publicRoutes.some(r => url.includes(r))) {
         this.headerMode = 'landing';
-        this.showFooter = url.includes('landing-view');
+        // Public pages use the website header/footer (except auth).
+        this.showFooter = !url.includes('auth-view');
       } else {
-        this.headerMode = 'app';
+        // Client area uses the premium sidebar/topbar shell.
+        this.headerMode = 'hidden';
         this.showFooter = false;
       }
     });

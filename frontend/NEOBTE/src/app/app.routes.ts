@@ -19,25 +19,38 @@ import { AccountDetailView } from './Components/Views/account-detail-view/accoun
 import { ReceiveView } from './Components/Views/receive-view/receive-view';
 import { TreasuryComponent } from './Components/adminComponents/treasury-component/treasury-component';
 import { PricingView } from './Components/Views/pricing-view/pricing-view';
+import { PricingInappView } from './Components/Views/pricing-inapp-view/pricing-inapp-view';
 import { SettingsView } from './Components/Views/settings-view/settings-view';
 import { NotificationsView } from './Components/Views/notifications-view/notifications-view';
 import { InvestmentView } from './Components/Views/investment-view/investment-view';
+import { LoanView } from './Components/Views/loan-view/loan-view';
+import { ClientShell } from './Layouts/client-shell/client-shell';
 
 export const routes: Routes = [
   {
-    path: 'home-view',
-    component: HomeView,
-    canActivate: [authGuard],
+    path: '',
+    redirectTo: 'landing-view',
+    pathMatch: 'full',
   },
   {
-    path: 'account/:id',
-    component: AccountDetailView,
+    path: '',
+    component: ClientShell,
     canActivate: [authGuard],
-  },
-  {
-    path: 'receive',
-    component: ReceiveView,
-    canActivate: [authGuard]
+    children: [
+      { path: 'home-view', component: HomeView },
+      { path: 'compte-view', component: CompteView },
+      { path: 'account/:id', component: AccountDetailView },
+      { path: 'receive', component: ReceiveView },
+      { path: 'virement-view', component: VirementView },
+      { path: 'investment-view', component: InvestmentView },
+      { path: 'loan-view', component: LoanView },
+      { path: 'support-view', component: SupportView },
+      { path: 'notifications-view', component: NotificationsView },
+      { path: 'settings-view', component: SettingsView },
+      { path: 'pricing', component: PricingInappView },
+      // In-app news view (now consistent with the client chrome)
+      { path: 'actualite-view', component: ActualiteView },
+    ],
   },
   {
     path: 'auth-view',
@@ -65,45 +78,6 @@ export const routes: Routes = [
   {
     path: 'pricing-view',
     component: PricingView,
-  },
-  {
-    path: 'settings-view',
-    component: SettingsView,
-    canActivate: [authGuard],
-  },
-  {
-    path: 'notifications-view',
-    component: NotificationsView,
-    canActivate: [authGuard],
-  },
-  {
-    path: 'support-view',
-    component: SupportView,
-    canActivate: [authGuard],
-  },
-  {
-    path: 'virement-view',
-    component: VirementView,
-    canActivate: [authGuard],
-  },
-  {
-    path: 'actualite-view',
-    component: ActualiteView,
-  },
-  {
-    path: 'investment-view',
-    component: InvestmentView,
-    canActivate: [authGuard],
-  },
-  {
-    path: 'compte-view',
-    component: CompteView,
-    canActivate: [authGuard],
-  },
-  {
-    path: '',
-    redirectTo: 'landing-view',
-    pathMatch: 'full',
   },
   {
     path: '**',

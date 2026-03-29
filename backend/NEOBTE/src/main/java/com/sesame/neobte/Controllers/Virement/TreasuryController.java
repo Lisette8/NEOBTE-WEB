@@ -6,7 +6,9 @@ import com.sesame.neobte.Entities.Enumeration.Investment.InvestmentStatut;
 import com.sesame.neobte.Repositories.ICompteInterneRepository;
 import com.sesame.neobte.Repositories.IFraisTransactionRepository;
 import com.sesame.neobte.Repositories.Investment.IInvestmentRepository;
+import com.sesame.neobte.Repositories.Loan.ILoanRepository;
 import com.sesame.neobte.Services.Investment.InvestmentServiceImpl;
+import com.sesame.neobte.Services.Loan.LoanServiceImpl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,6 +27,7 @@ public class TreasuryController {
     private final ICompteInterneRepository compteInterneRepository;
     private final IFraisTransactionRepository fraisTransactionRepository;
     private final IInvestmentRepository investmentRepository;
+    private final ILoanRepository loanRepository;
 
     @Value("${neobte.transfer.fee-rate:0.005}")
     private double feeRate;
@@ -68,10 +71,19 @@ public class TreasuryController {
                             f.getTauxApplique(), v.getMontant(), sender, recipient, f.getDateCreation());
                 }).toList();
 
+        // ── Loan stats ────────────────────────────────────────────────────
+        long activeLoans         = loanRepository.countActiveLoans();
+        double totalOutstanding  = loanRepository.totalOutstanding();
+        double totalRepaid       = loanRepository.totalRepaid();
+        double totalPenalties    = loanRepository.totalPenalties();
+        double loanPoolBalance   = compteInterneRepository.findByNom(LoanServiceImpl.ACCOUNT_LOANS)
+                .map(c -> c.getSolde()).orElse(0.0);
+
         return new TreasuryResponseDTO(
                 fees, feeRate,
                 investmentPool, reserves, deployed, reserveRate,
                 activeInvestments, totalInterestPaid,
+                activeLoans, totalOutstanding, totalRepaid, totalPenalties, loanPoolBalance,
                 entries);
     }
 }

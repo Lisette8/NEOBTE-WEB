@@ -68,7 +68,7 @@
         <!-- Active investments -->
         <div *ngIf="!loading && tab === 'active'">
             <div class="iv-empty" *ngIf="activeInvestments.length === 0">
-                <div class="iv-empty-icon">📈</div>
+                <div class="iv-empty-icon"><i class="fa-solid fa-chart-line"></i></div>
                 <p class="iv-empty-title">Aucun investissement actif</p>
                 <p class="iv-empty-sub">Faites fructifier votre épargne en souscrivant à un plan d'investissement.</p>
                 <button class="btn-new-inv" (click)="goNew()">Commencer →</button>
@@ -181,7 +181,7 @@
         <!-- History -->
         <div *ngIf="!loading && tab === 'history'">
             <div class="iv-empty" *ngIf="historyInvestments.length === 0">
-                <div class="iv-empty-icon">📋</div>
+                <div class="iv-empty-icon"><i class="fa-regular fa-clipboard"></i></div>
                 <p class="iv-empty-title">Aucun historique</p>
                 <p class="iv-empty-sub">Vos investissements terminés apparaîtront ici.</p>
             </div>

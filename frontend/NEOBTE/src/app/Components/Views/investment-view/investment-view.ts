@@ -187,7 +187,7 @@ export class InvestmentView implements OnInit, OnDestroy {
   }
 
   accountLabel(c: Compte): string {
-    return `${this.accountTypeMeta[c.typeCompte]?.icon ?? ''} ${this.accountTypeMeta[c.typeCompte]?.label ?? c.typeCompte} #${c.idCompte} · ${this.fmt(c.solde)} TND`;
+    return `${this.accountTypeMeta[c.typeCompte]?.label ?? c.typeCompte} #${c.idCompte} · ${this.fmt(c.solde)} TND`;
   }
 
   fmt(n: number): string {

@@ -926,3 +926,11 @@
 .nav-item-invest .nav-icon svg {
   stroke: #6ee7b7;
 }
+
+.nav-item-loans.active {
+  background: rgba(239, 68, 68, 0.15) !important;
+}
+
+.nav-item-loans .nav-icon svg {
+  stroke: #fca5a5;
+}

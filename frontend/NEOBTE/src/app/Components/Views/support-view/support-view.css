@@ -1,5 +1,5 @@
 :host { display: block; }
-.page { max-width: 520px; margin: 0 auto; padding: 80px 20px 100px; }
+.page { max-width: 1200px; margin: 0; padding: 0; }
 
 .page-top { margin-bottom: 24px; animation: fadeUp 0.4s var(--ease) both; }
 .page-top h1 { font-size: 1.4rem; font-weight: 700; color: var(--text-1); letter-spacing: -0.03em; margin-bottom: 2px; }

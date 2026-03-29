@@ -3,7 +3,10 @@ export type NotificationType =
   | 'ACTUALITE_UPDATED'
   | 'TRANSFER_SENT'
   | 'TRANSFER_RECEIVED'
-  | 'PASSWORD_CHANGED';
+  | 'PASSWORD_CHANGED'
+  | 'REFERRAL_REWARD'
+  | 'INVESTMENT_CREATED'
+  | 'INVESTMENT_MATURED';
 
 export interface ClientNotification {
   id: number;
@@ -14,4 +17,3 @@ export interface ClientNotification {
   lu: boolean;
   dateCreation: string;
 }
-

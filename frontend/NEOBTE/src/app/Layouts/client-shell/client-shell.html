@@ -1,0 +1,115 @@
+<div class="neo-shell">
+  <!-- Sidebar -->
+  <aside class="neo-sidebar">
+    <div class="neo-brand" routerLink="/home-view">
+      <div class="neo-logo">N</div>
+      <div class="neo-brand-text">
+        <div class="neo-brand-name">NEOBTE</div>
+        <div class="neo-brand-sub">Banque · Client</div>
+      </div>
+    </div>
+
+    <nav class="neo-nav" aria-label="Navigation principale">
+      <a class="neo-nav-item" routerLink="/home-view" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+        <span class="neo-nav-ic"><i class="fa-solid fa-gauge-high"></i></span>
+        Tableau de bord
+      </a>
+      <a class="neo-nav-item" routerLink="/compte-view" routerLinkActive="active">
+        <span class="neo-nav-ic"><i class="fa-solid fa-credit-card"></i></span>
+        Comptes
+      </a>
+      <a class="neo-nav-item" routerLink="/virement-view" routerLinkActive="active">
+        <span class="neo-nav-ic"><i class="fa-solid fa-right-left"></i></span>
+        Virements
+      </a>
+      <a class="neo-nav-item" routerLink="/investment-view" routerLinkActive="active">
+        <span class="neo-nav-ic"><i class="fa-solid fa-chart-line"></i></span>
+        Investissements
+      </a>
+      <a class="neo-nav-item" routerLink="/loan-view" routerLinkActive="active">
+        <span class="neo-nav-ic"><i class="fa-solid fa-hand-holding-dollar"></i></span>
+        Prêts
+      </a>
+      <a class="neo-nav-item" routerLink="/support-view" routerLinkActive="active">
+        <span class="neo-nav-ic"><i class="fa-solid fa-headset"></i></span>
+        Support
+      </a>
+      <a class="neo-nav-item" routerLink="/actualite-view" routerLinkActive="active">
+        <span class="neo-nav-ic"><i class="fa-solid fa-newspaper"></i></span>
+        Actualités
+      </a>
+    </nav>
+
+    <div class="neo-sidebar-bottom">
+      <button class="neo-logout" type="button" (click)="logout()">
+        <i class="fa-solid fa-arrow-right-from-bracket"></i>
+        Se déconnecter
+      </button>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="neo-main">
+    <!-- Topbar -->
+    <div class="neo-topbar">
+      <div class="neo-search">
+        <i class="fa-solid fa-magnifying-glass neo-search-ic" aria-hidden="true"></i>
+        <input placeholder="Rechercher (comptes, transactions, investissements)..." aria-label="Recherche" />
+      </div>
+
+      <div class="neo-actions">
+        <div class="neo-notif-wrap" (mouseenter)="onNotifHover(true)" (mouseleave)="onNotifHover(false)">
+          <button class="neo-icon-btn neo-notif-btn" type="button" aria-label="Notifications" (click)="toggleNotif()" [class.pulse]="notifPulse">
+            <i class="fa-regular fa-bell"></i>
+            <span class="neo-notif-badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
+          </button>
+
+          <div class="neo-notif-dd" *ngIf="notifOpen" (mouseenter)="onNotifDropdownHover(true)" (mouseleave)="onNotifDropdownHover(false)">
+            <div class="neo-notif-hd">
+              <p class="neo-notif-title">Notifications</p>
+              <button class="neo-notif-action" type="button" (click)="markAllRead()" [disabled]="unreadCount === 0">
+                Tout lire
+              </button>
+            </div>
+
+            <div class="neo-notif-list" *ngIf="!notifLoading; else notifSkel">
+              <a
+                class="neo-notif-item"
+                *ngFor="let n of notifications"
+                [class.unread]="!n.lu"
+                [routerLink]="n.lien || '/notifications-view'"
+                (click)="markRead(n); toggleNotif(false)"
+              >
+                <div class="neo-notif-dot" *ngIf="!n.lu"></div>
+                <div class="neo-notif-txt">
+                  <p class="neo-notif-t">{{ n.titre }}</p>
+                  <p class="neo-notif-m">{{ n.message }}</p>
+                  <p class="neo-notif-d">{{ n.dateCreation | date : 'd MMM, HH:mm' }}</p>
+                </div>
+              </a>
+              <a class="neo-notif-more" routerLink="/notifications-view" (click)="toggleNotif(false)">Voir toutes →</a>
+            </div>
+            <ng-template #notifSkel>
+              <div class="neo-notif-skel">
+                <div class="neo-skel" style="height: 52px; border-radius: 14px"></div>
+                <div class="neo-skel" style="height: 52px; border-radius: 14px"></div>
+                <div class="neo-skel" style="height: 52px; border-radius: 14px"></div>
+              </div>
+            </ng-template>
+          </div>
+        </div>
+
+        <a routerLink="/settings-view" class="neo-avatar neo-avatar-link" [title]="userName || 'Paramètres'">
+          <img *ngIf="photoUrl" [src]="photoUrl" alt="Photo de profil" (error)="onAvatarImgError()" />
+          <span *ngIf="!photoUrl">{{ userInitials }}</span>
+        </a>
+      </div>
+    </div>
+
+    <div class="neo-content">
+      <router-outlet></router-outlet>
+    </div>
+  </main>
+</div>
+
+<app-client-chatbot-bubble></app-client-chatbot-bubble>

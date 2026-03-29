@@ -1,4 +1,4 @@
-package com.sesame.neobte.Entities.Enumeration;
+package com.sesame.neobte.Entities.Enumeration.Loan;
 
 public enum LoanStatut {
     PENDING_APPROVAL, // awaiting admin review

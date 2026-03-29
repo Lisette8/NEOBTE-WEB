@@ -5,17 +5,17 @@
   left: 0;
   right: 0;
   z-index: 100;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  border-bottom: 1px solid var(--border-soft);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
 }
 
 .header-inner {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 24px;
-  height: 60px;
+  height: 64px;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -38,7 +38,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #0000A0;
+  background: #0a0a14;
   flex-shrink: 0;
 }
 
@@ -63,8 +63,8 @@
   gap: 5px;
   padding: 6px 12px;
   border-radius: var(--r-sm);
-  font-size: 0.83rem;
-  font-weight: 500;
+  font-size: 0.85rem;
+  font-weight: 750;
   color: var(--text-2);
   text-decoration: none;
   background: transparent;
@@ -83,7 +83,7 @@
 .nav-link.active {
   color: var(--blue);
   background: var(--blue-light);
-  font-weight: 600;
+  font-weight: 850;
 }
 
 /* ── Services Dropdown (hover) ──────────────────────── */
@@ -163,7 +163,7 @@
 
 .btn-login {
   padding: 7px 18px;
-  background: var(--blue);
+  background: #0a0a14;
   color: #fff;
   border-radius: var(--r-md);
   font-size: 0.83rem;
@@ -174,8 +174,8 @@
 }
 
 .btn-login:hover {
-  background: #0000c8;
-  box-shadow: 0 3px 12px rgba(0, 0, 160, 0.25);
+  background: #000;
+  box-shadow: var(--shadow-sm);
   transform: translateY(-1px);
 }
 
@@ -184,7 +184,7 @@
   align-items: center;
   gap: 5px;
   padding: 7px 16px;
-  border: 1.5px solid var(--border);
+  border: 1px solid var(--border);
   background: var(--surface);
   border-radius: var(--r-md);
   font-size: 0.83rem;
@@ -195,8 +195,9 @@
 }
 
 .btn-go-app:hover {
-  border-color: var(--blue);
-  color: var(--blue);
+  border-color: #d9dbe6;
+  color: var(--text-1);
+  background: var(--border-soft);
 }
 
 .btn-settings {

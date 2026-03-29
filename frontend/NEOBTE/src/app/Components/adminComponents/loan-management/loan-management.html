@@ -1,0 +1,200 @@
+<div class="lm-shell">
+    <div class="lm-success" *ngIf="success">✓ {{ success }}</div>
+    <div class="lm-error" *ngIf="error && !showForm && !approvingId && !rejectingId">{{ error }}</div>
+
+    <!-- Stats -->
+    <div class="lm-stats" *ngIf="!loading">
+        <div class="lm-stat lm-stat--pending" (click)="tab='loans'; statusFilter='PENDING_APPROVAL'">
+            <p class="lms-num">{{ pendingCount }}</p>
+            <p class="lms-lbl">En attente</p>
+        </div>
+        <div class="lm-stat lm-stat--active" (click)="tab='loans'; statusFilter='ACTIVE'">
+            <p class="lms-num">{{ activeCount }}</p>
+            <p class="lms-lbl">Actifs</p>
+        </div>
+        <div class="lm-stat lm-stat--default" (click)="tab='loans'; statusFilter='DEFAULT'">
+            <p class="lms-num">{{ defaultCount }}</p>
+            <p class="lms-lbl">Défaut</p>
+        </div>
+        <div class="lm-stat" (click)="tab='products'">
+            <p class="lms-num">{{ products.length }}</p>
+            <p class="lms-lbl">Produits</p>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="lm-tabs">
+        <button class="lm-tab" [class.active]="tab==='loans'" (click)="tab='loans'">
+            Prêts <span class="lm-badge" *ngIf="pendingCount">{{ pendingCount }}</span>
+        </button>
+        <button class="lm-tab" [class.active]="tab==='products'" (click)="tab='products'">Produits</button>
+    </div>
+
+    <!-- ══ LOANS TAB ══ -->
+    <div *ngIf="tab === 'loans'">
+        <div class="lm-tab-header">
+            <div class="lm-filters">
+                <button class="lm-filter"
+                    *ngFor="let s of ['ALL','PENDING_APPROVAL','ACTIVE','LATE','DEFAULT','PAID_OFF','REJECTED']"
+                    [class.active]="statusFilter === s" (click)="statusFilter = s">
+                    {{ s === 'ALL' ? 'Tous' : statutLabel(s) }}
+                </button>
+            </div>
+        </div>
+
+        <!-- Approve inline form -->
+        <div class="action-form" *ngIf="approvingId">
+            <p class="af-title">Approuver le prêt #{{ approvingId }}</p>
+            <div class="lm-error" *ngIf="error">{{ error }}</div>
+            <textarea class="af-textarea" [(ngModel)]="approveNote" rows="2"
+                placeholder="Note admin (facultatif)…"></textarea>
+            <div class="af-actions">
+                <button class="af-btn-cancel" (click)="cancelApprove()">Annuler</button>
+                <button class="af-btn-approve" (click)="confirmApprove()">Confirmer l'approbation</button>
+            </div>
+        </div>
+
+        <!-- Reject inline form -->
+        <div class="action-form action-form--reject" *ngIf="rejectingId">
+            <p class="af-title">Refuser le prêt #{{ rejectingId }}</p>
+            <div class="lm-error" *ngIf="error">{{ error }}</div>
+            <textarea class="af-textarea" [(ngModel)]="rejectMotif" rows="2"
+                placeholder="Motif du refus (obligatoire)…"></textarea>
+            <div class="af-actions">
+                <button class="af-btn-cancel" (click)="cancelReject()">Annuler</button>
+                <button class="af-btn-reject" (click)="confirmReject()" [disabled]="!rejectMotif.trim()">Confirmer le
+                    refus</button>
+            </div>
+        </div>
+
+        <div class="loans-table-wrap" *ngIf="!loading && filteredLoans.length > 0">
+            <table class="loans-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Utilisateur</th>
+                        <th>Produit</th>
+                        <th>Montant</th>
+                        <th>Mensualité</th>
+                        <th>Pénalités</th>
+                        <th>Statut</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let loan of filteredLoans">
+                        <td class="lt-id">#{{ loan.id }}</td>
+                        <td class="lt-user">Compte #{{ loan.compteDestinationId }}</td>
+                        <td class="lt-product">
+                            <p>{{ loan.productNom }}</p><span class="lt-meta">{{ durationLabel(loan.dureeEnMois) }} · {{
+                                pct(loan.tauxAnnuel) }}%</span>
+                        </td>
+                        <td class="lt-amount">{{ fmt(loan.montant) }} TND</td>
+                        <td class="lt-amount">{{ fmt(loan.mensualite) }} TND</td>
+                        <td [class.lt-penalty]="loan.totalPenalites > 0">{{ loan.totalPenalites > 0 ?
+                            fmt(loan.totalPenalites) + ' TND' : '—' }}</td>
+                        <td><span class="lt-badge" [style.background]="statutColor(loan.statut) + '22'"
+                                [style.color]="statutColor(loan.statut)">{{ statutLabel(loan.statut) }}</span></td>
+                        <td class="lt-actions">
+                            <ng-container *ngIf="loan.statut === 'PENDING_APPROVAL'">
+                                <button class="lt-btn-approve" (click)="startApprove(loan.id)">Approuver</button>
+                                <button class="lt-btn-reject" (click)="startReject(loan.id)">Refuser</button>
+                            </ng-container>
+                            <span *ngIf="loan.statut !== 'PENDING_APPROVAL'" class="lt-no-action">—</span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="lm-empty" *ngIf="!loading && filteredLoans.length === 0">Aucun prêt dans cette catégorie.</div>
+    </div>
+
+    <!-- ══ PRODUCTS TAB ══ -->
+    <div *ngIf="tab === 'products'">
+        <div class="lm-tab-header">
+            <p class="lm-tab-sub">Définissez les produits de prêt disponibles pour les clients.</p>
+            <button class="btn-add-product" (click)="openNew()">+ Nouveau produit</button>
+        </div>
+
+        <!-- Product form -->
+        <div class="product-form-card" *ngIf="showForm">
+            <div class="pf-header">
+                <h3>{{ editingProduct ? 'Modifier le produit' : 'Nouveau produit' }}</h3>
+                <button class="pf-close" (click)="closeForm()">✕</button>
+            </div>
+            <div class="lm-error pf-err" *ngIf="error">{{ error }}</div>
+            <div class="pf-grid">
+                <div class="pf-field pf-full"><label>Nom</label><input type="text" [(ngModel)]="form.nom"></div>
+                <div class="pf-field pf-full"><label>Description</label><textarea [(ngModel)]="form.description"
+                        rows="2"></textarea></div>
+                <div class="pf-field">
+                    <label>Type</label>
+                    <select [(ngModel)]="form.type">
+                        <option *ngFor="let t of loanTypes" [value]="t">{{ loanTypeLabels[t] }}</option>
+                    </select>
+                </div>
+                <div class="pf-field"><label>Durée (mois)</label>
+                    <div class="pf-iw"><input type="number" min="1" max="360"
+                            [(ngModel)]="form.dureeEnMois"><span>mois</span></div>
+                </div>
+                <div class="pf-field"><label>Taux annuel (%)</label>
+                    <div class="pf-iw"><input type="number" step="0.01" min="0.1" max="100"
+                            [value]="pct(form.tauxAnnuel)"
+                            (input)="setPct('tauxAnnuel', $any($event.target).value)"><span>%</span></div>
+                </div>
+                <div class="pf-field"><label>Montant min (TND)</label>
+                    <div class="pf-iw"><input type="number" min="100" [(ngModel)]="form.montantMin"><span>TND</span>
+                    </div>
+                </div>
+                <div class="pf-field"><label>Montant max (TND)</label>
+                    <div class="pf-iw"><input type="number" min="100" [(ngModel)]="form.montantMax"><span>TND</span>
+                    </div>
+                </div>
+                <div class="pf-field"><label>Grâce (jours)</label>
+                    <div class="pf-iw"><input type="number" min="0" max="30"
+                            [(ngModel)]="form.gracePeriodDays"><span>j</span></div>
+                </div>
+                <div class="pf-field"><label>Pénalité (%)</label>
+                    <div class="pf-iw"><input type="number" step="0.01" min="0" max="50" [value]="pct(form.penaltyRate)"
+                            (input)="setPct('penaltyRate', $any($event.target).value)"><span>%</span></div>
+                </div>
+                <div class="pf-field"><label>Pénalité fixe (TND)</label>
+                    <div class="pf-iw"><input type="number" min="0" [(ngModel)]="form.penaltyFixedFee"><span>TND</span>
+                    </div>
+                </div>
+                <div class="pf-field"><label>Seuil défaut</label>
+                    <div class="pf-iw"><input type="number" min="1" max="12"
+                            [(ngModel)]="form.defaultThreshold"><span>impayés</span></div>
+                </div>
+                <div class="pf-field pf-toggle-row"><label>Actif</label><label class="toggle"><input type="checkbox"
+                            [(ngModel)]="form.actif"><span class="toggle-slider"></span></label></div>
+            </div>
+            <div class="pf-actions">
+                <button class="pf-cancel" (click)="closeForm()" [disabled]="saving">Annuler</button>
+                <button class="pf-save" (click)="saveProduct()" [disabled]="saving">{{ editingProduct ? 'Enregistrer' :
+                    'Créer' }}</button>
+            </div>
+        </div>
+
+        <!-- Products list -->
+        <div class="products-list" *ngIf="!loading">
+            <div class="product-row" *ngFor="let p of products">
+                <div class="pr-left">
+                    <div class="pr-rate">{{ pct(p.tauxAnnuel) }}%</div>
+                    <div>
+                        <p class="pr-name">{{ p.nom }} <span class="pr-type">{{ loanTypeLabels[p.type] }}</span></p>
+                        <p class="pr-meta">{{ durationLabel(p.dureeEnMois) }} · {{ fmt(p.montantMin) }}–{{
+                            fmt(p.montantMax) }} TND · Grâce {{ p.gracePeriodDays }}j · Pén. {{ pct(p.penaltyRate)
+                            }}%+{{ fmt(p.penaltyFixedFee) }}TND</p>
+                    </div>
+                </div>
+                <div class="pr-right">
+                    <span class="pr-badge" [class.pr-on]="p.actif" [class.pr-off]="!p.actif">{{ p.actif ? 'Actif' :
+                        'Inactif' }}</span>
+                    <button class="pr-edit" (click)="openEdit(p)">Modifier</button>
+                    <button class="pr-del" (click)="deleteProduct(p)">Supprimer</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

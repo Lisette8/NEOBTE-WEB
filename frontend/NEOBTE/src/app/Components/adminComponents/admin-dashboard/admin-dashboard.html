@@ -134,6 +134,18 @@
         <span class="nav-label">Investissements</span>
       </button>
 
+      <button class="nav-item nav-item-loans" [class.active]="selectedTab === 'loans'" (click)="goTo('loans')">
+        <span class="nav-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <rect x="2" y="7" width="20" height="14" rx="2" />
+            <path d="M16 7V5a2 2 0 0 0-4 0v2" />
+            <line x1="12" y1="12" x2="12" y2="16" />
+            <line x1="10" y1="14" x2="14" y2="14" />
+          </svg>
+        </span>
+        <span class="nav-label">Prêts</span>
+      </button>
+
       <button class="nav-item nav-item-policy" [class.active]="selectedTab === 'policy'" (click)="goTo('policy')">
         <span class="nav-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -437,6 +449,7 @@
       <app-fraude-management *ngIf="selectedTab === 'security'"></app-fraude-management>
       <app-account-policy *ngIf="selectedTab === 'policy'"></app-account-policy>
       <app-investment-management *ngIf="selectedTab === 'investments'"></app-investment-management>
+      <app-loan-management *ngIf="selectedTab === 'loans'"></app-loan-management>
       <app-ai-analytics *ngIf="selectedTab === 'ai'"></app-ai-analytics>
 
     </div>

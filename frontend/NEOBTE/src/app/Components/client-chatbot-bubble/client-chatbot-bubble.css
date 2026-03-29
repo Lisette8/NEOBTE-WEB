@@ -1,0 +1,101 @@
+:host {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 60;
+}
+
+.cbubble {
+  position: relative;
+}
+
+.cbubble-btn {
+  width: 54px;
+  height: 54px;
+  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: #0a0a14;
+  color: #fff;
+  box-shadow: var(--shadow-lg);
+  display: grid;
+  place-items: center;
+  transition: transform var(--t-fast), box-shadow var(--t-fast);
+}
+
+.cbubble-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
+}
+
+.cbubble-panel {
+  position: absolute;
+  right: 0;
+  bottom: 66px;
+  width: min(420px, calc(100vw - 36px));
+  max-height: min(640px, calc(100vh - 120px));
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  box-shadow: var(--shadow-lg);
+  animation: fadeUp 0.18s var(--ease) both;
+}
+
+.cbubble-hd {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 12px 12px;
+  border-bottom: 1px solid var(--border-soft);
+  background: linear-gradient(180deg, rgba(0, 0, 160, 0.03), transparent);
+}
+
+.cbubble-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 950;
+  color: var(--text-1);
+}
+
+.cbubble-chip {
+  margin-left: 6px;
+  height: 20px;
+  padding: 0 8px;
+  border-radius: 999px;
+  background: rgba(22, 163, 74, 0.10);
+  color: var(--green);
+  font-size: 0.74rem;
+  font-weight: 950;
+  display: inline-flex;
+  align-items: center;
+}
+
+.cbubble-chip.locked {
+  background: rgba(0, 0, 0, 0.06);
+  color: var(--text-2);
+}
+
+.cbubble-close {
+  width: 36px;
+  height: 36px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  background: #fff;
+  display: grid;
+  place-items: center;
+}
+
+.cbubble-body {
+  padding: 12px;
+  overflow: auto;
+  max-height: calc(640px - 50px);
+}
+
+.cbubble-muted {
+  color: var(--text-3);
+  font-weight: 700;
+  margin: 0;
+}
+

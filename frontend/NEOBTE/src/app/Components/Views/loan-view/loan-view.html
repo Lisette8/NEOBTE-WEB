@@ -1,0 +1,317 @@
+<div class="lv-page">
+
+    <div class="lv-success" *ngIf="success">✓ {{ success }}</div>
+
+    <!-- ══ LIST ══ -->
+    <ng-container *ngIf="step === 'list'">
+
+        <!-- Hero -->
+        <div class="lv-hero" *ngIf="!loading && activeLoans.length > 0">
+            <div class="lvh-stat">
+                <p class="lvh-label">Mensualités actives</p>
+                <p class="lvh-value">{{ fmt(totalMonthlyPayment) }} <span class="lvh-cur">TND / mois</span></p>
+            </div>
+            <div class="lvh-div"></div>
+            <div class="lvh-stat">
+                <p class="lvh-label">Prêts en cours</p>
+                <p class="lvh-value">{{ activeLoans.length }}</p>
+            </div>
+        </div>
+
+        <div class="lv-cta-row">
+            <div>
+                <h1 class="lv-title">Mes prêts</h1>
+                <p class="lv-sub">Gérez vos emprunts et suivez vos remboursements</p>
+            </div>
+            <button class="btn-new-loan" (click)="goNew()">+ Nouveau prêt</button>
+        </div>
+
+        <!-- Tabs -->
+        <div class="lv-tabs">
+            <button class="lv-tab" [class.active]="tab==='active'" (click)="tab='active'">
+                En cours <span class="lv-badge" *ngIf="activeLoans.length">{{ activeLoans.length }}</span>
+            </button>
+            <button class="lv-tab" [class.active]="tab==='history'" (click)="tab='history'">Historique</button>
+        </div>
+
+        <div class="lv-error" *ngIf="error">{{ error }}</div>
+
+        <div class="lv-skeleton" *ngIf="loading">
+            <div class="lvs-card" *ngFor="let i of [1,2]"></div>
+        </div>
+
+        <!-- Active loans -->
+        <div *ngIf="!loading && tab === 'active'">
+            <div class="lv-empty" *ngIf="activeLoans.length === 0">
+                <div class="lv-empty-icon"><i class="fa-solid fa-hand-holding-dollar"></i></div>
+                <p class="lv-empty-title">Aucun prêt en cours</p>
+                <p class="lv-empty-sub">Simulez et demandez un prêt adapté à votre projet.</p>
+                <button class="btn-new-loan" (click)="goNew()">Demander un prêt →</button>
+            </div>
+
+            <div class="loan-card" *ngFor="let loan of activeLoans" [class.loan-card--late]="loan.statut === 'LATE'"
+                [class.loan-card--default]="loan.statut === 'DEFAULT'"
+                [class.loan-card--pending]="loan.statut === 'PENDING_APPROVAL'">
+                <div class="lc-top">
+                    <div>
+                        <p class="lc-name">{{ loan.productNom }}</p>
+                        <p class="lc-meta">{{ typeLabel(loan.type) }} · {{ durationLabel(loan.dureeEnMois) }} · {{
+                            pct(loan.tauxAnnuel) }}%</p>
+                    </div>
+                    <span class="lc-badge" [style.background]="statutColor(loan.statut) + '22'"
+                        [style.color]="statutColor(loan.statut)">
+                        {{ statutLabel(loan.statut) }}
+                    </span>
+                </div>
+
+                <!-- Pending: no progress -->
+                <div class="lc-pending-note" *ngIf="loan.statut === 'PENDING_APPROVAL'">
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10" />
+                        <polyline points="12 6 12 12 16 14" />
+                    </svg>
+                    Votre demande est en cours d'examen. Vous serez notifié dès qu'une décision sera prise.
+                </div>
+
+                <!-- Active/Late: repayment progress -->
+                <ng-container *ngIf="loan.statut !== 'PENDING_APPROVAL' && loan.statut !== 'REJECTED'">
+                    <div class="lc-progress-wrap">
+                        <div class="lc-progress-bar">
+                            <div class="lc-progress-fill" [style.width.%]="loan.progressPct"
+                                [class.lc-fill--late]="loan.statut === 'LATE' || loan.statut === 'DEFAULT'"></div>
+                        </div>
+                        <div class="lc-progress-meta">
+                            <span>{{ loan.progressPct | number:'1.0-1' }}% remboursé</span>
+                            <span>Reste : {{ fmt(loan.resteADu) }} TND</span>
+                        </div>
+                    </div>
+
+                    <div class="lc-amounts">
+                        <div class="lca-cell">
+                            <p class="lca-label">Montant emprunté</p>
+                            <p class="lca-value">{{ fmt(loan.montant) }} TND</p>
+                        </div>
+                        <div class="lca-cell">
+                            <p class="lca-label">Mensualité</p>
+                            <p class="lca-value lca-value--blue">{{ fmt(loan.mensualite) }} TND</p>
+                        </div>
+                        <div class="lca-cell">
+                            <p class="lca-label">Total remboursé</p>
+                            <p class="lca-value lca-value--green">{{ fmt(loan.totalRembourse) }} TND</p>
+                        </div>
+                        <div class="lca-cell" *ngIf="loan.totalPenalites > 0">
+                            <p class="lca-label">Pénalités</p>
+                            <p class="lca-value lca-value--red">{{ fmt(loan.totalPenalites) }} TND</p>
+                        </div>
+                    </div>
+
+                    <!-- Default warning -->
+                    <div class="lc-default-warning" *ngIf="loan.statut === 'DEFAULT'">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path
+                                d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+                            <line x1="12" y1="9" x2="12" y2="13" />
+                            <line x1="12" y1="17" x2="12.01" y2="17" />
+                        </svg>
+                        Prêt en défaut — {{ loan.missedPayments }} mensualité{{ loan.missedPayments > 1 ? 's' : '' }}
+                        impayée{{ loan.missedPayments > 1 ? 's' : '' }}. Contactez le support immédiatement.
+                    </div>
+
+                    <!-- Repayment schedule toggle -->
+                    <button class="btn-schedule-toggle" (click)="toggleRepayments(loan.id)">
+                        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline *ngIf="expandedLoanId !== loan.id" points="6 9 12 15 18 9" />
+                            <polyline *ngIf="expandedLoanId === loan.id" points="18 15 12 9 6 15" />
+                        </svg>
+                        {{ expandedLoanId === loan.id ? 'Masquer' : 'Voir le tableau de remboursement' }}
+                    </button>
+
+                    <!-- Schedule table -->
+                    <div class="lc-schedule" *ngIf="expandedLoanId === loan.id">
+                        <div class="lcs-wrap">
+                            <table class="lcs-table">
+                                <thead>
+                                    <tr>
+                                        <th>#</th>
+                                        <th>Échéance</th>
+                                        <th>Mensualité</th>
+                                        <th>Capital</th>
+                                        <th>Intérêt</th>
+                                        <th>Pénalité</th>
+                                        <th>Statut</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr *ngFor="let r of loan.repayments" [class.lcs-row--paid]="r.statut === 'PAID'"
+                                        [class.lcs-row--late]="r.statut === 'LATE' || r.statut === 'FAILED'">
+                                        <td class="lcs-num">{{ r.installmentNumber }}</td>
+                                        <td>{{ r.dateDue | date:'d MMM y' }}</td>
+                                        <td class="lcs-amount">{{ fmt(r.montantDu) }} TND</td>
+                                        <td class="lcs-cap">{{ fmt(r.principalPortion) }}</td>
+                                        <td class="lcs-int">{{ fmt(r.interetPortion) }}</td>
+                                        <td class="lcs-pen" [class.lcs-pen--active]="r.penalite > 0">{{ r.penalite > 0 ?
+                                            fmt(r.penalite) : '—' }}</td>
+                                        <td>
+                                            <span class="lcs-badge" [class.lcs-badge--paid]="r.statut === 'PAID'"
+                                                [class.lcs-badge--late]="r.statut === 'LATE'"
+                                                [class.lcs-badge--failed]="r.statut === 'FAILED'"
+                                                [class.lcs-badge--pending]="r.statut === 'PENDING'">
+                                                {{ repayStatutLabel(r.statut) }}
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </ng-container>
+            </div>
+        </div>
+
+        <!-- History -->
+        <div *ngIf="!loading && tab === 'history'">
+            <div class="lv-empty" *ngIf="historyLoans.length === 0">
+                <div class="lv-empty-icon"><i class="fa-regular fa-clipboard"></i></div>
+                <p class="lv-empty-title">Aucun historique</p>
+            </div>
+            <div class="loan-card loan-card--done" *ngFor="let loan of historyLoans">
+                <div class="lc-top">
+                    <div>
+                        <p class="lc-name">{{ loan.productNom }}</p>
+                        <p class="lc-meta">{{ typeLabel(loan.type) }} · {{ durationLabel(loan.dureeEnMois) }}</p>
+                    </div>
+                    <span class="lc-badge" [style.background]="statutColor(loan.statut) + '22'"
+                        [style.color]="statutColor(loan.statut)">{{ statutLabel(loan.statut) }}</span>
+                </div>
+                <div class="lc-amounts lc-amounts--compact">
+                    <div class="lca-cell">
+                        <p class="lca-label">Montant</p>
+                        <p class="lca-value">{{ fmt(loan.montant) }} TND</p>
+                    </div>
+                    <div class="lca-cell" *ngIf="loan.statut === 'PAID_OFF'">
+                        <p class="lca-label">Intérêts payés</p>
+                        <p class="lca-value">{{ fmt(loan.totalInteret) }} TND</p>
+                    </div>
+                    <div class="lca-cell" *ngIf="loan.totalPenalites > 0">
+                        <p class="lca-label">Pénalités</p>
+                        <p class="lca-value lca-value--red">{{ fmt(loan.totalPenalites) }} TND</p>
+                    </div>
+                    <div class="lca-cell" *ngIf="loan.motifRejet">
+                        <p class="lca-label">Motif refus</p>
+                        <p class="lca-value">{{ loan.motifRejet }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </ng-container>
+
+
+    <!-- ══ NEW LOAN ══ -->
+    <ng-container *ngIf="step === 'new'">
+        <div class="lv-new-header">
+            <button class="lv-back" (click)="goList()">← Retour</button>
+            <h1>Demander un prêt</h1>
+            <p class="lv-sub">Choisissez un produit, simulez votre mensualité et soumettez votre demande</p>
+        </div>
+
+        <div class="lv-error" *ngIf="error">{{ error }}</div>
+
+        <!-- Step 1: Product selection -->
+        <div class="lv-section">
+            <p class="lv-section-label">1 — Choisir un produit</p>
+            <div class="products-grid">
+                <div class="product-card" *ngFor="let p of products" [class.selected]="selectedProduct?.id === p.id"
+                    (click)="selectProduct(p)">
+                    <div class="pc-top">
+                        <span class="pc-type-badge">{{ typeLabel(p.type) }}</span>
+                        <span class="pc-rate">{{ pct(p.tauxAnnuel) }}<span class="pc-rate-unit">% / an</span></span>
+                    </div>
+                    <p class="pc-name">{{ p.nom }}</p>
+                    <p class="pc-desc">{{ p.description }}</p>
+                    <div class="pc-details">
+                        <span>{{ durationLabel(p.dureeEnMois) }}</span>
+                        <span>{{ fmt(p.montantMin) }}–{{ fmt(p.montantMax) }} TND</span>
+                    </div>
+                    <p class="pc-mensualite">Dès {{ fmt(p.exampleMensualite) }} TND/mois</p>
+                    <div class="pc-check" *ngIf="selectedProduct?.id === p.id">✓</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: Amount, accounts, simulation -->
+        <div class="lv-section" *ngIf="selectedProduct">
+            <p class="lv-section-label">2 — Montant et comptes</p>
+            <div class="lv-form">
+                <div class="lvf-group">
+                    <label>Montant souhaité</label>
+                    <div class="lvf-input-wrap">
+                        <input type="number" [(ngModel)]="montant" [min]="selectedProduct.montantMin"
+                            [max]="selectedProduct.montantMax" step="100" (ngModelChange)="triggerSim()">
+                        <span class="lvf-suffix">TND</span>
+                    </div>
+                    <p class="lvf-hint">Entre {{ fmt(selectedProduct.montantMin) }} et {{
+                        fmt(selectedProduct.montantMax) }} TND</p>
+                </div>
+                <div class="lvf-group">
+                    <label>Compte de réception</label>
+                    <select class="lvf-select" [(ngModel)]="compteDestinationId">
+                        <option [ngValue]="null">Sélectionner…</option>
+                        <option *ngFor="let c of comptes" [ngValue]="c.idCompte">{{ accountLabel(c) }}</option>
+                    </select>
+                    <p class="lvf-hint">Les fonds du prêt seront versés sur ce compte.</p>
+                </div>
+                <div class="lvf-group">
+                    <label>Compte de prélèvement</label>
+                    <select class="lvf-select" [(ngModel)]="comptePrelevementId">
+                        <option [ngValue]="null">Sélectionner…</option>
+                        <option *ngFor="let c of comptes" [ngValue]="c.idCompte">{{ accountLabel(c) }}</option>
+                    </select>
+                    <p class="lvf-hint">Les mensualités seront prélevées automatiquement de ce compte.</p>
+                </div>
+                <div class="lvf-group lvf-full">
+                    <label>Motif du prêt <span class="lvf-optional">(facultatif)</span></label>
+                    <textarea class="lvf-textarea" [(ngModel)]="motif" rows="2"
+                        placeholder="Décrivez l'objet de votre prêt…"></textarea>
+                </div>
+
+                <!-- Simulation panel -->
+                <div class="lv-simulation" *ngIf="simulation && montant">
+                    <p class="lvs-title">Simulation de remboursement</p>
+                    <p class="lvs-subtitle" *ngIf="simulating">Calcul en cours…</p>
+                    <div class="lvs-row"><span>Montant emprunté</span><span>{{ fmt(simulation.montant) }} TND</span>
+                    </div>
+                    <div class="lvs-row"><span>Taux annuel (TAEG)</span><span>{{ pct(simulation.tauxAnnuel) }}%</span>
+                    </div>
+                    <div class="lvs-row"><span>Durée</span><span>{{ durationLabel(simulation.dureeEnMois) }}</span>
+                    </div>
+                    <div class="lvs-row lvs-row--highlight"><span>Mensualité fixe</span><span>{{
+                            fmt(simulation.mensualite) }} TND / mois</span></div>
+                    <div class="lvs-row"><span>Total des intérêts</span><span class="lvs-interest">+{{
+                            fmt(simulation.totalInteret) }} TND</span></div>
+                    <div class="lvs-row lvs-row--total"><span>Total à rembourser</span><span>{{ fmt(simulation.totalDu)
+                            }} TND</span></div>
+                    <div class="lvs-penalty-note">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <circle cx="12" cy="12" r="10" />
+                            <line x1="12" y1="8" x2="12" y2="12" />
+                            <line x1="12" y1="16" x2="12.01" y2="16" />
+                        </svg>
+                        Période de grâce : {{ selectedProduct.gracePeriodDays }}j après chaque échéance.
+                        Pénalité de retard : {{ pct(selectedProduct.penaltyRate) }}% + {{
+                        fmt(selectedProduct.penaltyFixedFee) }} TND fixe.
+                        Défaut après {{ selectedProduct.defaultThreshold }} impayés.
+                    </div>
+                </div>
+
+                <button class="btn-submit-loan" (click)="submitLoan()" [disabled]="!canSubmit || submitting">
+                    <span *ngIf="submitting" class="spinner-sm"></span>
+                    <span *ngIf="!submitting">Soumettre la demande</span>
+                </button>
+            </div>
+        </div>
+    </ng-container>
+</div>

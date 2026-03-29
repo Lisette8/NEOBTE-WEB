@@ -1,0 +1,24 @@
+<div class="cbubble">
+  <div class="cbubble-panel" *ngIf="open">
+    <div class="cbubble-hd">
+      <div class="cbubble-title">
+        <i class="fa-solid fa-wand-magic-sparkles"></i>
+        Assistant IA
+        <span class="cbubble-chip" [class.locked]="!premium">{{ premium ? 'Premium' : 'Verrouillé' }}</span>
+      </div>
+      <button class="cbubble-close" type="button" (click)="close()" aria-label="Fermer">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    </div>
+
+    <div class="cbubble-body">
+      <p class="cbubble-muted" *ngIf="loading">Chargement…</p>
+      <app-client-chatbot *ngIf="!loading" [isPremium]="premium"></app-client-chatbot>
+    </div>
+  </div>
+
+  <button class="cbubble-btn" type="button" (click)="toggle()" aria-label="Ouvrir l’assistant IA">
+    <i class="fa-solid fa-wand-magic-sparkles"></i>
+  </button>
+</div>
+

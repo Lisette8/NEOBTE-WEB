@@ -95,6 +95,14 @@ public class Utilisateur implements Serializable {
 
     private LocalDateTime pinTempTokenExpiry;
 
+    /**
+     * When true, this user has defaulted on a loan and cannot request new ones
+     * until an admin resets this flag after the situation is resolved.
+     */
+    @Convert(converter = BooleanToIntegerConverter.class)
+    @Column(nullable = false)
+    private boolean loanRestricted = false;
+
     // ── Relations ─────────────────────────────────────────────────────────────
 
     @OneToMany(mappedBy = "utilisateur")

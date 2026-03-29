@@ -1,15 +1,17 @@
-<div class="wrap">
-  <div class="top">
+<div class="notif-page anim-fade-up">
+  <div class="notif-top">
     <div>
-      <h1>Notifications</h1>
-      <p>Tout ce qui concerne votre compte, en temps réel</p>
+      <h1 class="notif-title">Notifications</h1>
+      <p class="notif-sub">Alertes, informations importantes et activité de votre compte.</p>
     </div>
-    <div class="actions">
-      <button class="btn" type="button" (click)="toggleUnreadOnly()">
-        {{ unreadOnly ? 'Afficher tout' : 'Afficher non lues' }}
+    <div class="notif-actions">
+      <button class="neo-btn" type="button" (click)="toggleUnreadOnly()">
+        <i class="fa-regular fa-circle-check"></i>
+        {{ unreadOnly ? 'Afficher tout' : 'Non lues' }}
       </button>
-      <button class="btn primary" type="button" (click)="markAllRead()" [disabled]="notifications.length===0">
-        Tout marquer comme lu
+      <button class="neo-btn neo-btn--primary" type="button" (click)="markAllRead()" [disabled]="notifications.length===0">
+        <i class="fa-solid fa-check-double"></i>
+        Tout lire
       </button>
     </div>
   </div>
@@ -17,34 +19,69 @@
   <p class="status loading" *ngIf="loading">Chargement…</p>
   <p class="status error" *ngIf="error">{{ error }}</p>
 
-  <div class="list" *ngIf="!loading && !error">
-    <button
-      class="item"
-      *ngFor="let n of notifications"
-      type="button"
-      [class.unread]="!n.lu"
-      (click)="markRead(n)"
-      [routerLink]="n.lien || null"
-    >
-      <div class="dot" *ngIf="!n.lu"></div>
-      <div class="txt">
-        <div class="row">
-          <p class="t">{{ n.titre }}</p>
-          <span class="d">{{ n.dateCreation | date:'d MMM y, HH:mm' }}</span>
+  <div class="notif-grid" *ngIf="!loading && !error">
+    <section class="neo-card neo-card--pad notif-list">
+      <div class="notif-list-hd">
+        <div class="neo-muted">
+          {{ unreadOnly ? 'Filtre : non lues' : 'Filtre : toutes' }} · Page {{ page + 1 }} / {{ totalPages || 1 }}
         </div>
-        <p class="m">{{ n.message }}</p>
+        <a class="neo-link" routerLink="/settings-view" (click)="$event.stopPropagation()">Préférences →</a>
       </div>
-    </button>
 
-    <div class="empty" *ngIf="notifications.length===0">
-      Aucune notification.
-    </div>
+      <div class="notif-items" *ngIf="notifications.length > 0; else emptyState">
+        <a
+          class="notif-item"
+          *ngFor="let n of notifications"
+          [class.unread]="!n.lu"
+          [routerLink]="n.lien || '/notifications-view'"
+          (click)="markRead(n)"
+        >
+          <div class="notif-ic" [class.unread]="!n.lu">
+            <i [class]="iconClass(n.type)"></i>
+          </div>
+          <div class="notif-txt">
+            <div class="notif-row">
+              <p class="notif-t">{{ n.titre }}</p>
+              <span class="notif-date">{{ n.dateCreation | date:'d MMM, HH:mm' }}</span>
+            </div>
+            <p class="notif-m">{{ n.message }}</p>
+            <div class="notif-meta">
+              <span class="neo-badge">{{ typeLabel(n.type) }}</span>
+              <span class="neo-muted" *ngIf="n.lien">Détails disponibles</span>
+            </div>
+          </div>
+        </a>
+      </div>
+
+      <ng-template #emptyState>
+        <div class="notif-empty">
+          <p class="notif-empty-title">Aucune notification</p>
+          <p class="notif-empty-sub">Votre activité apparaîtra ici (virements, sécurité, actualités).</p>
+        </div>
+      </ng-template>
+    </section>
+
+    <aside class="neo-card neo-card--pad notif-side">
+      <h3>Conseils</h3>
+      <p class="neo-muted">Sur ordinateur, la cloche en haut à droite affiche vos 6 dernières notifications.</p>
+      <div class="notif-side-box">
+        <p class="box-title">Sons</p>
+        <p class="box-sub">Activez/désactivez le son dans <strong>Paramètres → Notifications</strong>.</p>
+        <a class="neo-btn" routerLink="/settings-view">
+          <i class="fa-solid fa-sliders"></i>
+          Ouvrir les paramètres
+        </a>
+      </div>
+    </aside>
   </div>
 
   <div class="pagination" *ngIf="totalPages > 1">
-    <button class="pg-btn" (click)="previousPage()" [disabled]="page === 0 || loading">← Précédent</button>
+    <button class="neo-btn" (click)="previousPage()" [disabled]="page === 0 || loading">
+      <i class="fa-solid fa-arrow-left"></i> Précédent
+    </button>
     <span class="pg-label">Page {{ page + 1 }} / {{ totalPages }}</span>
-    <button class="pg-btn" (click)="nextPage()" [disabled]="page === totalPages - 1 || loading">Suivant →</button>
+    <button class="neo-btn" (click)="nextPage()" [disabled]="page === totalPages - 1 || loading">
+      Suivant <i class="fa-solid fa-arrow-right"></i>
+    </button>
   </div>
 </div>
-

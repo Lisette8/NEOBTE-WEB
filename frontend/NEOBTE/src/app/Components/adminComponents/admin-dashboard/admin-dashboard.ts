@@ -17,16 +17,17 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { AccountPolicy } from '../account-policy/account-policy';
 import { InvestmentManagement } from '../investment-management/investment-management';
+import { LoanManagement } from '../loan-management/loan-management';
 
 
-const VALID_TABS = ['home', 'demandes', 'users', 'comptes', 'virements', 'support', 'news', 'treasury', 'security', 'ai', 'policy', 'investments'];
+const VALID_TABS = ['home', 'demandes', 'users', 'comptes', 'virements', 'support', 'news', 'treasury', 'security', 'ai', 'policy', 'investments', 'loans'];
 
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
   imports: [CommonModule, FormsModule, UserManagement, AdminSupport, ActualiteManagement,
     CompteManagement, VirementManagement, DemandeManagement, TreasuryComponent,
-    FraudeManagement, AiAnalytics, AccountPolicy, InvestmentManagement],
+    FraudeManagement, AiAnalytics, AccountPolicy, InvestmentManagement, LoanManagement],
   templateUrl: './admin-dashboard.html',
   styleUrl: './admin-dashboard.css',
 })
@@ -149,6 +150,7 @@ export class AdminDashboard implements OnInit, OnDestroy {
     security: 'Monitor fraud alerts, review suspicious activity and configure detection rules',
     policy: 'Configure fee rates and transfer limits per account type',
     investments: 'Gérer les plans d\'investissement et suivre les souscriptions clients',
+    loans: 'Gérer les produits de prêt, approuver les demandes et suivre les remboursements',
     ai: 'AI-powered fraud intelligence, financial forecasts, and risk insights',
   };
 

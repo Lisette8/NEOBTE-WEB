@@ -9,8 +9,6 @@ import { AuthService } from '../../../Services/auth-service';
 import { CompteService } from '../../../Services/compte-service';
 import { ClientAiService } from '../../../Services/client-ai.service';
 import { ClientInsights } from '../../client-insights/client-insights';
-import { ClientChatbot } from '../../client-chatbot/client-chatbot';
-import { ClientMarketRates } from '../../client-market-rates/client-market-rates';
 import { AccountUsage, ClientInsightsData, PremiumStatus } from '../../../Entities/Interfaces/client-premium';
 import { AccountPhysicalCard } from '../../account-physical-card/account-physical-card';
 import { interval, Subscription } from 'rxjs';
@@ -22,7 +20,7 @@ import { InvestmentService } from '../../../Services/investment.service';
 @Component({
   selector: 'app-home-view',
   standalone: true,
-  imports: [CommonModule, RouterLink, ClientInsights, ClientChatbot, ClientMarketRates, AccountPhysicalCard],
+  imports: [CommonModule, RouterLink, ClientInsights, AccountPhysicalCard],
   templateUrl: './home-view.html',
   styleUrl: './home-view.css',
 })
@@ -196,6 +194,45 @@ export class HomeView implements OnInit, OnDestroy {
     if (h < 12) return 'Bonjour';
     if (h < 18) return 'Bon après-midi';
     return 'Bonsoir';
+  }
+
+  get recentInvestments(): Investment[] {
+    return [...this.activeInvestments]
+      .sort((a, b) => new Date(b.dateDebut).getTime() - new Date(a.dateDebut).getTime())
+      .slice(0, 5);
+  }
+
+  get recentActualites(): Actualite[] {
+    return [...this.actualites]
+      .sort((a, b) => new Date(b.dateCreationActualite).getTime() - new Date(a.dateCreationActualite).getTime())
+      .slice(0, 5);
+  }
+
+  formatDateShort(iso: string): string {
+    try {
+      const d = new Date(iso);
+      return d.toLocaleDateString('fr-TN', { day: '2-digit', month: 'short' });
+    } catch {
+      return iso;
+    }
+  }
+
+  /** SVG polyline points for the balance chart (premium insights). */
+  get balanceChartPoints(): string {
+    const values = this.insights?.dailyBalance?.values ?? [];
+    if (values.length < 2) return '';
+    const w = 640;
+    const h = 220;
+    const padX = 14;
+    const padY = 16;
+    const min = Math.min(...values);
+    const max = Math.max(...values);
+    const span = Math.max(1e-6, max - min);
+    return values.map((v, i) => {
+      const x = padX + (i * (w - padX * 2)) / (values.length - 1);
+      const y = padY + (1 - (v - min) / span) * (h - padY * 2);
+      return `${x.toFixed(1)},${y.toFixed(1)}`;
+    }).join(' ');
   }
 
   private tryLoadInsights() {

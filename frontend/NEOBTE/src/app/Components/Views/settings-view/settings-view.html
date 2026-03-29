@@ -1,69 +1,85 @@
-<div class="settings">
-  <div class="top">
-    <div>
-      <h1>Paramètres</h1>
-      <p>Gérez votre compte et vos préférences</p>
+<div class="settings-page anim-fade-up">
+  <div class="settings-top neo-card neo-card--pad">
+    <div class="settings-top-left">
+      <h1 class="settings-title">Paramètres</h1>
+      <p class="settings-sub">Gérez votre profil, votre sécurité et vos préférences.</p>
     </div>
-    <button class="btn ghost" *ngIf="!loading && !error" type="button" (click)="logout()" [disabled]="loggingOut">
-      {{ loggingOut ? 'Déconnexion…' : 'Se déconnecter' }}
-    </button>
+    <div class="settings-top-right">
+      <span class="neo-badge"><i class="fa-solid fa-shield-halved"></i> Sécurité</span>
+      <span class="neo-badge" *ngIf="profile?.pinEnabled"><i class="fa-solid fa-lock"></i> PIN actif</span>
+      <span class="neo-badge" *ngIf="!profile?.pinEnabled"><i class="fa-regular fa-circle"></i> PIN inactif</span>
+    </div>
   </div>
 
   <p class="status loading" *ngIf="loading">Chargement…</p>
   <p class="status error" *ngIf="error">{{ error }}</p>
-  <p class="hint error" *ngIf="logoutError">{{ logoutError }}</p>
 
-  <div class="layout" *ngIf="!loading && !error">
-    <nav class="menu" aria-label="Sections des paramètres">
-      <button class="menu-item" type="button" [class.active]="section==='profil'" (click)="setSection('profil')">
+  <div class="settings-layout" *ngIf="!loading && !error">
+    <nav class="settings-menu neo-card neo-card--pad" aria-label="Sections des paramètres">
+      <button class="settings-menu-item" type="button" [class.active]="section==='profil'" (click)="setSection('profil')">
+        <span class="ic"><i class="fa-regular fa-user"></i></span>
         Profil
       </button>
-      <button class="menu-item" type="button" [class.active]="section==='securite'" (click)="setSection('securite')">
+      <button class="settings-menu-item" type="button" [class.active]="section==='securite'" (click)="setSection('securite')">
+        <span class="ic"><i class="fa-solid fa-shield-halved"></i></span>
         Sécurité
       </button>
-      <button class="menu-item" type="button" [class.active]="section==='abonnement'"
-        (click)="setSection('abonnement')">
+      <button class="settings-menu-item" type="button" [class.active]="section==='abonnement'" (click)="setSection('abonnement')">
+        <span class="ic"><i class="fa-regular fa-gem"></i></span>
         Abonnement
       </button>
-      <button class="menu-item" type="button" [class.active]="section==='parrainage'"
-        (click)="setSection('parrainage')">
+      <button class="settings-menu-item" type="button" [class.active]="section==='parrainage'" (click)="setSection('parrainage')">
+        <span class="ic"><i class="fa-solid fa-user-group"></i></span>
         Parrainage
       </button>
-
-      <button class="menu-item" type="button" [class.active]="section==='notifications'"
-        (click)="setSection('notifications')">
+      <button class="settings-menu-item" type="button" [class.active]="section==='notifications'" (click)="setSection('notifications')">
+        <span class="ic"><i class="fa-regular fa-bell"></i></span>
         Notifications
       </button>
-      <button class="menu-item" type="button" [class.active]="section==='assistance'"
-        (click)="setSection('assistance')">
+      <button class="settings-menu-item" type="button" [class.active]="section==='assistance'" (click)="setSection('assistance')">
+        <span class="ic"><i class="fa-solid fa-headset"></i></span>
         Assistance
       </button>
-      <button class="menu-item" type="button" [class.active]="section==='bte'" (click)="setSection('bte')">
+      <button class="settings-menu-item" type="button" [class.active]="section==='bte'" (click)="setSection('bte')">
+        <span class="ic"><i class="fa-solid fa-building-columns"></i></span>
         BTE
       </button>
-      <button class="menu-item" type="button" [class.active]="section==='a-propos'" (click)="setSection('a-propos')">
+      <button class="settings-menu-item" type="button" [class.active]="section==='a-propos'" (click)="setSection('a-propos')">
+        <span class="ic"><i class="fa-regular fa-circle-question"></i></span>
         À propos
       </button>
     </nav>
 
-    <div class="content">
+    <div class="settings-content">
       <!-- Profil -->
-      <section class="card" *ngIf="section==='profil'">
-        <div class="card-hd">
-          <h2>Profil</h2>
-          <p>Vos informations personnelles et votre photo</p>
+      <section class="neo-card neo-card--pad settings-card" *ngIf="section==='profil'">
+        <div class="settings-card-hd">
+          <div class="settings-card-title">
+            <span class="settings-card-ic"><i class="fa-regular fa-user"></i></span>
+            <div>
+              <h2>Profil</h2>
+              <p>Vos informations personnelles et votre photo.</p>
+            </div>
+          </div>
+          <span class="neo-badge" *ngIf="profile?.email"><i class="fa-regular fa-envelope"></i> {{ profile?.email }}</span>
         </div>
 
-        <div class="photo-row">
-          <div class="avatar" [class.has]="photoPreviewUrl">
-            <img *ngIf="photoPreviewUrl" [src]="photoPreviewUrl" alt="Photo de profil" />
+        <div class="settings-photo-row">
+          <div class="settings-avatar" [class.has]="photoPreviewUrl">
+            <img *ngIf="photoPreviewUrl" [src]="photoPreviewUrl" alt="Photo de profil" (error)="onPreviewImgError()" />
             <span *ngIf="!photoPreviewUrl">{{ (profile?.prenom?.[0] || 'U') }}</span>
           </div>
-          <div class="photo-actions">
-            <input type="file" accept="image/*" (change)="onSelectPhoto($event)" />
-            <button class="btn" type="button" (click)="uploadPhoto()" [disabled]="!photoFile || uploadingPhoto">
-              {{ uploadingPhoto ? 'Envoi…' : 'Enregistrer la photo' }}
+          <div class="settings-photo-actions">
+            <input id="neo-photo" type="file" accept="image/*" (change)="onSelectPhoto($event)" hidden />
+            <label class="neo-btn" for="neo-photo">
+              <i class="fa-regular fa-image"></i>
+              Choisir une photo
+            </label>
+            <button class="neo-btn neo-btn--primary" type="button" (click)="uploadPhoto()" [disabled]="!photoFile || uploadingPhoto">
+              <i class="fa-solid fa-cloud-arrow-up"></i>
+              {{ uploadingPhoto ? 'Envoi…' : 'Enregistrer' }}
             </button>
+            <p class="settings-hint">Format recommandé : PNG/JPG · 1:1 · ≤ 2 Mo</p>
             <p class="hint error" *ngIf="photoError">{{ photoError }}</p>
           </div>
         </div>
@@ -110,18 +126,24 @@
         <p class="hint ok" *ngIf="profileSuccess">{{ profileSuccess }}</p>
         <p class="hint error" *ngIf="profileError">{{ profileError }}</p>
 
-        <div class="actions">
-          <button class="btn primary" type="button" (click)="saveProfile()" [disabled]="savingProfile">
+        <div class="settings-actions">
+          <button class="neo-btn neo-btn--primary" type="button" (click)="saveProfile()" [disabled]="savingProfile">
+            <i class="fa-solid fa-floppy-disk"></i>
             {{ savingProfile ? 'Enregistrement…' : 'Enregistrer' }}
           </button>
         </div>
       </section>
 
       <!-- Sécurité -->
-      <section class="card" *ngIf="section==='securite'">
-        <div class="card-hd">
-          <h2>Sécurité</h2>
-          <p>Mot de passe et récupération du compte</p>
+      <section class="neo-card neo-card--pad settings-card" *ngIf="section==='securite'">
+        <div class="settings-card-hd">
+          <div class="settings-card-title">
+            <span class="settings-card-ic"><i class="fa-solid fa-shield-halved"></i></span>
+            <div>
+              <h2>Sécurité</h2>
+              <p>Mot de passe, récupération et code PIN.</p>
+            </div>
+          </div>
         </div>
 
         <div class="callout">
@@ -160,7 +182,7 @@
 
         <div class="divider"></div>
 
-        <button class="link" type="button" (click)="toggleForgotPassword()">
+        <button class="settings-link" type="button" (click)="toggleForgotPassword()">
           Mot de passe oublié ?
         </button>
 
@@ -180,7 +202,7 @@
                 <input [(ngModel)]="fpEmail" placeholder="ex: client@email.com" />
               </div>
               <div class="actions">
-                <button class="btn" type="button" (click)="sendResetCode()" [disabled]="fpLoading">
+                <button class="neo-btn" type="button" (click)="sendResetCode()" [disabled]="fpLoading">
                   {{ fpLoading ? 'Envoi…' : 'Envoyer un code' }}
                 </button>
               </div>
@@ -192,10 +214,10 @@
                 <input [(ngModel)]="fpCode" placeholder="6 chiffres" inputmode="numeric" />
               </div>
               <div class="actions">
-                <button class="btn primary" type="button" (click)="verifyResetCode()" [disabled]="fpLoading">
+                <button class="neo-btn neo-btn--primary" type="button" (click)="verifyResetCode()" [disabled]="fpLoading">
                   {{ fpLoading ? 'Vérification…' : 'Vérifier' }}
                 </button>
-                <button class="btn" type="button" (click)="resendResetCode()" [disabled]="fpLoading">
+                <button class="neo-btn" type="button" (click)="resendResetCode()" [disabled]="fpLoading">
                   Renvoyer le code
                 </button>
               </div>
@@ -211,7 +233,7 @@
                 <input type="password" [(ngModel)]="fpConfirmPassword" />
               </div>
               <div class="actions">
-                <button class="btn primary" type="button" (click)="resetPassword()" [disabled]="fpLoading">
+                <button class="neo-btn neo-btn--primary" type="button" (click)="resetPassword()" [disabled]="fpLoading">
                   {{ fpLoading ? 'Mise à jour…' : 'Réinitialiser' }}
                 </button>
               </div>
@@ -242,13 +264,13 @@
             <p class="callout-body">Un code PIN est demandé à chaque connexion.</p>
           </div>
           <div class="actions" style="flex-wrap:wrap">
-            <button class="btn primary" type="button" *ngIf="!pinEnabled" (click)="openPinSection('enable')">Activer le
+            <button class="neo-btn neo-btn--primary" type="button" *ngIf="!pinEnabled" (click)="openPinSection('enable')">Activer le
               PIN</button>
-            <button class="btn" type="button" *ngIf="pinEnabled" (click)="openPinSection('change')">Modifier le
+            <button class="neo-btn" type="button" *ngIf="pinEnabled" (click)="openPinSection('change')">Modifier le
               PIN</button>
-            <button class="btn" type="button" *ngIf="pinEnabled" (click)="openPinSection('disable')"
+            <button class="neo-btn" type="button" *ngIf="pinEnabled" (click)="openPinSection('disable')"
               style="color:var(--red)">Désactiver</button>
-            <button class="btn" type="button" *ngIf="pinEnabled" (click)="sendPinResetCode()" [disabled]="pinLoading">
+            <button class="neo-btn" type="button" *ngIf="pinEnabled" (click)="sendPinResetCode()" [disabled]="pinLoading">
               {{ pinLoading ? 'Envoi…' : 'PIN oublié ?' }}
             </button>
           </div>
@@ -268,9 +290,9 @@
           </div>
           <p class="hint error" *ngIf="pinError">{{ pinError }}</p>
           <div class="actions">
-            <button class="btn primary" type="button" (click)="enablePin()" [disabled]="pinLoading">{{ pinLoading ?
+            <button class="neo-btn neo-btn--primary" type="button" (click)="enablePin()" [disabled]="pinLoading">{{ pinLoading ?
               'Activation…' : 'Activer' }}</button>
-            <button class="btn" type="button" (click)="openPinSection('menu')">Annuler</button>
+            <button class="neo-btn" type="button" (click)="openPinSection('menu')">Annuler</button>
           </div>
         </ng-container>
 
@@ -284,9 +306,9 @@
           </div>
           <p class="hint error" *ngIf="pinError">{{ pinError }}</p>
           <div class="actions">
-            <button class="btn primary" type="button" (click)="disablePin()" [disabled]="pinLoading"
+            <button class="neo-btn neo-btn--primary" type="button" (click)="disablePin()" [disabled]="pinLoading"
               style="background:var(--red)">{{ pinLoading ? 'Désactivation…' : 'Désactiver' }}</button>
-            <button class="btn" type="button" (click)="openPinSection('menu')">Annuler</button>
+            <button class="neo-btn" type="button" (click)="openPinSection('menu')">Annuler</button>
           </div>
         </ng-container>
 
@@ -308,9 +330,9 @@
           </div>
           <p class="hint error" *ngIf="pinError">{{ pinError }}</p>
           <div class="actions">
-            <button class="btn primary" type="button" (click)="changePin()" [disabled]="pinLoading">{{ pinLoading ?
+            <button class="neo-btn neo-btn--primary" type="button" (click)="changePin()" [disabled]="pinLoading">{{ pinLoading ?
               'Modification…' : 'Modifier' }}</button>
-            <button class="btn" type="button" (click)="openPinSection('menu')">Annuler</button>
+            <button class="neo-btn" type="button" (click)="openPinSection('menu')">Annuler</button>
           </div>
         </ng-container>
 
@@ -325,19 +347,24 @@
           </div>
           <p class="hint error" *ngIf="pinError">{{ pinError }}</p>
           <div class="actions">
-            <button class="btn primary" type="button" (click)="verifyPinResetCode()" [disabled]="pinLoading">{{
+            <button class="neo-btn neo-btn--primary" type="button" (click)="verifyPinResetCode()" [disabled]="pinLoading">{{
               pinLoading ? 'Vérification…' : 'Vérifier' }}</button>
-            <button class="btn" type="button" (click)="openPinSection('menu')">Annuler</button>
+            <button class="neo-btn" type="button" (click)="openPinSection('menu')">Annuler</button>
           </div>
         </ng-container>
 
       </section>
 
       <!-- Abonnement -->
-      <section class="card" *ngIf="section==='abonnement'">
-        <div class="card-hd">
-          <h2>Abonnement</h2>
-          <p>Découvrez les avantages de Premium</p>
+      <section class="neo-card neo-card--pad settings-card" *ngIf="section==='abonnement'">
+        <div class="settings-card-hd">
+          <div class="settings-card-title">
+            <span class="settings-card-ic"><i class="fa-regular fa-gem"></i></span>
+            <div>
+              <h2>Abonnement</h2>
+              <p>Découvrez les avantages de Premium.</p>
+            </div>
+          </div>
         </div>
 
         <div class="callout">
@@ -348,15 +375,20 @@
         </div>
 
         <div class="actions">
-          <a class="btn primary" routerLink="/pricing-view">Voir les offres</a>
+          <a class="neo-btn neo-btn--primary" routerLink="/pricing"><i class="fa-solid fa-tags"></i> Voir les offres</a>
         </div>
       </section>
 
       <!-- Parrainage -->
-      <section class="card" *ngIf="section==='parrainage'">
-        <div class="card-hd">
-          <h2>Parrainage</h2>
-          <p>Invitez vos proches et gagnez du Premium gratuitement</p>
+      <section class="neo-card neo-card--pad settings-card" *ngIf="section==='parrainage'">
+        <div class="settings-card-hd">
+          <div class="settings-card-title">
+            <span class="settings-card-ic"><i class="fa-solid fa-user-group"></i></span>
+            <div>
+              <h2>Parrainage</h2>
+              <p>Invitez vos proches et gagnez du Premium gratuitement.</p>
+            </div>
+          </div>
         </div>
 
         <div *ngIf="referralLoading" class="ref-loading">Chargement...</div>
@@ -434,10 +466,7 @@
 
           <!-- Premium badge if active -->
           <div class="ref-premium-active" *ngIf="referral.premium && referral.premiumExpiresAt">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="16" height="16">
-              <polygon
-                points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-            </svg>
+            <i class="fa-solid fa-star"></i>
             Premium actif — expire le {{ referral.premiumExpiresAt | date:'d MMM y' }}
           </div>
 
@@ -451,10 +480,7 @@
                 <span class="ref-history-date">{{ r.dateReferral | date:'d MMM y' }}</span>
               </div>
               <div class="ref-reward-badge">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="12" height="12">
-                  <polygon
-                    points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-                </svg>
+                <i class="fa-solid fa-star"></i>
                 +30j Premium
               </div>
             </div>
@@ -468,26 +494,47 @@
       </section>
 
       <!-- Notifications -->
-      <section class="card" *ngIf="section==='notifications'">
-        <div class="card-hd">
-          <h2>Notifications</h2>
-          <p>Gérez vos alertes et préférences</p>
+      <section class="neo-card neo-card--pad settings-card" *ngIf="section==='notifications'">
+        <div class="settings-card-hd">
+          <div class="settings-card-title">
+            <span class="settings-card-ic"><i class="fa-regular fa-bell"></i></span>
+            <div>
+              <h2>Notifications</h2>
+              <p>Vos alertes (virements, sécurité, actualités) et vos préférences.</p>
+            </div>
+          </div>
         </div>
 
         <p class="hint">
-          Consultez vos notifications (virements, sécurité, actualités) et marquez-les comme lues.
+          Astuce : passez la souris sur l’icône cloche en haut à droite pour voir vos dernières notifications.
         </p>
 
+        <div class="settings-pref">
+          <div class="settings-pref-txt">
+            <p class="settings-pref-title">Sons des notifications</p>
+            <p class="settings-pref-sub">Un son discret à l’arrivée d’une nouvelle notification (peut nécessiter un premier clic dans l’application).</p>
+          </div>
+          <label class="neo-switch">
+            <input type="checkbox" [checked]="notifSoundEnabled" (change)="setNotifSoundEnabled($any($event.target).checked)" />
+            <span class="neo-switch-ui"></span>
+          </label>
+        </div>
+
         <div class="actions">
-          <a class="btn primary" routerLink="/notifications-view">Ouvrir</a>
+          <a class="neo-btn neo-btn--primary" routerLink="/notifications-view"><i class="fa-solid fa-inbox"></i> Ouvrir</a>
         </div>
       </section>
 
       <!-- Assistance -->
-      <section class="card" *ngIf="section==='assistance'">
-        <div class="card-hd">
-          <h2>Assistance</h2>
-          <p>Besoin d’aide ? Contactez-nous</p>
+      <section class="neo-card neo-card--pad settings-card" *ngIf="section==='assistance'">
+        <div class="settings-card-hd">
+          <div class="settings-card-title">
+            <span class="settings-card-ic"><i class="fa-solid fa-headset"></i></span>
+            <div>
+              <h2>Assistance</h2>
+              <p>Besoin d’aide ? Contactez-nous.</p>
+            </div>
+          </div>
         </div>
 
         <div class="stack">
@@ -496,7 +543,7 @@
               <p class="row-title">Support dans l’application</p>
               <p class="row-body">Ouvrez une demande et suivez son traitement.</p>
             </div>
-            <a class="btn" routerLink="/support-view">Accéder</a>
+            <a class="neo-btn" routerLink="/support-view"><i class="fa-solid fa-life-ring"></i> Accéder</a>
           </div>
 
           <div class="row">
@@ -504,18 +551,23 @@
               <p class="row-title">Site officiel BTE</p>
               <p class="row-body">Informations, agences, contact et actualités.</p>
             </div>
-            <a class="btn" href="https://www.bte.com.tn/fr/" target="_blank" rel="noopener noreferrer">
-              Ouvrir
+            <a class="neo-btn" href="https://www.bte.com.tn/fr/" target="_blank" rel="noopener noreferrer">
+              <i class="fa-solid fa-arrow-up-right-from-square"></i> Ouvrir
             </a>
           </div>
         </div>
       </section>
 
       <!-- BTE -->
-      <section class="card" *ngIf="section==='bte'">
-        <div class="card-hd">
-          <h2>BTE</h2>
-          <p>Informations utiles et contact</p>
+      <section class="neo-card neo-card--pad settings-card" *ngIf="section==='bte'">
+        <div class="settings-card-hd">
+          <div class="settings-card-title">
+            <span class="settings-card-ic"><i class="fa-solid fa-building-columns"></i></span>
+            <div>
+              <h2>BTE</h2>
+              <p>Informations utiles et contact.</p>
+            </div>
+          </div>
         </div>
 
         <div class="stack">
@@ -524,37 +576,42 @@
               <p class="row-title">Centre de relation client</p>
               <p class="row-body">Tél. : (+216) 71 112 000</p>
             </div>
-            <a class="btn" href="tel:+21671112000">Appeler</a>
+            <a class="neo-btn" href="tel:+21671112000"><i class="fa-solid fa-phone"></i> Appeler</a>
           </div>
           <div class="row">
             <div>
               <p class="row-title">Adresse</p>
               <p class="row-body">Centre Urbain Nord — Tunis</p>
             </div>
-            <a class="btn" href="https://www.bte.com.tn/fr/" target="_blank" rel="noopener noreferrer">Détails</a>
+            <a class="neo-btn" href="https://www.bte.com.tn/fr/" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-location-dot"></i> Détails</a>
           </div>
           <div class="row">
             <div>
               <p class="row-title">Cours des devises</p>
               <p class="row-body">Consultez les cours indicatifs (site BTE).</p>
             </div>
-            <a class="btn" href="https://www.bte.com.tn/fr/" target="_blank" rel="noopener noreferrer">Ouvrir</a>
+            <a class="neo-btn" href="https://www.bte.com.tn/fr/" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-arrow-trend-up"></i> Ouvrir</a>
           </div>
           <div class="row">
             <div>
               <p class="row-title">Réclamations</p>
               <p class="row-body">Envoyer une réclamation via le site officiel.</p>
             </div>
-            <a class="btn" href="https://www.bte.com.tn/fr/" target="_blank" rel="noopener noreferrer">Ouvrir</a>
+            <a class="neo-btn" href="https://www.bte.com.tn/fr/" target="_blank" rel="noopener noreferrer"><i class="fa-solid fa-pen-to-square"></i> Ouvrir</a>
           </div>
         </div>
       </section>
 
       <!-- À propos -->
-      <section class="card" *ngIf="section==='a-propos'">
-        <div class="card-hd">
-          <h2>À propos</h2>
-          <p>Informations sur l’application</p>
+      <section class="neo-card neo-card--pad settings-card" *ngIf="section==='a-propos'">
+        <div class="settings-card-hd">
+          <div class="settings-card-title">
+            <span class="settings-card-ic"><i class="fa-regular fa-circle-question"></i></span>
+            <div>
+              <h2>À propos</h2>
+              <p>Informations sur l’application.</p>
+            </div>
+          </div>
         </div>
 
         <div class="stack">

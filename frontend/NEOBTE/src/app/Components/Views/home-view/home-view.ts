@@ -14,13 +14,14 @@ import { AccountPhysicalCard } from '../../account-physical-card/account-physica
 import { interval, Subscription } from 'rxjs';
 import { Investment } from '../../../Entities/Interfaces/investment';
 import { InvestmentService } from '../../../Services/investment.service';
+import { NeoChart } from '../../neo-chart/neo-chart';
 
 
 
 @Component({
   selector: 'app-home-view',
   standalone: true,
-  imports: [CommonModule, RouterLink, ClientInsights, AccountPhysicalCard],
+  imports: [CommonModule, RouterLink, ClientInsights, AccountPhysicalCard, NeoChart],
   templateUrl: './home-view.html',
   styleUrl: './home-view.css',
 })
@@ -217,22 +218,36 @@ export class HomeView implements OnInit, OnDestroy {
     }
   }
 
-  /** SVG polyline points for the balance chart (premium insights). */
-  get balanceChartPoints(): string {
+  // ── Chart (cached — computed once after data loads) ─────
+  // balanceChartPoints: empty string = no data (controls *ngIf guard in template)
+  balanceChartPoints = '';
+  chartXLabels: string[] = [];
+  chartValues: number[] = [];  // public — bound in template via [values]="chartValues"
+
+  private buildChart(): void {
     const values = this.insights?.dailyBalance?.values ?? [];
-    if (values.length < 2) return '';
-    const w = 640;
-    const h = 220;
-    const padX = 14;
-    const padY = 16;
-    const min = Math.min(...values);
-    const max = Math.max(...values);
-    const span = Math.max(1e-6, max - min);
-    return values.map((v, i) => {
-      const x = padX + (i * (w - padX * 2)) / (values.length - 1);
-      const y = padY + (1 - (v - min) / span) * (h - padY * 2);
-      return `${x.toFixed(1)},${y.toFixed(1)}`;
-    }).join(' ');
+    if (values.length < 2) {
+      this.balanceChartPoints = '';
+      this.chartValues = [];
+      this.chartXLabels = [];
+      return;
+    }
+
+    this.chartValues = values;
+    this.balanceChartPoints = 'ok'; // truthy sentinel — activates *ngIf
+
+    // X labels
+    const n = values.length;
+    const lbls = this.insights?.dailyBalance?.labels ?? [];
+    const src  = lbls.length === n ? lbls : values.map((_, i) => {
+      const d = new Date();
+      d.setDate(d.getDate() - (n - 1 - i));
+      return d.toISOString().slice(0, 10);
+    });
+    this.chartXLabels = src.map((d: string) => {
+      try { return new Date(d).toLocaleDateString('fr-TN', { day: '2-digit', month: 'short' }); }
+      catch { return d; }
+    });
   }
 
   private tryLoadInsights() {
@@ -243,7 +258,11 @@ export class HomeView implements OnInit, OnDestroy {
     this.insightsLoading = true;
     this.insightsError = '';
     this.clientAiService.getClientInsights(accountIds, this.totalBalance).subscribe({
-      next: (data) => { this.insights = data; this.insightsLoading = false; },
+      next: (data) => {
+        this.insights = data;
+        this.insightsLoading = false;
+        this.buildChart();  // compute chart data once after data arrives
+      },
       error: () => { this.insightsLoading = false; this.insightsError = 'Failed to load insights.'; }
     });
   }

@@ -1,100 +1,310 @@
+/* ── Host positioning ─────────────────────────────────── */
 :host {
   position: fixed;
-  right: 18px;
-  bottom: 18px;
+  right: 22px;
+  bottom: 22px;
   z-index: 60;
+  font-family: 'Inter', -apple-system, sans-serif;
 }
 
 .cbubble {
   position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 14px;
 }
 
+/* ── Trigger button ───────────────────────────────────── */
 .cbubble-btn {
-  width: 54px;
-  height: 54px;
-  border-radius: 18px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: #0a0a14;
+  position: relative;
+  width: 58px;
+  height: 58px;
+  border-radius: 20px;
+  border: none;
+  cursor: pointer;
+  background: linear-gradient(135deg, #0d2b77 0%, #5b21b6 60%, #7c3aed 100%);
   color: #fff;
-  box-shadow: var(--shadow-lg);
+  box-shadow:
+    0 0 0 0 rgba(124, 58, 237, 0.55),
+    0 16px 40px rgba(13, 43, 119, 0.38);
   display: grid;
   place-items: center;
-  transition: transform var(--t-fast), box-shadow var(--t-fast);
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.3s ease,
+              border-radius 0.3s ease;
+  animation: btnPulse 2.8s ease-in-out infinite;
 }
 
 .cbubble-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.18);
+  transform: translateY(-4px) scale(1.06);
+  box-shadow:
+    0 0 0 8px rgba(124, 58, 237, 0.18),
+    0 24px 50px rgba(91, 33, 182, 0.42);
+  animation: none;
 }
 
+.cbubble-btn--open {
+  border-radius: 16px;
+  background: linear-gradient(135deg, #1e1e2e 0%, #2d1b69 100%);
+  animation: none;
+  box-shadow: 0 8px 24px rgba(13,43,119,0.3);
+}
+
+/* ── Pulsing ring behind button ───────────────────────── */
+.cbubble-btn-ring {
+  position: absolute;
+  inset: -6px;
+  border-radius: 26px;
+  background: transparent;
+  border: 2px solid rgba(124, 58, 237, 0.35);
+  animation: ringPulse 2.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+.cbubble-btn--open .cbubble-btn-ring {
+  animation: none;
+  opacity: 0;
+}
+
+/* ── Icon inside button ───────────────────────────────── */
+.cbubble-btn-icon {
+  font-size: 1.2rem;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.2s ease;
+}
+
+/* ── Panel ────────────────────────────────────────────── */
 .cbubble-panel {
   position: absolute;
   right: 0;
-  bottom: 66px;
+  bottom: 74px;
   width: min(420px, calc(100vw - 36px));
   max-height: min(640px, calc(100vh - 120px));
+  display: flex;
+  flex-direction: column;
   overflow: hidden;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 22px;
-  box-shadow: var(--shadow-lg);
-  animation: fadeUp 0.18s var(--ease) both;
+  border-radius: 24px;
+  border: 1px solid rgba(13, 43, 119, 0.14);
+  background: #fff;
+  box-shadow:
+    0 2px 8px rgba(13, 43, 119, 0.06),
+    0 24px 64px rgba(13, 43, 119, 0.18),
+    0 0 0 1px rgba(124, 58, 237, 0.08);
+
+  /* Mind-blowing entrance animation */
+  animation: panelReveal 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: bottom right;
 }
 
+.cbubble-panel.is-closing {
+  animation: panelExit 0.32s cubic-bezier(0.55, 0, 1, 0.45) both;
+}
+
+/* ── Panel header ─────────────────────────────────────── */
 .cbubble-hd {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
-  padding: 12px 12px;
-  border-bottom: 1px solid var(--border-soft);
-  background: linear-gradient(180deg, rgba(0, 0, 160, 0.03), transparent);
+  gap: 12px;
+  padding: 16px 16px 14px;
+  background: linear-gradient(135deg, #0d2b77 0%, #4c1d95 100%);
+  position: relative;
+  overflow: hidden;
+  flex-shrink: 0;
 }
 
-.cbubble-title {
-  display: inline-flex;
+/* Decorative glow inside header */
+.cbubble-hd::before {
+  content: '';
+  position: absolute;
+  width: 220px;
+  height: 220px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(167, 139, 250, 0.25) 0%, transparent 70%);
+  top: -80px;
+  right: -60px;
+  pointer-events: none;
+}
+
+.cbubble-identity {
+  display: flex;
   align-items: center;
-  gap: 10px;
-  font-weight: 950;
-  color: var(--text-1);
+  gap: 12px;
+  position: relative;
+  z-index: 1;
 }
 
-.cbubble-chip {
-  margin-left: 6px;
-  height: 20px;
-  padding: 0 8px;
+.cbubble-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.15);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  display: grid;
+  place-items: center;
+  font-size: 1rem;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.cbubble-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  color: #fff;
+  margin: 0 0 3px;
+  letter-spacing: -0.01em;
+}
+
+.cbubble-status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.76rem;
+  color: rgba(255, 255, 255, 0.72);
+  margin: 0;
+}
+
+.cbubble-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.4);
+  flex-shrink: 0;
+}
+
+.cbubble-dot--on {
+  background: #34d399;
+  box-shadow: 0 0 6px rgba(52, 211, 153, 0.8);
+  animation: dotBlink 2s ease-in-out infinite;
+}
+
+.cbubble-hd-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
+}
+
+.cbubble-tier {
+  font-size: 0.7rem;
+  font-weight: 700;
+  padding: 4px 10px;
   border-radius: 999px;
-  background: rgba(22, 163, 74, 0.10);
-  color: var(--green);
-  font-size: 0.74rem;
-  font-weight: 950;
-  display: inline-flex;
-  align-items: center;
+  letter-spacing: 0.02em;
 }
 
-.cbubble-chip.locked {
-  background: rgba(0, 0, 0, 0.06);
-  color: var(--text-2);
+.cbubble-tier--premium {
+  background: rgba(251, 191, 36, 0.18);
+  color: #fbbf24;
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.cbubble-tier--locked {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .cbubble-close {
-  width: 36px;
-  height: 36px;
-  border-radius: 14px;
-  border: 1px solid var(--border);
-  background: #fff;
+  width: 32px;
+  height: 32px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.85);
   display: grid;
   place-items: center;
+  cursor: pointer;
+  transition: background 0.18s ease, transform 0.18s ease;
+  font-size: 0.85rem;
 }
 
+.cbubble-close:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.08);
+}
+
+/* ── Panel body ───────────────────────────────────────── */
 .cbubble-body {
-  padding: 12px;
-  overflow: auto;
-  max-height: calc(640px - 50px);
+  flex: 1;
+  min-height: 0;           /* critical: allows flex child to shrink below content size */
+  overflow: hidden;        /* body does NOT scroll — only chat-scroll does */
+  display: flex;
+  flex-direction: column;
 }
 
-.cbubble-muted {
-  color: var(--text-3);
-  font-weight: 700;
-  margin: 0;
+/* ── Loading state ────────────────────────────────────── */
+.cbubble-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  padding: 40px 20px;
+  color: #8898b3;
+  font-size: 0.88rem;
+}
+
+.cbubble-spinner {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 3px solid rgba(13, 43, 119, 0.1);
+  border-top-color: #7c3aed;
+  animation: spin 0.8s linear infinite;
+}
+
+/* ── Keyframes ────────────────────────────────────────── */
+@keyframes panelReveal {
+  0%   {
+    opacity: 0;
+    transform: scale(0.7) translateY(24px);
+    filter: blur(8px);
+    clip-path: inset(20% 0% 80% 0% round 24px);
+  }
+  60%  {
+    clip-path: inset(0% 0% 0% 0% round 24px);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: blur(0);
+    clip-path: inset(0% 0% 0% 0% round 24px);
+  }
+}
+
+@keyframes panelExit {
+  0% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    filter: blur(0);
+    clip-path: inset(0% 0% 0% 0% round 24px);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.75) translateY(18px);
+    filter: blur(6px);
+    clip-path: inset(15% 0% 85% 0% round 24px);
+  }
+}
+
+@keyframes btnPulse {
+  0%,  100% { box-shadow: 0 0 0 0 rgba(124,58,237,0.55), 0 16px 40px rgba(13,43,119,0.38); }
+  50%        { box-shadow: 0 0 0 10px rgba(124,58,237,0),   0 16px 40px rgba(13,43,119,0.38); }
+}
+
+@keyframes ringPulse {
+  0%,  100% { transform: scale(1);    opacity: 0.5; }
+  50%        { transform: scale(1.18); opacity: 0; }
+}
+
+@keyframes dotBlink {
+  0%,  100% { opacity: 1; }
+  50%        { opacity: 0.5; }
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }

@@ -1,10 +1,11 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { RevealOnScrollDirective } from '../../../Directives/reveal-on-scroll.directive';
 
 @Component({
   selector: 'app-pricing-view',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, RevealOnScrollDirective],
   templateUrl: './pricing-view.html',
   styleUrl: './pricing-view.css',
 })

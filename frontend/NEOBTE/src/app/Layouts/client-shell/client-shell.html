@@ -2,14 +2,23 @@
   <!-- Sidebar -->
   <aside class="neo-sidebar">
     <div class="neo-brand" routerLink="/home-view">
-      <div class="neo-logo">N</div>
+      <div class="neo-logo" aria-hidden="true">
+        <img
+          *ngIf="!sidebarLogoErrored"
+          class="neo-logo-img"
+          [src]="sidebarLogoSrc"
+          alt="NEOBTE"
+          (error)="onSidebarLogoError()"
+        />
+        <span *ngIf="sidebarLogoErrored" class="neo-logo-fallback">N</span>
+      </div>
       <div class="neo-brand-text">
         <div class="neo-brand-name">NEOBTE</div>
         <div class="neo-brand-sub">Banque · Client</div>
       </div>
     </div>
 
-    <nav class="neo-nav" aria-label="Navigation principale">
+    <nav #sidebarNav class="neo-nav" aria-label="Navigation principale">
       <a class="neo-nav-item" routerLink="/home-view" routerLinkActive="active"
         [routerLinkActiveOptions]="{ exact: true }">
         <span class="neo-nav-ic"><i class="fa-solid fa-gauge-high"></i></span>

@@ -1,24 +1,54 @@
 <div class="cbubble">
-  <div class="cbubble-panel" *ngIf="open">
+
+  <!-- ── Floating panel ──────────────────────────── -->
+  <div class="cbubble-panel" *ngIf="open" [class.is-closing]="isClosing">
+
+    <!-- Header -->
     <div class="cbubble-hd">
-      <div class="cbubble-title">
-        <i class="fa-solid fa-wand-magic-sparkles"></i>
-        Assistant IA
-        <span class="cbubble-chip" [class.locked]="!premium">{{ premium ? 'Premium' : 'Verrouillé' }}</span>
+      <div class="cbubble-identity">
+        <div class="cbubble-avatar">
+          <i class="fa-solid fa-wand-magic-sparkles"></i>
+        </div>
+        <div>
+          <p class="cbubble-name">NEO Assistant</p>
+          <p class="cbubble-status">
+            <span class="cbubble-dot" [class.cbubble-dot--on]="premium"></span>
+            {{ premium ? 'Premium · En ligne' : 'Accès limité' }}
+          </p>
+        </div>
       </div>
-      <button class="cbubble-close" type="button" (click)="close()" aria-label="Fermer">
-        <i class="fa-solid fa-xmark"></i>
-      </button>
+      <div class="cbubble-hd-actions">
+        <span class="cbubble-tier" [class.cbubble-tier--premium]="premium" [class.cbubble-tier--locked]="!premium">
+          {{ premium ? '✦ Premium' : '🔒 Verrouillé' }}
+        </span>
+        <button class="cbubble-close" type="button" (click)="close()" aria-label="Fermer">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
     </div>
 
+    <!-- Body -->
     <div class="cbubble-body">
-      <p class="cbubble-muted" *ngIf="loading">Chargement…</p>
+      <div class="cbubble-loading" *ngIf="loading">
+        <span class="cbubble-spinner"></span>
+        <p>Connexion à l'assistant…</p>
+      </div>
       <app-client-chatbot *ngIf="!loading" [isPremium]="premium"></app-client-chatbot>
     </div>
   </div>
 
-  <button class="cbubble-btn" type="button" (click)="toggle()" aria-label="Ouvrir l’assistant IA">
-    <i class="fa-solid fa-wand-magic-sparkles"></i>
+  <!-- ── Trigger button ──────────────────────────── -->
+  <button
+    class="cbubble-btn"
+    [class.cbubble-btn--open]="open"
+    type="button"
+    (click)="toggle()"
+    aria-label="Ouvrir l'assistant IA">
+    <span class="cbubble-btn-ring"></span>
+    <span class="cbubble-btn-icon">
+      <i class="fa-solid fa-wand-magic-sparkles" *ngIf="!open"></i>
+      <i class="fa-solid fa-xmark" *ngIf="open"></i>
+    </span>
   </button>
-</div>
 
+</div>

@@ -1,243 +1,214 @@
-<!-- Header -->
-<header class="neo-header">
-  <div>
-    <p class="neo-kicker">{{ getTimeOfDay() }},</p>
-    <h1 class="neo-title">{{ userName || 'Bienvenue' }}</h1>
-    <p class="neo-sub">Votre activité est à jour. Consultez vos soldes, investissements et limites.</p>
-  </div>
+<!-- Decorative background -->
+<div class="deco" aria-hidden="true">
+  <span class="deco-ring deco-ring-1"></span>
+  <span class="deco-ring deco-ring-2"></span>
+  <span class="deco-blob deco-blob-1"></span>
+  <span class="deco-dot-cluster"></span>
+</div>
 
-  <div class="neo-header-actions">
-    <a routerLink="/compte-view" [queryParams]="{ open: 'true' }" class="neo-btn neo-btn--primary">
-      <i class="fa-solid fa-plus"></i>
-      Nouveau compte
+<!-- ── Header ──────────────────────────────────────────── -->
+<header class="dash-header reveal">
+  <div>
+    <p class="kicker">{{ getTimeOfDay() }}</p>
+    <h1 class="dash-title">{{ userName || 'Bienvenue' }}</h1>
+    <p class="dash-sub">Votre tableau de bord financier en temps réel.</p>
+  </div>
+  <div class="dash-actions">
+    <a routerLink="/virement-view" class="btn btn-secondary">
+      <i class="fa-solid fa-paper-plane"></i> Envoyer
     </a>
-    <a routerLink="/virement-view" class="neo-btn">
-      <i class="fa-solid fa-paper-plane"></i>
-      Envoyer
+    <a routerLink="/compte-view" [queryParams]="{ open: 'true' }" class="btn btn-primary">
+      <i class="fa-solid fa-plus"></i> Nouveau compte
     </a>
   </div>
 </header>
 
-<!-- KPIs -->
-<section class="neo-kpis">
-  <div class="neo-card neo-kpi" *ngIf="!loading; else kpiSkel">
-    <p class="neo-kpi-label">Solde total</p>
-    <p class="neo-kpi-value">{{ totalBalance | number : '1.3-3' }} <span class="neo-kpi-cur">TND</span></p>
-    <p class="neo-kpi-sub">
-      {{ activeComptes.length }} compte{{ activeComptes.length !== 1 ? 's' : '' }} actif{{
-      activeComptes.length !== 1 ? 's' : ''
-      }}
-    </p>
+<!-- ── KPIs ────────────────────────────────────────────── -->
+<section class="kpi-strip">
+  <div class="kpi-card reveal" *ngIf="!loading; else kpiSkel">
+    <div class="kpi-icon"><i class="fa-solid fa-wallet"></i></div>
+    <div>
+      <p class="kpi-label">Solde total</p>
+      <p class="kpi-value">{{ totalBalance | number : '1.3-3' }} <span class="kpi-cur">TND</span></p>
+      <p class="kpi-sub">{{ activeComptes.length }} compte{{ activeComptes.length !== 1 ? 's' : '' }} actif{{ activeComptes.length !== 1 ? 's' : '' }}</p>
+    </div>
   </div>
-
   <ng-template #kpiSkel>
-    <div class="neo-card neo-kpi neo-skel" style="min-height: 104px"></div>
+    <div class="kpi-card kpi-skel"></div>
   </ng-template>
 
-  <div class="neo-card neo-kpi" *ngIf="!loading">
-    <p class="neo-kpi-label">Épargne (projection)</p>
-    <p class="neo-kpi-value">+{{ projectedAnnualInterest | number : '1.3-3' }} <span class="neo-kpi-cur">TND</span></p>
-    <p class="neo-kpi-sub" *ngIf="hasSavingsAccount; else noSav">
-      ≈ 4,5% / an sur {{ savingsBalance | number : '1.3-3' }} TND
-    </p>
-    <ng-template #noSav>
-      <p class="neo-kpi-sub">Ouvrez un compte épargne pour profiter du rendement</p>
-    </ng-template>
+  <div class="kpi-card reveal delay-1" *ngIf="!loading">
+    <div class="kpi-icon kpi-icon--gold"><i class="fa-solid fa-chart-line"></i></div>
+    <div>
+      <p class="kpi-label">Investissements actifs</p>
+      <p class="kpi-value">{{ activeInvestments.length }}</p>
+      <p class="kpi-sub">+{{ totalExpectedInterest | number : '1.3-3' }} TND attendus</p>
+    </div>
   </div>
 
-  <div class="neo-card neo-kpi" *ngIf="!loading">
-    <p class="neo-kpi-label">Investissements actifs</p>
-    <p class="neo-kpi-value">{{ activeInvestments.length }}</p>
-    <p class="neo-kpi-sub">Intérêts attendus: +{{ totalExpectedInterest | number : '1.3-3' }} TND</p>
-  </div>
-
-  <div class="neo-card neo-kpi" *ngIf="!premiumLoading; else premSkel">
-    <p class="neo-kpi-label">Premium IA</p>
-    <p class="neo-kpi-value" [class.neo-kpi-value--ok]="isPremium" [class.neo-kpi-value--muted]="!isPremium">
-      {{ isPremium ? 'Actif' : 'Inactif' }}
-    </p>
-    <p class="neo-kpi-sub" *ngIf="isPremium; else upgrade">Insights + Marchés + Chatbot</p>
-    <ng-template #upgrade>
-      <a routerLink="/pricing-view" class="neo-link">Passer Premium →</a>
-    </ng-template>
-  </div>
-  <ng-template #premSkel>
-    <div class="neo-card neo-kpi neo-skel" style="min-height: 104px"></div>
-  </ng-template>
-</section>
-
-<!-- Main grid -->
-<section class="neo-grid">
-  <div class="neo-card neo-card--pad">
-    <div class="neo-card-hd">
-      <h2>Compte principal</h2>
-      <a routerLink="/compte-view" class="neo-link">Voir tous →</a>
+  <div class="kpi-card reveal delay-2" *ngIf="!premiumLoading; else premSkel">
+    <div class="kpi-icon" [class.kpi-icon--ok]="isPremium" [class.kpi-icon--muted]="!isPremium">
+      <i class="fa-solid fa-wand-magic-sparkles"></i>
     </div>
-
-    <div *ngIf="!loading && primaryAccount as primary; else noPrimary">
-      <app-account-physical-card [compte]="primary" />
-    </div>
-    <ng-template #noPrimary>
-      <div class="neo-empty">
-        <p class="neo-muted">Aucun compte actif</p>
-        <a routerLink="/compte-view" [queryParams]="{ open: 'true' }" class="neo-btn neo-btn--primary">Ouvrir un
-          compte</a>
-      </div>
-    </ng-template>
-  </div>
-
-  <div class="neo-card neo-card--pad">
-    <div class="neo-card-hd">
-      <h2>Limites quotidiennes</h2>
-      <a routerLink="/virement-view" class="neo-link">Voir détails →</a>
-    </div>
-
-    <div class="neo-limits" *ngIf="!premiumLoading && accountUsages.length > 0; else limitsEmpty">
-      <div class="neo-limit" *ngFor="let u of accountUsages">
-        <div class="neo-limit-top">
-          <span class="neo-limit-name">
-            <i class="fa-solid fa-shield-halved"></i>
-            {{ accountTypeMeta[u.typeCompte]?.label }}
-          </span>
-          <span class="neo-limit-val">{{ u.dailyCountUsed }}/{{ u.dailyCountLimit }}</span>
-        </div>
-        <div class="neo-bar">
-          <div class="neo-bar-fill" [style.width.%]="dailyUsagePct(u)" [class.neo-bar-fill--warn]="isNearDailyLimit(u)"
-            [class.neo-bar-fill--full]="isAtDailyLimit(u)"></div>
-        </div>
-        <p class="neo-limit-sub">Max transfert: {{ u.maxTransferAmount | number : '1.0-0' }} TND</p>
-      </div>
-    </div>
-    <ng-template #limitsEmpty>
-      <p class="neo-muted">Chargement des limites…</p>
-    </ng-template>
-  </div>
-</section>
-
-<!-- Secondary grid -->
-<section class="neo-grid neo-grid--2">
-  <div class="neo-card neo-card--pad">
-    <div class="neo-card-hd">
-      <h2>Performance (solde)</h2>
-      <span class="neo-badge" *ngIf="!isPremium">Premium</span>
-    </div>
-
-    <div class="neo-chart">
-      <svg viewBox="0 0 640 220" preserveAspectRatio="none" *ngIf="balanceChartPoints; else chartPlaceholder">
-        <polyline class="neo-chart-line" [attr.points]="balanceChartPoints"></polyline>
-      </svg>
-      <ng-template #chartPlaceholder>
-        <div class="neo-chart-placeholder">
-          <p class="neo-muted">Activez Premium pour voir votre courbe de solde (7 jours).</p>
-          <button type="button" class="neo-btn neo-btn--primary" (click)="openPricing()">Découvrir Premium</button>
-        </div>
+    <div>
+      <p class="kpi-label">Premium IA</p>
+      <p class="kpi-value" [class.value--ok]="isPremium" [class.value--muted]="!isPremium">
+        {{ isPremium ? 'Actif' : 'Inactif' }}
+      </p>
+      <p class="kpi-sub" *ngIf="isPremium; else upgradeLink">Insights · Marchés · Chatbot</p>
+      <ng-template #upgradeLink>
+        <a routerLink="/pricing-view" class="kpi-upgrade">Passer Premium →</a>
       </ng-template>
     </div>
   </div>
+  <ng-template #premSkel>
+    <div class="kpi-card kpi-skel"></div>
+  </ng-template>
+</section>
 
-  <div class="neo-card neo-card--pad">
-    <div class="neo-card-hd">
-      <h2>Actions rapides</h2>
-      <a routerLink="/support-view" class="neo-link">Besoin d'aide ? →</a>
+<!-- ── Main grid ───────────────────────────────────────── -->
+<section class="main-grid">
+
+  <!-- Left: Account card + limits -->
+  <div class="grid-col">
+    <div class="dash-card reveal">
+      <div class="card-hd">
+        <h2>Compte principal</h2>
+        <a routerLink="/compte-view" class="card-link">Voir tous →</a>
+      </div>
+      <div *ngIf="!loading && primaryAccount as primary; else noPrimary">
+        <app-account-physical-card [compte]="primary" />
+      </div>
+      <ng-template #noPrimary>
+        <div class="card-empty">
+          <p class="empty-text">Aucun compte actif</p>
+          <a routerLink="/compte-view" [queryParams]="{ open: 'true' }" class="btn btn-primary">Ouvrir un compte</a>
+        </div>
+      </ng-template>
     </div>
 
-    <div class="neo-quick">
-      <a routerLink="/virement-view" class="neo-quick-item" *ngIf="canPrimarySendExternal">
-        <span class="neo-quick-ic"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
-        <div>
-          <p class="neo-quick-title">Envoyer</p>
-          <p class="neo-quick-sub">Virement externe</p>
+    <div class="dash-card reveal delay-1" *ngIf="accountUsages.length > 0">
+      <div class="card-hd">
+        <h2>Limites quotidiennes</h2>
+        <a routerLink="/virement-view" class="card-link">Détails →</a>
+      </div>
+      <div class="limits-list">
+        <div class="limit-row" *ngFor="let u of accountUsages">
+          <div class="limit-top">
+            <span class="limit-name">
+              <i class="fa-solid fa-shield-halved"></i>
+              {{ accountTypeMeta[u.typeCompte]?.label }}
+            </span>
+            <span class="limit-count">{{ u.dailyCountUsed }}/{{ u.dailyCountLimit }}</span>
+          </div>
+          <div class="limit-bar">
+            <div class="limit-fill"
+              [style.width.%]="dailyUsagePct(u)"
+              [class.limit-fill--warn]="isNearDailyLimit(u)"
+              [class.limit-fill--full]="isAtDailyLimit(u)">
+            </div>
+          </div>
+          <p class="limit-sub">Max transfert : {{ u.maxTransferAmount | number : '1.0-0' }} TND</p>
         </div>
-      </a>
-      <a routerLink="/virement-view" [queryParams]="{ mode: 'interne' }" class="neo-quick-item"
-        *ngIf="!canPrimarySendExternal && activeComptes.length > 0">
-        <span class="neo-quick-ic"><i class="fa-solid fa-arrows-rotate"></i></span>
-        <div>
-          <p class="neo-quick-title">Transférer</p>
-          <p class="neo-quick-sub">Entre vos comptes</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Chart + Quick actions -->
+  <div class="grid-col">
+    <div class="dash-card reveal delay-1">
+      <div class="card-hd">
+        <h2>Performance (solde)</h2>
+        <span class="premium-badge" *ngIf="!isPremium">Premium</span>
+      </div>
+
+      <!-- Real area chart when we have data -->
+      <div class="chart-wrap" *ngIf="balanceChartPoints; else chartPlaceholder">
+        <app-neo-chart
+          type="area"
+          mood="growth"
+          [compact]="true"
+          [labels]="chartXLabels"
+          [values]="chartValues">
+        </app-neo-chart>
+      </div>
+
+
+      <ng-template #chartPlaceholder>
+        <div class="chart-placeholder">
+          <div class="chart-placeholder-icon"><i class="fa-solid fa-chart-area"></i></div>
+          <p>Activez Premium pour visualiser l'évolution de votre solde sur 7 jours.</p>
+          <button type="button" class="btn btn-primary" (click)="openPricing()">Découvrir Premium</button>
         </div>
-      </a>
-      <a routerLink="/receive" class="neo-quick-item">
-        <span class="neo-quick-ic"><i class="fa-solid fa-qrcode"></i></span>
-        <div>
-          <p class="neo-quick-title">Recevoir</p>
-          <p class="neo-quick-sub">RIB & QR</p>
-        </div>
-      </a>
-      <a routerLink="/investment-view" class="neo-quick-item">
-        <span class="neo-quick-ic"><i class="fa-solid fa-chart-simple"></i></span>
-        <div>
-          <p class="neo-quick-title">Investir</p>
-          <p class="neo-quick-sub">Nouveaux plans</p>
-        </div>
-      </a>
-      <a routerLink="/loan-view" class="neo-quick-item">
-        <span class="neo-quick-ic"><i class="fa-solid fa-hand-holding-dollar"></i></span>
-        <div>
-          <p class="neo-quick-title">Prêts</p>
-          <p class="neo-quick-sub">Simuler & suivre</p>
-        </div>
-      </a>
-      <button type="button" class="neo-quick-item" (click)="goToAiSection()">
-        <span class="neo-quick-ic"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
-        <div>
-          <p class="neo-quick-title">Assistant IA</p>
-          <p class="neo-quick-sub">{{ isPremium ? 'Disponible' : 'Premium requis' }}</p>
-        </div>
-      </button>
+      </ng-template>
+    </div>
+
+    <!-- Quick actions -->
+    <div class="dash-card reveal delay-2">
+      <div class="card-hd">
+        <h2>Actions rapides</h2>
+        <a routerLink="/support-view" class="card-link">Aide →</a>
+      </div>
+      <div class="quick-grid">
+        <a routerLink="/virement-view" class="quick-item" *ngIf="canPrimarySendExternal">
+          <span class="quick-ic"><i class="fa-solid fa-arrow-up-right-from-square"></i></span>
+          <p class="quick-title">Envoyer</p>
+          <p class="quick-sub">Virement</p>
+        </a>
+        <a routerLink="/virement-view" [queryParams]="{ mode: 'interne' }" class="quick-item"
+          *ngIf="!canPrimarySendExternal && activeComptes.length > 0">
+          <span class="quick-ic"><i class="fa-solid fa-arrows-rotate"></i></span>
+          <p class="quick-title">Transférer</p>
+          <p class="quick-sub">Entre comptes</p>
+        </a>
+        <a routerLink="/receive" class="quick-item">
+          <span class="quick-ic"><i class="fa-solid fa-qrcode"></i></span>
+          <p class="quick-title">Recevoir</p>
+          <p class="quick-sub">RIB &amp; QR</p>
+        </a>
+        <a routerLink="/investment-view" class="quick-item">
+          <span class="quick-ic quick-ic--gold"><i class="fa-solid fa-chart-simple"></i></span>
+          <p class="quick-title">Investir</p>
+          <p class="quick-sub">Nouveaux plans</p>
+        </a>
+        <a routerLink="/loan-view" class="quick-item">
+          <span class="quick-ic"><i class="fa-solid fa-hand-holding-dollar"></i></span>
+          <p class="quick-title">Prêts</p>
+          <p class="quick-sub">Simuler &amp; suivre</p>
+        </a>
+        <button type="button" class="quick-item" (click)="goToAiSection()">
+          <span class="quick-ic" [class.quick-ic--premium]="isPremium"><i class="fa-solid fa-wand-magic-sparkles"></i></span>
+          <p class="quick-title">Assistant IA</p>
+          <p class="quick-sub">{{ isPremium ? 'Disponible' : 'Premium' }}</p>
+        </button>
+      </div>
     </div>
   </div>
 </section>
 
-<!-- Activity -->
-<section class="neo-grid neo-grid--2">
-  <div class="neo-card neo-card--pad">
-    <div class="neo-card-hd">
-      <h2>Investissements récents</h2>
-      <a routerLink="/investment-view" class="neo-link">Voir tout →</a>
-    </div>
-
-    <div class="neo-list" *ngIf="recentInvestments.length > 0; else invEmpty">
-      <div class="neo-row" *ngFor="let inv of recentInvestments">
-        <div class="neo-row-ic"><i class="fa-solid fa-thumbtack"></i></div>
-        <div class="neo-row-main">
-          <p class="neo-row-title">{{ inv.planNom }}</p>
-          <p class="neo-row-sub">Échéance: {{ formatDateShort(inv.dateEcheance) }} · {{ inv.daysRemaining }}j</p>
-        </div>
-        <div class="neo-row-val">
-          <p class="neo-row-amt">{{ inv.montant | number : '1.3-3' }} TND</p>
-          <p class="neo-row-meta">+{{ inv.interetAttendu | number : '1.3-3' }}</p>
-        </div>
-      </div>
-    </div>
-    <ng-template #invEmpty>
-      <p class="neo-muted">Aucun investissement actif pour le moment.</p>
-    </ng-template>
+<!-- ── Investissements récents ─────────────────────────── -->
+<section class="dash-card invest-card reveal" *ngIf="recentInvestments.length > 0">
+  <div class="card-hd">
+    <h2>Investissements récents</h2>
+    <a routerLink="/investment-view" class="card-link">Voir tout →</a>
   </div>
-
-  <div class="neo-card neo-card--pad">
-    <div class="neo-card-hd">
-      <h2>Actualités</h2>
-      <a routerLink="/actualite-view" class="neo-link">Voir tout →</a>
-    </div>
-
-    <div class="neo-list" *ngIf="recentActualites.length > 0; else newsEmpty">
-      <div class="neo-row" *ngFor="let a of recentActualites">
-        <div class="neo-row-ic"><i class="fa-regular fa-newspaper"></i></div>
-        <div class="neo-row-main">
-          <p class="neo-row-title">{{ a.titre }}</p>
-          <p class="neo-row-sub">{{ formatDateShort(a.dateCreationActualite) }}</p>
-        </div>
+  <div class="inv-list">
+    <div class="inv-row" *ngFor="let inv of recentInvestments">
+      <div class="inv-ic"><i class="fa-solid fa-thumbtack"></i></div>
+      <div class="inv-main">
+        <p class="inv-title">{{ inv.planNom }}</p>
+        <p class="inv-sub">Échéance : {{ formatDateShort(inv.dateEcheance) }} · {{ inv.daysRemaining }}j</p>
+      </div>
+      <div class="inv-val">
+        <p class="inv-amt">{{ inv.montant | number : '1.3-3' }} TND</p>
+        <p class="inv-gain">+{{ inv.interetAttendu | number : '1.3-3' }}</p>
       </div>
     </div>
-    <ng-template #newsEmpty>
-      <p class="neo-muted">Aucune actualité pour le moment.</p>
-    </ng-template>
   </div>
 </section>
 
-<!-- Premium section (kept for now; anchored by quick action) -->
-<section class="neo-premium" id="premium-section">
+<!-- ── Premium insights (anchored) ────────────────────── -->
+<section class="premium-section" id="premium-section">
   <app-client-insights [isPremium]="isPremium" [insights]="insights" [loading]="insightsLoading"
     [error]="insightsError" />
 </section>

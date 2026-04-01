@@ -21,6 +21,7 @@
   </div>
 
   <ng-container *ngIf="isPremium">
+    <!-- Summary stats -->
     <div class="insights-stats" *ngIf="insights">
       <div class="stat">
         <p class="k">Envoyé (mois)</p>
@@ -40,14 +41,32 @@
     <p class="status-msg error" *ngIf="!loading && error">{{ error }}</p>
 
     <div class="charts" *ngIf="!loading && insights">
-      <div class="chart-block">
-        <p class="chart-title">Envoyé / reçu par mois</p>
-        <div class="chart-wrap"><canvas #monthlyChart></canvas></div>
-      </div>
-
+      <!-- Balance trend -->
       <div class="chart-block">
         <p class="chart-title">Tendance du solde ({{ insights.dailyBalance.labels.length }} jours)</p>
-        <div class="chart-wrap"><canvas #balanceChart></canvas></div>
+        <div class="chart-canvas-wrap">
+          <app-neo-chart
+            type="area"
+            mood="balance"
+            [compact]="false"
+            [labels]="insights.dailyBalance.labels"
+            [values]="insights.dailyBalance.values">
+          </app-neo-chart>
+        </div>
+      </div>
+
+      <!-- Monthly transfers bar chart -->
+      <div class="chart-block">
+        <p class="chart-title">Envoyé / reçu par mois</p>
+        <div class="chart-canvas-wrap">
+          <app-neo-chart
+            type="bar"
+            mood="transfers"
+            [compact]="false"
+            [labels]="insights.monthlyTransfers.labels"
+            [datasets]="transferDatasets">
+          </app-neo-chart>
+        </div>
       </div>
     </div>
   </ng-container>

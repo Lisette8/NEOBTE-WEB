@@ -1,5 +1,5 @@
-import { CommonModule } from '@angular/common';
-import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { CommonModule, DOCUMENT } from '@angular/common';
+import { AfterViewInit, Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../../Services/auth-service';
 import { NotificationService } from '../../Services/notification-service';
@@ -8,6 +8,7 @@ import { ClientNotification } from '../../Entities/Interfaces/notification';
 import { Subscription } from 'rxjs';
 import { ClientChatbotBubble } from '../../Components/client-chatbot-bubble/client-chatbot-bubble';
 import { UiPreferencesService } from '../../Services/ui-preferences.service';
+import { Inject } from '@angular/core';
 
 @Component({
   selector: 'app-client-shell',
@@ -16,10 +17,12 @@ import { UiPreferencesService } from '../../Services/ui-preferences.service';
   templateUrl: './client-shell.html',
   styleUrl: './client-shell.css',
 })
-export class ClientShell implements OnInit, OnDestroy {
+export class ClientShell implements OnInit, OnDestroy, AfterViewInit {
   userName = '';
   photoUrl: string | null = null;
   notifPulse = false;
+  sidebarLogoSrc = 'assets/logo-mark.png';
+  sidebarLogoErrored = false;
 
   notifOpen = false;
   notifications: ClientNotification[] = [];
@@ -32,16 +35,24 @@ export class ClientShell implements OnInit, OnDestroy {
   private avatarBlobUrl: string | null = null;
   private avatarTriedBlob = false;
   private notifCloseTimer: any = null;
+  private removeNavWheelListener: (() => void) | null = null;
+
+  @ViewChild('sidebarNav', { static: true }) private sidebarNav?: ElementRef<HTMLElement>;
 
   constructor(
     private authService: AuthService,
     private router: Router,
     private notificationService: NotificationService,
     private websocketService: WebsocketService,
-    private uiPrefs: UiPreferencesService
+    private uiPrefs: UiPreferencesService,
+    @Inject(DOCUMENT) private document: Document
   ) {}
 
   ngOnInit(): void {
+    // Lock window scroll when the client shell is active to prevent rubber-band overscroll
+    // from dragging the sidebar/topbar (especially on macOS trackpads).
+    this.document.body.classList.add('neo-body-lock');
+
     this.userId = this.authService.getUserId();
 
     this.subs.push(
@@ -77,6 +88,8 @@ export class ClientShell implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.subs.forEach((s) => s.unsubscribe());
     if (this.avatarBlobUrl) URL.revokeObjectURL(this.avatarBlobUrl);
+    this.removeNavWheelListener?.();
+    this.document.body.classList.remove('neo-body-lock');
   }
 
   get userInitials(): string {
@@ -94,6 +107,10 @@ export class ClientShell implements OnInit, OnDestroy {
     const base = url.startsWith('http') ? url : `http://localhost:8080${url}`;
     const b = this.authService.getPhotoCacheBuster();
     return `${base}${base.includes('?') ? '&' : '?'}v=${b}`;
+  }
+
+  onSidebarLogoError() {
+    this.sidebarLogoErrored = true;
   }
 
   onAvatarImgError() {
@@ -165,6 +182,29 @@ export class ClientShell implements OnInit, OnDestroy {
   @HostListener('document:pointerdown')
   onPointerDown() {
     this.uiPrefs.unlockAudio();
+  }
+
+  ngAfterViewInit(): void {
+    // Prevent scroll chaining (overscroll) from the sidebar into the main view.
+    const el = this.sidebarNav?.nativeElement;
+    if (!el) return;
+
+    const onWheel = (ev: WheelEvent) => {
+      // Only when the sidebar is scrollable.
+      const max = el.scrollHeight - el.clientHeight;
+      if (max <= 0) return;
+
+      const atTop = el.scrollTop <= 0;
+      const atBottom = el.scrollTop >= max - 1;
+
+      if ((atTop && ev.deltaY < 0) || (atBottom && ev.deltaY > 0)) {
+        ev.preventDefault();
+        ev.stopPropagation();
+      }
+    };
+
+    el.addEventListener('wheel', onWheel, { passive: false });
+    this.removeNavWheelListener = () => el.removeEventListener('wheel', onWheel as any);
   }
 
   private loadNotifCounts() {

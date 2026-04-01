@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { RevealOnScrollDirective } from '../../../Directives/reveal-on-scroll.directive';
 
 declare const L: any;  // Leaflet — loaded via CDN in index.html
 
@@ -17,7 +18,7 @@ interface Agency {
 @Component({
   selector: 'app-contact-view',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterLink],
+  imports: [CommonModule, FormsModule, RouterLink, RevealOnScrollDirective],
   templateUrl: './contact-view.html',
   styleUrl: './contact-view.css',
 })

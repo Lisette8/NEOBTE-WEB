@@ -1,147 +1,187 @@
-<div class="neo-pricing">
-  <div class="top">
-    <div>
-      <h1>NeoBTE Premium</h1>
-      <p>Une expérience plus intelligente, plus rapide, plus sécurisée — pensée pour la fintech.</p>
-    </div>
+<main class="pricing-page">
+
+  <!-- decorative background layer -->
+  <div class="deco" aria-hidden="true">
+    <span class="deco-ring deco-ring-1"></span>
+    <span class="deco-ring deco-ring-2"></span>
+    <span class="deco-ring deco-ring-3"></span>
+    <span class="deco-blob deco-blob-1"></span>
+    <span class="deco-blob deco-blob-2"></span>
+    <span class="deco-lines deco-lines-1"></span>
+    <span class="deco-cross deco-cross-1"></span>
+    <span class="deco-dot-cluster"></span>
   </div>
 
-  <div class="grid">
-    <div class="neo-card plan">
-      <div class="plan-hd">
-        <span class="chip"><i class="fa-regular fa-circle"></i> Essentiel</span>
-        <div class="price">
-          <span class="amt">0</span>
-          <span class="unit">TND / mois</span>
-        </div>
-      </div>
-
-      <p class="tagline">L’essentiel pour gérer vos comptes au quotidien.</p>
-
-      <ul class="features">
-        <li><i class="fa-solid fa-check"></i> Gestion des comptes & aperçu du solde</li>
-        <li><i class="fa-solid fa-check"></i> Virements (selon limites de votre compte)</li>
-        <li><i class="fa-solid fa-check"></i> Fil d’actualités BTE</li>
-        <li><i class="fa-solid fa-check"></i> Support & tickets</li>
-        <li class="no"><i class="fa-solid fa-minus"></i> Assistant IA financier</li>
-        <li class="no"><i class="fa-solid fa-minus"></i> Graphiques & insights avancés</li>
-      </ul>
-
-      <div class="actions">
-        <button class="neo-btn" type="button" disabled>Offre actuelle</button>
+  <!-- Hero header -->
+  <section class="pricing-hero section neo-reveal--bloom" revealOnScroll>
+    <div class="container">
+      <div class="pricing-hero__inner reveal neo-reveal--bloom" revealOnScroll>
+        <p class="kicker">Tarifs &amp; Offres</p>
+        <h1>Un accès clair, des fonctionnalités adaptées à vos besoins.</h1>
+        <p class="lead">
+          NEO BTE est accessible gratuitement. Déverrouillez des outils avancés avec l'offre Premium,
+          ou contactez-nous pour un accompagnement entreprise sur mesure.
+        </p>
       </div>
     </div>
+  </section>
 
-    <div class="neo-card plan premium">
-      <div class="plan-hd">
-        <span class="chip premium"><i class="fa-regular fa-gem"></i> Premium</span>
-        <div class="price">
-          <span class="amt" style="font-size: 1.2rem">Sur demande</span>
-          <span class="unit">en agence</span>
+  <!-- Plan cards -->
+  <section class="section-sm neo-reveal--bloom" revealOnScroll>
+    <div class="container plan-grid">
+
+      <!-- Essentiel -->
+      <article class="plan-card reveal neo-reveal--bloom" revealOnScroll>
+        <div class="plan-card__head">
+          <span class="kicker kicker-sm"><i class="fa-regular fa-circle"></i> Essentiel</span>
+          <div class="plan-price">
+            <span class="plan-price__amt">0</span>
+            <span class="plan-price__unit">TND / mois</span>
+          </div>
         </div>
+        <p class="plan-tagline">L'essentiel pour gérer vos comptes au quotidien.</p>
+        <ul class="plan-features">
+          <li><i class="fa-solid fa-check"></i> Gestion des comptes &amp; aperçu du solde</li>
+          <li><i class="fa-solid fa-check"></i> Virements (selon limites de votre compte)</li>
+          <li><i class="fa-solid fa-check"></i> Fil d'actualités BTE</li>
+          <li><i class="fa-solid fa-check"></i> Support &amp; tickets</li>
+          <li class="plan-feature--off"><i class="fa-solid fa-minus"></i> Assistant IA financier</li>
+          <li class="plan-feature--off"><i class="fa-solid fa-minus"></i> Graphiques &amp; insights avancés</li>
+        </ul>
+        <div class="plan-card__foot">
+          <button class="btn btn-secondary" type="button" disabled>Offre actuelle</button>
+        </div>
+      </article>
+
+      <!-- Premium (highlighted) -->
+      <article class="plan-card plan-card--premium reveal delay-1 neo-reveal--bloom" revealOnScroll>
+        <div class="plan-card__head">
+          <span class="kicker kicker-sm kicker-gold"><i class="fa-regular fa-gem"></i> Premium</span>
+          <div class="plan-price">
+            <span class="plan-price__amt plan-price__amt--sm">Sur demande</span>
+            <span class="plan-price__unit">en agence</span>
+          </div>
+        </div>
+        <p class="plan-tagline">Débloquez l'IA, les insights et une UX plus fluide.</p>
+        <ul class="plan-features">
+          <li><i class="fa-solid fa-check"></i> Assistant IA (conseils budget, explications, bonnes pratiques)</li>
+          <li><i class="fa-solid fa-check"></i> Courbe de solde &amp; performance</li>
+          <li><i class="fa-solid fa-check"></i> Insights sur vos virements (tendances, résumés)</li>
+          <li><i class="fa-solid fa-check"></i> Marchés (taux/crypto) &amp; suggestions</li>
+          <li><i class="fa-solid fa-check"></i> Expérience prioritaire &amp; support accéléré</li>
+        </ul>
+        <div class="plan-card__foot">
+          <button class="btn btn-gold" type="button" (click)="openAgencyModal()">
+            <i class="fa-solid fa-sparkles"></i> Obtenir Premium
+          </button>
+        </div>
+      </article>
+
+      <!-- Entreprise -->
+      <article class="plan-card reveal delay-2 neo-reveal--bloom" revealOnScroll>
+        <div class="plan-card__head">
+          <span class="kicker kicker-sm"><i class="fa-solid fa-building"></i> Entreprise</span>
+          <div class="plan-price">
+            <span class="plan-price__amt">—</span>
+            <span class="plan-price__unit">devis</span>
+          </div>
+        </div>
+        <p class="plan-tagline">Pour les professionnels : contrôle, audit et accompagnement dédié.</p>
+        <ul class="plan-features">
+          <li><i class="fa-solid fa-check"></i> Profils multiples &amp; permissions</li>
+          <li><i class="fa-solid fa-check"></i> Exports &amp; rapports</li>
+          <li><i class="fa-solid fa-check"></i> Seuils personnalisés</li>
+          <li><i class="fa-solid fa-check"></i> Support dédié</li>
+        </ul>
+        <div class="plan-card__foot">
+          <a class="btn btn-secondary" href="https://www.bte.com.tn/fr/" target="_blank" rel="noopener noreferrer">
+            <i class="fa-solid fa-arrow-up-right-from-square"></i> Contacter BTE
+          </a>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- Security note -->
+  <div class="container">
+    <p class="security-note reveal neo-reveal--bloom" revealOnScroll>
+      <i class="fa-solid fa-shield-halved"></i>
+      Toutes les offres incluent une sécurité bancaire, un contrôle d'accès (PIN 2FA) et une surveillance anti‑fraude.
+    </p>
+  </div>
+
+  <!-- FAQ -->
+  <section class="section neo-reveal--bloom" revealOnScroll>
+    <div class="container">
+      <div class="section-head reveal neo-reveal--bloom" revealOnScroll>
+        <p class="kicker">FAQ</p>
+        <h2>Questions fréquentes</h2>
       </div>
+      <div class="faq-grid">
+        <article class="faq-card reveal neo-reveal--bloom" revealOnScroll>
+          <p class="faq-q">Comment activer Premium ?</p>
+          <p class="faq-a">L'activation se fait en agence BTE, avec un conseiller. L'accès Premium est immédiat.</p>
+        </article>
+        <article class="faq-card reveal delay-1 neo-reveal--bloom" revealOnScroll>
+          <p class="faq-q">Le chatbot est-il disponible ?</p>
+          <p class="faq-a">Oui : la bulle est visible pour tous. Premium active les réponses IA et les insights.</p>
+        </article>
+        <article class="faq-card reveal delay-2 neo-reveal--bloom" revealOnScroll>
+          <p class="faq-q">Puis-je désactiver les sons ?</p>
+          <p class="faq-a">Oui : dans l'application, Paramètres → Notifications.</p>
+        </article>
+      </div>
+    </div>
+  </section>
 
-      <p class="tagline">Débloquez l’IA, les insights et une UX plus fluide (notifications, tableaux de bord).</p>
-
-      <ul class="features">
-        <li><i class="fa-solid fa-check"></i> Assistant IA (conseils budget, explications, bonnes pratiques)</li>
-        <li><i class="fa-solid fa-check"></i> Courbe de solde & performance</li>
-        <li><i class="fa-solid fa-check"></i> Insights sur vos virements (tendances, résumés)</li>
-        <li><i class="fa-solid fa-check"></i> Marchés (taux/crypto) & suggestions</li>
-        <li><i class="fa-solid fa-check"></i> Expérience prioritaire & support accéléré</li>
-      </ul>
-
-      <div class="actions">
-        <button class="neo-btn neo-btn--primary" type="button" (click)="openAgencyModal()">
-          <i class="fa-solid fa-sparkles"></i>
-          Obtenir Premium
+  <!-- CTA band -->
+  <section class="section cta neo-reveal--bloom" revealOnScroll>
+    <div class="container">
+      <div class="cta-band reveal neo-reveal--bloom" revealOnScroll>
+        <div class="cta-band__copy">
+          <p class="kicker kicker-light">NEO BTE</p>
+          <h2>Prêt à passer au niveau supérieur ?</h2>
+          <p>Rendez-vous en agence BTE pour activer Premium et accéder à l'ensemble des fonctionnalités.</p>
+        </div>
+        <button class="btn btn-gold" type="button" (click)="openAgencyModal()">
+          <i class="fa-solid fa-sparkles"></i> Obtenir Premium
         </button>
       </div>
     </div>
+  </section>
 
-    <div class="neo-card plan">
-      <div class="plan-hd">
-        <span class="chip"><i class="fa-solid fa-building"></i> Entreprise</span>
-        <div class="price">
-          <span class="amt">—</span>
-          <span class="unit">devis</span>
-        </div>
-      </div>
-
-      <p class="tagline">Pour les professionnels : contrôle, audit et accompagnement dédié.</p>
-
-      <ul class="features">
-        <li><i class="fa-solid fa-check"></i> Profils multiples & permissions</li>
-        <li><i class="fa-solid fa-check"></i> Exports & rapports</li>
-        <li><i class="fa-solid fa-check"></i> Seuils personnalisés</li>
-        <li><i class="fa-solid fa-check"></i> Support dédié</li>
-      </ul>
-
-      <div class="actions">
-        <a class="neo-btn" href="https://www.bte.com.tn/fr/" target="_blank" rel="noopener noreferrer">
-          <i class="fa-solid fa-arrow-up-right-from-square"></i>
-          Contacter BTE
-        </a>
-      </div>
-    </div>
-  </div>
-
-  <p class="note">
-    Toutes les offres incluent une sécurité bancaire, un contrôle d’accès (PIN 2FA) et une surveillance anti‑fraude.
-  </p>
-
-  <div class="faq">
-    <div class="neo-card neo-card--pad faq-card">
-      <h3>Questions fréquentes</h3>
-      <div class="faq-grid">
-        <div class="qa">
-          <p class="q">Comment activer Premium ?</p>
-          <p class="a">L’activation se fait en agence BTE, avec un conseiller. L’accès Premium est immédiat.</p>
-        </div>
-        <div class="qa">
-          <p class="q">Le chatbot est-il disponible ?</p>
-          <p class="a">Oui : la bulle est visible pour tous. Premium active les réponses IA et les insights.</p>
-        </div>
-        <div class="qa">
-          <p class="q">Puis-je désactiver les sons ?</p>
-          <p class="a">Oui : dans l’application, Paramètres → Notifications.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-
+  <!-- Agency modal -->
   <div class="modal-backdrop" *ngIf="showAgencyModal" (click)="closeAgencyModal()">
     <div class="modal" (click)="$event.stopPropagation()">
-      <div class="modal-top">
+      <div class="modal-head">
         <h3 class="modal-title">Activation en agence BTE</h3>
         <button class="modal-close" type="button" (click)="closeAgencyModal()" aria-label="Fermer">
           <i class="fa-solid fa-xmark"></i>
         </button>
       </div>
-
       <p class="modal-body">
-        Pour souscrire à <strong>NeoBTE Premium</strong>, rendez‑vous dans une agence
-        <strong>Banque de Tunisie et des Emirats (BTE)</strong>. Un conseiller activera l’abonnement sur votre compte.
+        Pour souscrire à <strong>NEO BTE Premium</strong>, rendez‑vous dans une agence
+        <strong>Banque de Tunisie et des Emirats (BTE)</strong>. Un conseiller activera l'abonnement sur votre compte.
       </p>
-
-      <div class="steps">
-        <div class="step">
-          <span class="num">1</span>
-          <span>Apportez votre CIN et les informations de votre compte NeoBTE.</span>
+      <div class="modal-steps">
+        <div class="modal-step">
+          <span class="modal-step__num">1</span>
+          <span>Apportez votre CIN et les informations de votre compte NEO BTE.</span>
         </div>
-        <div class="step">
-          <span class="num">2</span>
-          <span>Demandez l’activation de l’abonnement <strong>Premium</strong>.</span>
+        <div class="modal-step">
+          <span class="modal-step__num">2</span>
+          <span>Demandez l'activation de l'abonnement <strong>Premium</strong>.</span>
         </div>
-        <div class="step">
-          <span class="num">3</span>
-          <span>L’assistant IA et les graphiques Premium deviennent disponibles immédiatement.</span>
+        <div class="modal-step">
+          <span class="modal-step__num">3</span>
+          <span>L'assistant IA et les graphiques Premium deviennent disponibles immédiatement.</span>
         </div>
       </div>
-
-      <div class="actions" style="justify-content: flex-end">
-        <button class="neo-btn" type="button" (click)="closeAgencyModal()">Compris</button>
+      <div class="modal-foot">
+        <button class="btn btn-secondary" type="button" (click)="closeAgencyModal()">Compris</button>
       </div>
     </div>
   </div>
-</div>
+
+</main>

@@ -25,7 +25,7 @@
     <p class="neo-kpi-value">{{ totalBalance | number : '1.3-3' }} <span class="neo-kpi-cur">TND</span></p>
     <p class="neo-kpi-sub">
       {{ activeComptes.length }} compte{{ activeComptes.length !== 1 ? 's' : '' }} actif{{
-        activeComptes.length !== 1 ? 's' : ''
+      activeComptes.length !== 1 ? 's' : ''
       }}
     </p>
   </div>
@@ -80,7 +80,8 @@
     <ng-template #noPrimary>
       <div class="neo-empty">
         <p class="neo-muted">Aucun compte actif</p>
-        <a routerLink="/compte-view" [queryParams]="{ open: 'true' }" class="neo-btn neo-btn--primary">Ouvrir un compte</a>
+        <a routerLink="/compte-view" [queryParams]="{ open: 'true' }" class="neo-btn neo-btn--primary">Ouvrir un
+          compte</a>
       </div>
     </ng-template>
   </div>
@@ -101,12 +102,8 @@
           <span class="neo-limit-val">{{ u.dailyCountUsed }}/{{ u.dailyCountLimit }}</span>
         </div>
         <div class="neo-bar">
-          <div
-            class="neo-bar-fill"
-            [style.width.%]="dailyUsagePct(u)"
-            [class.neo-bar-fill--warn]="isNearDailyLimit(u)"
-            [class.neo-bar-fill--full]="isAtDailyLimit(u)"
-          ></div>
+          <div class="neo-bar-fill" [style.width.%]="dailyUsagePct(u)" [class.neo-bar-fill--warn]="isNearDailyLimit(u)"
+            [class.neo-bar-fill--full]="isAtDailyLimit(u)"></div>
         </div>
         <p class="neo-limit-sub">Max transfert: {{ u.maxTransferAmount | number : '1.0-0' }} TND</p>
       </div>
@@ -152,12 +149,8 @@
           <p class="neo-quick-sub">Virement externe</p>
         </div>
       </a>
-      <a
-        routerLink="/virement-view"
-        [queryParams]="{ mode: 'interne' }"
-        class="neo-quick-item"
-        *ngIf="!canPrimarySendExternal && activeComptes.length > 0"
-      >
+      <a routerLink="/virement-view" [queryParams]="{ mode: 'interne' }" class="neo-quick-item"
+        *ngIf="!canPrimarySendExternal && activeComptes.length > 0">
         <span class="neo-quick-ic"><i class="fa-solid fa-arrows-rotate"></i></span>
         <div>
           <p class="neo-quick-title">Transférer</p>
@@ -245,6 +238,6 @@
 
 <!-- Premium section (kept for now; anchored by quick action) -->
 <section class="neo-premium" id="premium-section">
-  <app-client-insights [isPremium]="isPremium" [insights]="insights" [loading]="insightsLoading" [error]="insightsError" />
+  <app-client-insights [isPremium]="isPremium" [insights]="insights" [loading]="insightsLoading"
+    [error]="insightsError" />
 </section>
-

@@ -1,282 +1,295 @@
 :host {
-    display: block;
-  }
-  
-  /* ── CSS variables local to chart ────────────────────── */
-  .chart-shell {
-    --chart-color:  #0000A0;
-    --chart-neg:    #dc2626;
-    --chart-green:  #16a34a;
-  }
-  
-  /* ── Shell ────────────────────────────────────────────── */
-  .chart-shell {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--r-2xl);
-    padding: 20px 20px 16px;
-    margin-bottom: 20px;
-    animation: fadeUp 0.4s var(--ease) 0.08s both;
-  }
-  
-  /* ── Header ───────────────────────────────────────────── */
-  .chart-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 16px;
-  }
-  
-  .period-tabs {
-    display: flex;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 3px;
-    gap: 2px;
-  }
-  
-  .period-tab {
-    padding: 5px 11px;
-    border-radius: 7px;
-    border: none;
-    background: transparent;
-    font-size: 0.72rem;
-    font-weight: 600;
-    font-family: 'Inter', sans-serif;
-    color: var(--text-3);
-    cursor: pointer;
-    transition: all var(--t-fast);
-    white-space: nowrap;
-  }
-  
-  .period-tab:hover:not(.active) {
-    color: var(--text-2);
-    background: var(--border-soft);
-  }
-  
-  .period-tab.active {
-    background: var(--surface);
-    color: var(--text-1);
-    box-shadow: 0 1px 4px rgba(0,0,0,0.08);
-  }
-  
-  /* Change badge */
-  .change-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 4px 9px;
-    border-radius: 20px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-  }
-  
-  .change-badge.pos {
-    background: var(--green-light);
-    color: #166534;
-  }
-  
-  .change-badge.neg {
-    background: var(--red-light);
-    color: #991b1b;
-  }
-  
-  /* ── Chart wrapper ────────────────────────────────────── */
-  .chart-wrap {
-    position: relative;
-    width: 100%;
-    margin-bottom: 4px;
-    cursor: crosshair;
-  }
-  
-  .chart-svg {
-    display: block;
-    width: 100%;
-    height: 200px;
-    overflow: visible;
-  }
-  
-  /* Grid */
-  .grid-line {
-    stroke: var(--border-soft);
-    stroke-width: 1;
-    stroke-dasharray: 3 5;
-  }
-  
-  /* Line */
-  .line-path {
-    transition: stroke 0.3s ease;
-    vector-effect: non-scaling-stroke;
-  }
-  
-  /* Area */
-  .area-path {
-    transition: fill 0.3s ease;
-  }
-  
-  /* Dots */
-  .tx-dot {
-    transition: r 0.15s ease;
-  }
-  
-  .tx-dot:hover {
-    r: 5;
-  }
-  
-  .hover-dot {
-    pointer-events: none;
-  }
-  
-  /* Tooltip line */
-  .tooltip-line {
-    stroke: var(--border);
-    stroke-width: 1;
-    stroke-dasharray: 4 4;
-    pointer-events: none;
-    vector-effect: non-scaling-stroke;
-  }
-  
-  /* X labels */
-  .x-label {
-    font-size: 9px;
-    fill: var(--text-3);
-    font-family: 'Inter', sans-serif;
-    font-weight: 500;
-    pointer-events: none;
-  }
-  
-  /* ── Tooltip bubble ───────────────────────────────────── */
-  .tooltip-bubble {
-    position: absolute;
-    transform: translate(-50%, calc(-100% - 14px));
-    background: var(--text-1);
-    color: #fff;
-    border-radius: 10px;
-    padding: 9px 12px;
-    pointer-events: none;
-    white-space: nowrap;
-    z-index: 10;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.18);
-    animation: scaleIn 0.12s ease both;
-  }
-  
-  /* Arrow */
-  .tooltip-bubble::after {
-    content: '';
-    position: absolute;
-    bottom: -5px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 10px;
-    height: 10px;
-    background: var(--text-1);
-    clip-path: polygon(0 0, 100% 0, 50% 100%);
-  }
-  
-  .tt-balance {
-    font-size: 0.88rem;
-    font-weight: 800;
-    letter-spacing: -0.025em;
-    font-variant-numeric: tabular-nums;
-    margin-bottom: 1px;
-  }
-  
-  .tt-balance span {
-    font-size: 0.65rem;
-    font-weight: 500;
-    opacity: 0.7;
-  }
-  
-  .tt-date {
-    font-size: 0.65rem;
-    opacity: 0.6;
-    font-weight: 400;
-  }
-  
-  .tt-divider {
-    height: 1px;
-    background: rgba(255,255,255,0.15);
-    margin: 6px 0 5px;
-  }
-  
-  .tt-tx {
-    font-size: 0.72rem;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-variant-numeric: tabular-nums;
-  }
-  
-  .tt-tx.out { color: #fca5a5; }
-  .tt-tx.in  { color: #86efac; }
-  
-  /* ── Stats row ────────────────────────────────────────── */
-  .stats-row {
-    display: flex;
-    align-items: stretch;
-    border-top: 1px solid var(--border-soft);
-    margin-top: 16px;
-    padding-top: 14px;
-    gap: 0;
-  }
-  
-  .stat-card {
-    flex: 1;
-    text-align: center;
-    padding: 0 8px;
-  }
-  
-  .stat-divider {
-    width: 1px;
-    background: var(--border-soft);
-    align-self: stretch;
-  }
-  
-  .stat-label {
-    font-size: 0.65rem;
-    color: var(--text-3);
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-bottom: 4px;
-  }
-  
-  .stat-value {
-    font-size: 0.9rem;
-    font-weight: 800;
-    letter-spacing: -0.025em;
-    font-variant-numeric: tabular-nums;
-    line-height: 1.1;
-  }
-  
-  .stat-value.pos     { color: var(--green); }
-  .stat-value.neg     { color: var(--red); }
-  .stat-value.neutral { color: var(--text-1); }
-  
-  .stat-unit {
-    font-size: 0.6rem;
-    color: var(--text-3);
-    font-weight: 500;
-    margin-top: 1px;
-  }
-  
-  /* ── Empty state ──────────────────────────────────────── */
-  .chart-empty {
-    padding: 20px 0 10px;
-    text-align: center;
-  }
-  
-  .empty-line {
-    height: 2px;
-    background: var(--border-soft);
-    border-radius: 2px;
-    margin: 0 0 16px;
-  }
-  
-  .chart-empty p {
-    font-size: 0.78rem;
-    color: var(--text-3);
-  }
+  display: block;
+}
+
+/* ── CSS variables local to chart ────────────────────── */
+.chart-shell {
+  --chart-color: #0000A0;
+  --chart-neg: #dc2626;
+  --chart-green: #16a34a;
+}
+
+/* ── Shell ────────────────────────────────────────────── */
+.chart-shell {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r-2xl);
+  padding: 20px 20px 16px;
+  margin-bottom: 20px;
+  animation: fadeUp 0.4s var(--ease) 0.08s both;
+}
+
+/* ── Header ───────────────────────────────────────────── */
+.chart-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.period-tabs {
+  display: flex;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.period-tab {
+  padding: 5px 11px;
+  border-radius: 7px;
+  border: none;
+  background: transparent;
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-family: 'Inter', sans-serif;
+  color: var(--text-3);
+  cursor: pointer;
+  transition: all var(--t-fast);
+  white-space: nowrap;
+}
+
+.period-tab:hover:not(.active) {
+  color: var(--text-2);
+  background: var(--border-soft);
+}
+
+.period-tab.active {
+  background: var(--surface);
+  color: var(--text-1);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
+}
+
+/* Change badge */
+.change-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 9px;
+  border-radius: 20px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.change-badge.pos {
+  background: var(--green-light);
+  color: #166534;
+}
+
+.change-badge.neg {
+  background: var(--red-light);
+  color: #991b1b;
+}
+
+/* ── Chart wrapper ────────────────────────────────────── */
+.chart-wrap {
+  position: relative;
+  width: 100%;
+  margin-bottom: 4px;
+  cursor: crosshair;
+}
+
+.chart-svg {
+  display: block;
+  width: 100%;
+  height: 200px;
+  overflow: visible;
+}
+
+/* Grid */
+.grid-line {
+  stroke: var(--border-soft);
+  stroke-width: 1;
+  stroke-dasharray: 3 5;
+}
+
+/* Line */
+.line-path {
+  transition: stroke 0.3s ease;
+  vector-effect: non-scaling-stroke;
+}
+
+/* Area */
+.area-path {
+  transition: fill 0.3s ease;
+}
+
+/* Dots */
+.tx-dot {
+  transition: r 0.15s ease;
+}
+
+.tx-dot:hover {
+  r: 5;
+}
+
+.hover-dot {
+  pointer-events: none;
+}
+
+/* Tooltip line */
+.tooltip-line {
+  stroke: var(--border);
+  stroke-width: 1;
+  stroke-dasharray: 4 4;
+  pointer-events: none;
+  vector-effect: non-scaling-stroke;
+}
+
+/* X labels */
+.x-label {
+  font-size: 9px;
+  fill: var(--text-3);
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+  pointer-events: none;
+}
+
+/* ── Tooltip bubble ───────────────────────────────────── */
+.tooltip-bubble {
+  position: absolute;
+  transform: translate(-50%, calc(-100% - 14px));
+  background: var(--text-1);
+  color: #fff;
+  border-radius: 10px;
+  padding: 9px 12px;
+  pointer-events: none;
+  white-space: nowrap;
+  z-index: 10;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.18);
+  animation: scaleIn 0.12s ease both;
+}
+
+/* Arrow */
+.tooltip-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 10px;
+  height: 10px;
+  background: var(--text-1);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
+}
+
+.tt-balance {
+  font-size: 0.88rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 1px;
+}
+
+.tt-balance span {
+  font-size: 0.65rem;
+  font-weight: 500;
+  opacity: 0.7;
+}
+
+.tt-date {
+  font-size: 0.65rem;
+  opacity: 0.6;
+  font-weight: 400;
+}
+
+.tt-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.15);
+  margin: 6px 0 5px;
+}
+
+.tt-tx {
+  font-size: 0.72rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+.tt-tx.out {
+  color: #fca5a5;
+}
+
+.tt-tx.in {
+  color: #86efac;
+}
+
+/* ── Stats row ────────────────────────────────────────── */
+.stats-row {
+  display: flex;
+  align-items: stretch;
+  border-top: 1px solid var(--border-soft);
+  margin-top: 16px;
+  padding-top: 14px;
+  gap: 0;
+}
+
+.stat-card {
+  flex: 1;
+  text-align: center;
+  padding: 0 8px;
+}
+
+.stat-divider {
+  width: 1px;
+  background: var(--border-soft);
+  align-self: stretch;
+}
+
+.stat-label {
+  font-size: 0.65rem;
+  color: var(--text-3);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 4px;
+}
+
+.stat-value {
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.1;
+}
+
+.stat-value.pos {
+  color: var(--green);
+}
+
+.stat-value.neg {
+  color: var(--red);
+}
+
+.stat-value.neutral {
+  color: var(--text-1);
+}
+
+.stat-unit {
+  font-size: 0.6rem;
+  color: var(--text-3);
+  font-weight: 500;
+  margin-top: 1px;
+}
+
+/* ── Empty state ──────────────────────────────────────── */
+.chart-empty {
+  padding: 20px 0 10px;
+  text-align: center;
+}
+
+.empty-line {
+  height: 2px;
+  background: var(--border-soft);
+  border-radius: 2px;
+  margin: 0 0 16px;
+}
+
+.chart-empty p {
+  font-size: 0.78rem;
+  color: var(--text-3);
+}

@@ -10,7 +10,8 @@
     </div>
 
     <nav class="neo-nav" aria-label="Navigation principale">
-      <a class="neo-nav-item" routerLink="/home-view" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">
+      <a class="neo-nav-item" routerLink="/home-view" routerLinkActive="active"
+        [routerLinkActiveOptions]="{ exact: true }">
         <span class="neo-nav-ic"><i class="fa-solid fa-gauge-high"></i></span>
         Tableau de bord
       </a>
@@ -59,12 +60,14 @@
 
       <div class="neo-actions">
         <div class="neo-notif-wrap" (mouseenter)="onNotifHover(true)" (mouseleave)="onNotifHover(false)">
-          <button class="neo-icon-btn neo-notif-btn" type="button" aria-label="Notifications" (click)="toggleNotif()" [class.pulse]="notifPulse">
+          <button class="neo-icon-btn neo-notif-btn" type="button" aria-label="Notifications" (click)="toggleNotif()"
+            [class.pulse]="notifPulse">
             <i class="fa-regular fa-bell"></i>
             <span class="neo-notif-badge" *ngIf="unreadCount > 0">{{ unreadCount }}</span>
           </button>
 
-          <div class="neo-notif-dd" *ngIf="notifOpen" (mouseenter)="onNotifDropdownHover(true)" (mouseleave)="onNotifDropdownHover(false)">
+          <div class="neo-notif-dd" *ngIf="notifOpen" (mouseenter)="onNotifDropdownHover(true)"
+            (mouseleave)="onNotifDropdownHover(false)">
             <div class="neo-notif-hd">
               <p class="neo-notif-title">Notifications</p>
               <button class="neo-notif-action" type="button" (click)="markAllRead()" [disabled]="unreadCount === 0">
@@ -73,13 +76,8 @@
             </div>
 
             <div class="neo-notif-list" *ngIf="!notifLoading; else notifSkel">
-              <a
-                class="neo-notif-item"
-                *ngFor="let n of notifications"
-                [class.unread]="!n.lu"
-                [routerLink]="n.lien || '/notifications-view'"
-                (click)="markRead(n); toggleNotif(false)"
-              >
+              <a class="neo-notif-item" *ngFor="let n of notifications" [class.unread]="!n.lu"
+                [routerLink]="n.lien || '/notifications-view'" (click)="markRead(n); toggleNotif(false)">
                 <div class="neo-notif-dot" *ngIf="!n.lu"></div>
                 <div class="neo-notif-txt">
                   <p class="neo-notif-t">{{ n.titre }}</p>

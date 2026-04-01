@@ -1,5 +1,6 @@
 /* Card Containers */
-.users-card, .form-card {
+.users-card,
+.form-card {
   background: #ffffff;
   border-radius: 8px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
@@ -65,34 +66,50 @@
 }
 
 .btn-add {
-  background-color: #10b981; /* Emerald green */
+  background-color: #10b981;
+  /* Emerald green */
   color: white;
   padding: 10px 20px;
   font-size: 1rem;
   box-shadow: 0 4px 6px rgba(16, 185, 129, 0.2);
 }
-.btn-add:hover { background-color: #059669; }
+
+.btn-add:hover {
+  background-color: #059669;
+}
 
 .btn-edit {
-  background-color: #f59e0b; /* Amber/Orange */
+  background-color: #f59e0b;
+  /* Amber/Orange */
   color: white;
   margin-right: 8px;
 }
-.btn-edit:hover { background-color: #d97706; }
+
+.btn-edit:hover {
+  background-color: #d97706;
+}
 
 .btn-delete {
-  background-color: #ef4444; /* Red */
+  background-color: #ef4444;
+  /* Red */
   color: white;
 }
-.btn-delete:hover { background-color: #dc2626; }
+
+.btn-delete:hover {
+  background-color: #dc2626;
+}
 
 .btn-save {
-  background-color: #3b82f6; /* Blue */
+  background-color: #3b82f6;
+  /* Blue */
   color: white;
   padding: 10px 24px;
   font-size: 1rem;
 }
-.btn-save:hover { background-color: #2563eb; }
+
+.btn-save:hover {
+  background-color: #2563eb;
+}
 
 .actions-header {
   margin-bottom: 20px;
@@ -138,7 +155,8 @@
   white-space: nowrap;
 }
 
-.data-table th, .data-table td {
+.data-table th,
+.data-table td {
   padding: 14px 16px;
   border-bottom: 1px solid #e5e7eb;
   text-align: left;
@@ -211,9 +229,13 @@
   cursor: pointer;
   transition: all 0.15s;
 }
+
 .premium-toggle.on {
   background: #e0e7ff;
   border-color: #c7d2fe;
   color: #0000A0;
 }
-.premium-toggle:hover { transform: translateY(-1px); }
+
+.premium-toggle:hover {
+  transform: translateY(-1px);
+}

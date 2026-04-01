@@ -1,226 +1,180 @@
-<!-- ─── HERO ─────────────────────────────────────── -->
-<section class="hero">
-  <div class="hero-bg">
-    <div class="hero-orb orb-1"></div>
-    <div class="hero-orb orb-2"></div>
-    <div class="hero-grid"></div>
+<main class="landing-page">
+  <!-- decorative background layer -->
+  <div class="deco" aria-hidden="true">
+    <span class="deco-ring deco-ring-1"></span>
+    <span class="deco-ring deco-ring-2"></span>
+    <span class="deco-ring deco-ring-3"></span>
+    <span class="deco-blob deco-blob-1"></span>
+    <span class="deco-blob deco-blob-2"></span>
+    <span class="deco-lines deco-lines-1"></span>
+    <span class="deco-lines deco-lines-2"></span>
+    <span class="deco-cross deco-cross-1"></span>
+    <span class="deco-dot-cluster"></span>
   </div>
-
-  <div class="hero-content">
-    <div class="hero-badge">
-      <span class="badge-dot"></span>
-      Plateforme Digitale Officielle — BTE
-    </div>
-
-    <h1 class="hero-title">
-      Gérez vos finances<br>
-      <span class="hero-title-accent">avec confiance.</span>
-    </h1>
-
-    <p class="hero-sub">
-      NEO BTE réunit la solidité d'une banque tunisienne établie depuis 1982
-      avec la fluidité d'une expérience 100% digitale.
-    </p>
-
-    <div class="hero-actions">
-      <a routerLink="/auth-view" class="btn-hero-primary">Ouvrir un compte</a>
-      <a href="#services" class="btn-hero-ghost">Découvrir nos services</a>
-    </div>
-
-    <div class="hero-stats">
-      <div class="stat">
-        <span class="stat-val">40+</span>
-        <span class="stat-label">Années d'expérience</span>
-      </div>
-      <div class="stat-sep"></div>
-      <div class="stat">
-        <span class="stat-val">50k+</span>
-        <span class="stat-label">Clients actifs</span>
-      </div>
-      <div class="stat-sep"></div>
-      <div class="stat">
-        <span class="stat-val">24/7</span>
-        <span class="stat-label">Support disponible</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="hero-cards">
-    <div class="float-card card-balance">
-      <div class="fc-label">Solde disponible</div>
-      <div class="fc-value">12 450,00 <span>TND</span></div>
-      <div class="fc-bar">
-        <div class="fc-bar-fill"></div>
-      </div>
-      <div class="fc-sub">↑ +2.4% ce mois</div>
-    </div>
-
-    <div class="float-card card-transfer">
-      <div class="fc-label">Dernier virement</div>
-      <div class="fc-row">
-        <div class="fc-avatar">AH</div>
-        <div>
-          <div class="fc-name">Amine Hamdi</div>
-          <div class="fc-date">Aujourd'hui · 14:32</div>
+  <section class="hero section">
+    <div class="container hero-grid">
+      <div class="hero-copy reveal">
+        <p class="kicker">Plateforme digitale officielle de la BTE</p>
+        <h1>Une expérience bancaire claire, moderne et entièrement centrée sur vous.</h1>
+        <p class="lead">
+          NEO BTE simplifie la gestion de vos comptes, de vos paiements, de vos projets
+          d'investissement et de vos crédits, avec un niveau d'exigence premium inspiré
+          des meilleures fintechs internationales.
+        </p>
+        <div class="hero-cta">
+          <a routerLink="/register" class="btn btn-primary">Ouvrir mon compte</a>
+          <a routerLink="/auth-view" class="btn btn-secondary">Accéder à mon espace</a>
         </div>
-        <div class="fc-amount">−350 TND</div>
-      </div>
-    </div>
-
-    <div class="float-card card-security">
-      <div class="fc-icon"><i class="fa-solid fa-lock"></i></div>
-      <div class="fc-label">Sécurité renforcée</div>
-      <div class="fc-sub">Chiffrement 256-bit</div>
-    </div>
-  </div>
-</section>
-
-<!-- ─── TRUST STRIP ──────────────────────────────── -->
-<section class="trust-strip">
-  <p class="trust-label">Membre et partenaire de</p>
-  <div class="trust-logos">
-    <span class="trust-logo-item">Banque Centrale de Tunisie</span>
-    <span class="trust-dot">·</span>
-    <span class="trust-logo-item">SWIFT</span>
-    <span class="trust-dot">·</span>
-    <span class="trust-logo-item">VISA</span>
-    <span class="trust-dot">·</span>
-    <span class="trust-logo-item">Mastercard</span>
-    <span class="trust-dot">·</span>
-    <span class="trust-logo-item">UAE — Tunisie</span>
-  </div>
-</section>
-
-<!-- ─── SERVICES ─────────────────────────────────── -->
-<section class="services" id="services">
-  <div class="container">
-    <div class="section-header">
-      <span class="section-eyebrow">Nos Services</span>
-      <h2 class="section-title">Des solutions pour chaque<br>étape de votre vie financière</h2>
-      <p class="section-sub">Particuliers, professionnels, entreprises — BTE accompagne chaque profil avec des offres
-        pensées pour la Tunisie.</p>
-    </div>
-
-    <div class="services-grid">
-      <div class="service-card">
-        <div class="sc-icon"><i class="fa-solid fa-credit-card"></i></div>
-        <h3>Comptes & Cartes</h3>
-        <p>Compte chèque, épargne, carte Visa et Mastercard — gérez tout depuis NEO BTE.</p>
-        <div class="sc-arrow" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></div>
-      </div>
-      <div class="service-card">
-        <div class="sc-icon"><i class="fa-solid fa-right-left"></i></div>
-        <h3>Virements Instantanés</h3>
-        <p>Transférez en quelques secondes vers n'importe quel compte en Tunisie ou à l'international.</p>
-        <div class="sc-arrow" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></div>
-      </div>
-      <div class="service-card">
-        <div class="sc-icon"><i class="fa-solid fa-chart-line"></i></div>
-        <h3>Placements & Épargne</h3>
-        <p>Faites fructifier votre argent avec nos plans d'épargne, SICAV et produits de placement.</p>
-        <div class="sc-arrow" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></div>
-      </div>
-      <div class="service-card">
-        <div class="sc-icon"><i class="fa-solid fa-house"></i></div>
-        <h3>Crédits Immobiliers</h3>
-        <p>Financez votre projet immobilier avec des taux compétitifs et un accompagnement dédié.</p>
-        <div class="sc-arrow" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></div>
-      </div>
-      <div class="service-card">
-        <div class="sc-icon"><i class="fa-solid fa-globe"></i></div>
-        <h3>Services Internationaux</h3>
-        <p>Transferts devises, domiciliation d'exportation, lettres de crédit — ouverts sur le monde.</p>
-        <div class="sc-arrow" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></div>
-      </div>
-      <div class="service-card">
-        <div class="sc-icon"><i class="fa-solid fa-leaf"></i></div>
-        <h3>BTE Green</h3>
-        <p>Investissez dans l'avenir avec nos solutions de financement responsable et crédits verts.</p>
-        <div class="sc-arrow" aria-hidden="true"><i class="fa-solid fa-arrow-right"></i></div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ─── FEATURE SPLIT ────────────────────────────── -->
-<section class="feature-split">
-  <div class="container">
-    <div class="fs-grid">
-      <div class="fs-text">
-        <span class="section-eyebrow">Pourquoi NEO BTE ?</span>
-        <h2>La puissance d'une banque,<br>la légèreté du digital.</h2>
-        <p>Né de la Banque de Tunisie et des Émirats, NEO BTE hérite de plus de 40 ans d'expertise financière. Sur cette
-          fondation solide, nous avons bâti une expérience digitale moderne, rapide et sécurisée.</p>
-        <ul class="fs-features">
-          <li>
-            <span class="ff-icon" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
-            <div>
-              <strong>Sécurité bancaire certifiée</strong>
-              <span>Chiffrement de bout en bout, authentification forte</span>
-            </div>
-          </li>
-          <li>
-            <span class="ff-icon" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
-            <div>
-              <strong>Disponible partout, tout le temps</strong>
-              <span>Accès web et mobile, 24h/24 et 7j/7</span>
-            </div>
-          </li>
-          <li>
-            <span class="ff-icon" aria-hidden="true"><i class="fa-solid fa-check"></i></span>
-            <div>
-              <strong>Support dédié en arabe et français</strong>
-              <span>Conseillers disponibles par chat, email et téléphone</span>
-            </div>
-          </li>
+        <ul class="hero-proof">
+          <li>Agréé et conforme aux exigences du secteur bancaire tunisien</li>
+          <li>Protection avancée des données et des transactions</li>
+          <li>Accompagnement client continu en ligne</li>
         </ul>
-        <a routerLink="/auth-view" class="btn-hero-primary" style="display:inline-flex; margin-top: 2rem;">Commencer
-          maintenant</a>
       </div>
 
-      <div class="fs-visual">
-        <div class="fs-card-stack">
-          <div class="fsc fsc-back"></div>
-          <div class="fsc fsc-mid"></div>
-          <div class="fsc fsc-front">
-            <div class="fsc-top">
-              <span class="fsc-bank">NEO BTE</span>
-              <span class="fsc-chip">▉▊</span>
-            </div>
-            <div class="fsc-number">•••• •••• •••• 4782</div>
-            <div class="fsc-bottom">
-              <span>AMINE HAMDI</span>
-              <span>12/28</span>
-            </div>
-          </div>
-          <div class="fsc-stats">
-            <div class="fcs-item">
-              <span class="fcs-label">Dépenses ce mois</span>
-              <span class="fcs-val">2 180 TND</span>
-            </div>
-            <div class="fcs-item">
-              <span class="fcs-label">Épargne</span>
-              <span class="fcs-val">+840 TND</span>
-            </div>
-          </div>
+      <div class="hero-visual reveal delay-1">
+        <div class="sora-slot sora-slot-xl">
+          <img src="assets/land1.png" alt="NEO BTE hero visual">
+        </div>
+        <div class="glass-card card-balance">
+          <span>Solde consolidé</span>
+          <strong>127 450,00 TND</strong>
+          <small>Variation mensuelle +6,4%</small>
+        </div>
+        <div class="glass-card card-transfer">
+          <span>Virement prioritaire</span>
+          <strong>Confirmé en 12 sec</strong>
+          <small>Suivi en temps réel activé</small>
         </div>
       </div>
     </div>
-  </div>
-</section>
+  </section>
 
-<!-- ─── CTA ──────────────────────────────────────── -->
-<section class="cta-section">
-  <div class="container">
-    <div class="cta-inner">
-      <div class="cta-orb"></div>
-      <span class="section-eyebrow" style="color: rgba(255,255,255,0.55)">Prêt à commencer ?</span>
-      <h2>Ouvrez votre compte<br>en quelques minutes.</h2>
-      <p>Rejoignez des milliers de clients qui font confiance à NEO BTE pour gérer leur argent au quotidien.</p>
-      <div class="cta-actions">
-        <a routerLink="/auth-view" class="btn-cta">Ouvrir un compte gratuit</a>
-        <span class="cta-note">Aucun frais d'ouverture · 100% en ligne</span>
+  <section class="metrics section-sm">
+    <div class="container metric-grid">
+      <article class="metric reveal">
+        <strong>27</strong>
+        <span>agences en Tunisie</span>
+      </article>
+      <article class="metric reveal delay-1">
+        <strong>40+</strong>
+        <span>années d'expertise bancaire</span>
+      </article>
+      <article class="metric reveal delay-2">
+        <strong>24/7</strong>
+        <span>accès digital à vos services</span>
+      </article>
+      <article class="metric reveal delay-3">
+        <strong>100%</strong>
+        <span>parcours en ligne pour démarrer</span>
+      </article>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="section-head reveal">
+        <p class="kicker">Services clés</p>
+        <h2>Une banque complète, dans une interface simple</h2>
+        <p>
+          Chaque fonctionnalité a été pensée pour réduire les frictions et améliorer votre
+          pilotage financier au quotidien.
+        </p>
+      </div>
+      <div class="feature-cards">
+        <article class="feature-card reveal">
+          <h3>Comptes intelligents</h3>
+          <p>Vision instantanée de vos liquidités, de vos dépenses et de vos opérations récurrentes.</p>
+        </article>
+        <article class="feature-card reveal delay-1">
+          <h3>Virements rapides</h3>
+          <p>Exécution fluide des virements locaux et internationaux avec suivi transparent.</p>
+        </article>
+        <article class="feature-card reveal delay-2">
+          <h3>Épargne &amp; placement</h3>
+          <p>Solutions de placement adaptées à votre profil de risque et à vos objectifs.</p>
+        </article>
+        <article class="feature-card reveal">
+          <h3>Crédit digitalisé</h3>
+          <p>Dépôt, suivi et traitement de dossier simplifiés depuis un seul tableau de bord.</p>
+        </article>
+        <article class="feature-card reveal delay-1">
+          <h3>Conseil augmenté</h3>
+          <p>Recommandations personnalisées pour arbitrer vos décisions financières avec sérénité.</p>
+        </article>
+        <article class="feature-card reveal delay-2">
+          <h3>Support premium</h3>
+          <p>Équipe dédiée pour vous accompagner rapidement sur vos besoins quotidiens.</p>
+        </article>
       </div>
     </div>
-  </div>
-</section>
+  </section>
+
+  <section class="section alt">
+    <div class="container split">
+      <div class="split-copy reveal">
+        <p class="kicker">Pilotage en temps réel</p>
+        <h2>Visualisez vos finances, anticipez vos décisions.</h2>
+        <p>
+          Suivez la performance de vos comptes et de vos investissements avec des indicateurs
+          lisibles, des alertes utiles et des synthèses prêtes à l'action.
+        </p>
+        <ul>
+          <li>Historique détaillé de vos opérations</li>
+          <li>Catégorisation automatique des flux</li>
+          <li>Exports structurés pour vos suivis professionnels</li>
+        </ul>
+      </div>
+      <div class="split-visual reveal delay-1">
+        <div class="sora-slot sora-slot-lg">
+          <p>Zone image Sora — dashboard analytique (16:10)</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container steps-wrap">
+      <div class="section-head reveal">
+        <p class="kicker">Démarrage</p>
+        <h2>Trois étapes pour rejoindre NEO BTE</h2>
+      </div>
+      <div class="steps">
+        <article class="step reveal">
+          <span>01</span>
+          <h3>Création du compte</h3>
+          <p>Remplissez votre formulaire en ligne en quelques minutes avec un parcours guidé.</p>
+        </article>
+        <article class="step reveal delay-1">
+          <span>02</span>
+          <h3>Validation sécurisée</h3>
+          <p>Transmettez vos justificatifs et suivez l'avancement de votre vérification.</p>
+        </article>
+        <article class="step reveal delay-2">
+          <span>03</span>
+          <h3>Activation immédiate</h3>
+          <p>Accédez à vos services, lancez vos opérations et pilotez vos priorités financières.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="section cta">
+    <div class="container cta-grid">
+      <div class="cta-copy reveal">
+        <p class="kicker kicker-light">NEO BTE</p>
+        <h2>Une banque tunisienne historique, pensée pour les usages de demain.</h2>
+        <p>
+          Ouvrez votre compte sans complexité et bénéficiez d'une expérience premium,
+          fluide et alignée sur les standards des grandes plateformes financières.
+        </p>
+        <a routerLink="/auth-view" class="btn btn-gold">Créer mon compte gratuitement</a>
+      </div>
+      <div class="cta-visual reveal delay-1">
+        <div class="sora-slot sora-slot-wide">
+          <p>Zone image Sora — expérience client premium (21:9)</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>

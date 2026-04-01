@@ -4,4 +4,3 @@
 
 /* Layout CSS lives globally in src/styles.css (neo-*). This file remains minimal to
    avoid fighting view encapsulation when multiple client views reuse the shell. */
-

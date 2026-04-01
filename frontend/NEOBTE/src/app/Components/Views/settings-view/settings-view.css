@@ -874,12 +874,12 @@
   transition: transform var(--t-fast);
 }
 
-.neo-switch input:checked + .neo-switch-ui {
+.neo-switch input:checked+.neo-switch-ui {
   background: rgba(0, 0, 160, 0.18);
   border-color: rgba(0, 0, 160, 0.35);
 }
 
-.neo-switch input:checked + .neo-switch-ui::after {
+.neo-switch input:checked+.neo-switch-ui::after {
   transform: translateX(18px);
 }
 

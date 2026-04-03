@@ -25,9 +25,9 @@
 
     <!-- Tabs -->
     <div class="im-tabs">
-        <button class="im-tab" [class.active]="tab==='plans'" (click)="tab='plans'">Plans d'investissement</button>
+        <button class="im-tab" [class.active]="tab==='plans'" (click)="tab='plans'">Plans de placement</button>
         <button class="im-tab" [class.active]="tab==='investments'" (click)="tab='investments'">
-            Investissements <span class="im-badge" *ngIf="activeCount > 0">{{ activeCount }}</span>
+            Placements <span class="im-badge" *ngIf="activeCount > 0">{{ activeCount }}</span>
         </button>
     </div>
 
@@ -119,7 +119,7 @@
     <!-- ══ INVESTMENTS TAB ══ -->
     <div *ngIf="tab === 'investments'">
         <div class="im-tab-header">
-            <p class="im-tab-sub">Tous les investissements clients, par ordre chronologique décroissant.</p>
+            <p class="im-tab-sub">Tous les placements clients, par ordre chronologique décroissant.</p>
             <div class="im-filters">
                 <button class="im-filter" [class.active]="statusFilter==='ALL'" (click)="statusFilter='ALL'">Tous ({{
                     investments.length }})</button>
@@ -169,8 +169,8 @@
                 </tbody>
             </table>
         </div>
-        <div class="im-empty" *ngIf="!loading && filteredInvestments.length === 0">Aucun investissement dans cette
-            catégorie.</div>
+        <div class="im-empty" *ngIf="!loading && filteredInvestments.length === 0">Aucun placement dans cette catégorie.
+        </div>
     </div>
 
 </div>

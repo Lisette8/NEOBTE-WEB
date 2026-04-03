@@ -123,7 +123,7 @@ export class InvestmentView implements OnInit, OnDestroy {
   async subscribe() {
     if (!this.selectedPlan || !this.selectedCompteId || !this.montant) return;
     const confirmed = await this.modalService.confirm({
-      title: 'Confirmer l\'investissement',
+      title: 'Confirmer le placement',
       message: `Investir ${this.fmt(this.montant)} TND dans le plan « ${this.selectedPlan.nom} » pendant ${this.selectedPlan.dureeEnMois} mois ? Le montant sera bloqué jusqu'à l'échéance.`,
       confirmText: 'Investir', cancelText: 'Annuler', type: 'warning'
     });
@@ -138,7 +138,7 @@ export class InvestmentView implements OnInit, OnDestroy {
       next: () => {
         this.submitting = false;
         this.step = 'list';
-        this.success = `Investissement de ${this.fmt(this.montant!)} TND activé dans le plan « ${this.selectedPlan!.nom} ».`;
+        this.success = `Placement de ${this.fmt(this.montant!)} TND activé dans le plan « ${this.selectedPlan!.nom} ».`;
         this.selectedPlan = null; this.selectedCompteId = null; this.montant = null;
         this.loadAll();
         setTimeout(() => this.success = '', 5000);
@@ -152,9 +152,9 @@ export class InvestmentView implements OnInit, OnDestroy {
 
   async cancelInvestment(inv: Investment) {
     const confirmed = await this.modalService.confirm({
-      title: 'Annuler l\'investissement',
-      message: `Annuler l'investissement « ${inv.planNom} » ? Vous récupérerez uniquement le capital (${this.fmt(inv.montant)} TND). Les intérêts seront perdus.`,
-      confirmText: 'Annuler l\'investissement', cancelText: 'Garder', type: 'danger'
+      title: 'Annuler le placement',
+      message: `Annuler le placement « ${inv.planNom} » ? Vous récupérerez uniquement le capital (${this.fmt(inv.montant)} TND). Les intérêts seront perdus.`,
+      confirmText: 'Annuler le placement', cancelText: 'Garder', type: 'danger'
     });
     if (!confirmed) return;
 

@@ -66,7 +66,7 @@
             <h2>Mes cartes</h2>
             <span class="neo-badge">{{ comptes.length }} compte{{ comptes.length !== 1 ? 's' : '' }}</span>
           </div>
-          <p class="muted cards-desc">
+          <p class="muted">
             Vos cartes virtuelles représentent vos comptes. Sélectionnez-en une pour accéder aux détails et services.
           </p>
 
@@ -80,8 +80,7 @@
             <div class="empty-ic"><i class="fa-solid fa-credit-card"></i></div>
             <div class="empty-t">
               <h3>Commencez avec votre premier compte</h3>
-              <p>Ouvrez un compte et profitez de la banque digitale BTE : virements, épargne, investissement et plus.
-              </p>
+              <p>Ouvrez un compte et profitez de la banque digitale BTE : virements, épargne, placements et plus.</p>
               <button class="neo-btn neo-btn--primary" (click)="step = 'select-type'"
                 *ngIf="availableAccountTypes.length > 0">
                 <i class="fa-solid fa-plus"></i>
@@ -365,7 +364,7 @@
           <ul class="tips">
             <li>Conformité KYC/AML et sécurisation de votre profil.</li>
             <li>Réduction des fraudes et meilleure protection de vos transactions.</li>
-            <li>Accès simplifié aux services (virement, investissement, carte).</li>
+            <li>Accès simplifié aux services (virement, placement, carte).</li>
           </ul>
         </div>
       </aside>

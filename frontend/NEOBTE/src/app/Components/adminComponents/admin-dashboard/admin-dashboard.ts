@@ -151,7 +151,7 @@ export class AdminDashboard implements OnInit, OnDestroy {
     treasury: 'View collected service fees and transaction audit trail',
     security: 'Monitor fraud alerts, review suspicious activity and configure detection rules',
     policy: 'Configure fee rates and transfer limits per account type',
-    investments: 'Gérer les plans d\'investissement et suivre les souscriptions clients',
+    investments: 'Gérer les plans de placement et suivre les souscriptions clients',
     loans: 'Gérer les produits de prêt, approuver les demandes et suivre les remboursements',
     ai: 'AI-powered fraud intelligence, financial forecasts, and risk insights',
   };

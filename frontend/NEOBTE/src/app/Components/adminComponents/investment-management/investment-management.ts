@@ -83,7 +83,7 @@ export class InvestmentManagement implements OnInit {
   async deletePlan(plan: InvestmentPlan) {
     const confirmed = await this.modalService.confirm({
       title: 'Supprimer le plan',
-      message: `Supprimer « ${plan.nom} » ? Si des investissements sont actifs, il sera désactivé.`,
+      message: `Supprimer « ${plan.nom} » ? Si des placements sont actifs, il sera désactivé.`,
       confirmText: 'Supprimer', cancelText: 'Annuler', type: 'danger'
     });
     if (!confirmed) return;

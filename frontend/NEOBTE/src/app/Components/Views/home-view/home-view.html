@@ -203,6 +203,116 @@
   </div>
 </section>
 
+
+<!-- ── Santé financière ───────────────────────────────── -->
+<section class="dash-card health-card reveal" *ngIf="hasFinancialHealth && !loading">
+  <div class="card-hd">
+    <h2>Santé financière</h2>
+    <span class="health-badge" [class.health-badge--green]="debtRatioLevel === 0"
+      [class.health-badge--amber]="debtRatioLevel === 1" [class.health-badge--red]="debtRatioLevel === 2">
+      <i class="fa-solid fa-circle-check" *ngIf="debtRatioLevel === 0"></i>
+      <i class="fa-solid fa-triangle-exclamation" *ngIf="debtRatioLevel === 1"></i>
+      <i class="fa-solid fa-circle-exclamation" *ngIf="debtRatioLevel === 2"></i>
+      {{ debtRatioLabel }}
+    </span>
+  </div>
+
+  <div class="health-grid">
+
+    <!-- Ratio d'endettement -->
+    <div class="health-item">
+      <div class="hi-top">
+        <div class="hi-icon hi-icon--blue"><i class="fa-solid fa-scale-balanced"></i></div>
+        <div class="hi-texts">
+          <p class="hi-label">Ratio d'endettement</p>
+          <p class="hi-value">{{ (debtRatio * 100) | number:'1.0-1' }}%</p>
+        </div>
+      </div>
+      <div class="hi-bar">
+        <div class="hi-fill" [style.width.%]="debtRatio * 100" [class.hi-fill--green]="debtRatioLevel === 0"
+          [class.hi-fill--amber]="debtRatioLevel === 1" [class.hi-fill--red]="debtRatioLevel === 2">
+        </div>
+      </div>
+      <p class="hi-sub">
+        {{ totalMensualites | number:'1.3-3' }} TND/mois en remboursements
+        <span *ngIf="debtRatioLevel === 0"> · Situation saine</span>
+        <span *ngIf="debtRatioLevel === 1"> · Surveillez vos charges</span>
+        <span *ngIf="debtRatioLevel === 2"> · Endettement élevé</span>
+      </p>
+    </div>
+
+    <!-- Flux mensuel net -->
+    <div class="health-item">
+      <div class="hi-top">
+        <div class="hi-icon" [class.hi-icon--green]="monthlyNetFlowPositive"
+          [class.hi-icon--red]="!monthlyNetFlowPositive">
+          <i class="fa-solid" [class.fa-arrow-trend-up]="monthlyNetFlowPositive"
+            [class.fa-arrow-trend-down]="!monthlyNetFlowPositive"></i>
+        </div>
+        <div class="hi-texts">
+          <p class="hi-label">Flux net ce mois</p>
+          <p class="hi-value" [class.hi-value--green]="monthlyNetFlowPositive"
+            [class.hi-value--red]="!monthlyNetFlowPositive">
+            {{ monthlyNetFlow >= 0 ? '+' : '' }}{{ monthlyNetFlow | number:'1.3-3' }} TND
+          </p>
+        </div>
+      </div>
+      <p class="hi-sub">
+        {{ monthlyNetFlowPositive ? 'Vous épargnez ce mois-ci' : 'Dépenses supérieures aux entrées' }}
+      </p>
+    </div>
+
+    <!-- Intérêts placements acquis -->
+    <div class="health-item">
+      <div class="hi-top">
+        <div class="hi-icon hi-icon--gold"><i class="fa-solid fa-coins"></i></div>
+        <div class="hi-texts">
+          <p class="hi-label">Intérêts acquis</p>
+          <p class="hi-value hi-value--gold">+{{ totalAccruedInterest | number:'1.3-3' }} TND</p>
+        </div>
+      </div>
+      <p class="hi-sub">
+        Sur {{ activeInvestments.length }} placement{{ activeInvestments.length !== 1 ? 's' : '' }} actif{{
+        activeInvestments.length !== 1 ? 's' : '' }}
+        · Total attendu : +{{ totalExpectedInterest | number:'1.3-3' }} TND
+      </p>
+    </div>
+
+    <!-- Prochaine échéance -->
+    <div class="health-item" *ngIf="nextDeadline">
+      <div class="hi-top">
+        <div class="hi-icon" [class.hi-icon--amber]="nextDeadline.daysLeft <= 7"
+          [class.hi-icon--blue]="nextDeadline.daysLeft > 7">
+          <i class="fa-regular fa-calendar-clock"></i>
+        </div>
+        <div class="hi-texts">
+          <p class="hi-label">Prochaine échéance</p>
+          <p class="hi-value">{{ nextDeadline.daysLeft }}j</p>
+        </div>
+      </div>
+      <p class="hi-sub">
+        <span class="hi-tag" [class.hi-tag--loan]="nextDeadline.type === 'loan'"
+          [class.hi-tag--placement]="nextDeadline.type === 'placement'">
+          {{ nextDeadline.type === 'loan' ? 'Prêt' : 'Placement' }}
+        </span>
+        {{ nextDeadline.label }} · {{ nextDeadline.date | date:'d MMM y' }}
+      </p>
+    </div>
+
+    <div class="health-item health-item--empty" *ngIf="!nextDeadline">
+      <div class="hi-top">
+        <div class="hi-icon hi-icon--green"><i class="fa-regular fa-calendar-check"></i></div>
+        <div class="hi-texts">
+          <p class="hi-label">Prochaine échéance</p>
+          <p class="hi-value hi-value--green">Aucune</p>
+        </div>
+      </div>
+      <p class="hi-sub">Pas d'échéance imminente — tout est à jour.</p>
+    </div>
+
+  </div>
+</section>
+
 <!-- ── Premium insights (anchored) ────────────────────── -->
 <section class="premium-section" id="premium-section">
   <app-client-insights [isPremium]="isPremium" [insights]="insights" [loading]="insightsLoading"

@@ -15,6 +15,10 @@ import { interval, Subscription } from 'rxjs';
 import { Investment } from '../../../Entities/Interfaces/investment';
 import { InvestmentService } from '../../../Services/investment.service';
 import { NeoChart } from '../../neo-chart/neo-chart';
+import { Loan } from '../../../Entities/Interfaces/loan';
+import { Virement } from '../../../Entities/Interfaces/virement';
+import { LoanService } from '../../../Services/loan.service';
+import { VirementService } from '../../../Services/virement.service';
 
 
 
@@ -42,6 +46,8 @@ export class HomeView implements OnInit, OnDestroy {
   insightsError = '';
 
   activeInvestments: Investment[] = [];
+  activeLoans: Loan[] = [];
+  recentVirements: Virement[] = [];
   private accountsLoaded = false;
   private premiumLoaded = false;
   private pollSub?: Subscription;
@@ -54,7 +60,9 @@ export class HomeView implements OnInit, OnDestroy {
     private actualiteService: ActualiteService,
     private clientAiService: ClientAiService,
     private router: Router,
-    private investmentService: InvestmentService
+    private investmentService: InvestmentService,
+    private loanService: LoanService,
+    private virementService: VirementService
   ) { }
 
   ngOnInit() {
@@ -94,6 +102,16 @@ export class HomeView implements OnInit, OnDestroy {
 
     this.investmentService.getMyInvestments().subscribe({
       next: (inv) => this.activeInvestments = inv.filter(i => i.statut === 'ACTIVE'),
+      error: () => { }
+    });
+
+    this.loanService.getMyLoans().subscribe({
+      next: (loans) => this.activeLoans = loans.filter(l => l.statut === 'ACTIVE' || l.statut === 'APPROVED'),
+      error: () => { }
+    });
+
+    this.virementService.getHistory().subscribe({
+      next: (v) => this.recentVirements = v,
       error: () => { }
     });
 
@@ -299,6 +317,84 @@ export class HomeView implements OnInit, OnDestroy {
     const primary = this.primaryAccount;
     if (!primary) return false;
     return ACCOUNT_TYPE_META[primary.typeCompte]?.canSendExternal ?? true;
+  }
+
+
+  // ── Financial health getters ──────────────────────────────────────────────
+
+  /** Total monthly loan repayments across active loans */
+  get totalMensualites(): number {
+    return this.activeLoans.reduce((s, l) => s + (l.mensualite ?? 0), 0);
+  }
+
+  /** Debt ratio: monthly repayments / total balance (0–1) */
+  get debtRatio(): number {
+    if (!this.totalBalance) return 0;
+    return Math.min(1, this.totalMensualites / this.totalBalance);
+  }
+
+  /** 0=healthy, 1=warning, 2=critical */
+  get debtRatioLevel(): 0 | 1 | 2 {
+    if (this.debtRatio < 0.15) return 0;
+    if (this.debtRatio < 0.35) return 1;
+    return 2;
+  }
+
+  get debtRatioLabel(): string {
+    if (this.debtRatioLevel === 0) return 'Sain';
+    if (this.debtRatioLevel === 1) return 'Modéré';
+    return 'Élevé';
+  }
+
+  /** Net flow this month: received - sent (from virement history) */
+  get monthlyNetFlow(): number {
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1).getTime();
+    const myAccountIds = new Set(this.comptes.map(c => c.idCompte));
+    let received = 0;
+    let sent = 0;
+    for (const v of this.recentVirements) {
+      const t = new Date(v.dateDeVirement).getTime();
+      if (t < startOfMonth) continue;
+      if (myAccountIds.has(v.compteDestinationId)) received += v.montant;
+      if (myAccountIds.has(v.compteSourceId)) sent += (v.totalDebite ?? v.montant);
+    }
+    return received - sent;
+  }
+
+  get monthlyNetFlowPositive(): boolean { return this.monthlyNetFlow >= 0; }
+
+  /** Accrued interest already earned across active placements */
+  get totalAccruedInterest(): number {
+    return this.activeInvestments.reduce((s, i) => s + (i.totalAccrued ?? 0), 0);
+  }
+
+  /** Next upcoming deadline across loans and investments */
+  get nextDeadline(): { label: string; date: string; type: 'loan' | 'placement'; daysLeft: number } | null {
+    const today = Date.now();
+    const candidates: { label: string; date: string; type: 'loan' | 'placement'; daysLeft: number }[] = [];
+
+    for (const l of this.activeLoans) {
+      const next = l.repayments?.find(r => r.statut === 'PENDING');
+      if (next?.dateDue) {
+        const daysLeft = Math.ceil((new Date(next.dateDue).getTime() - today) / 86400000);
+        if (daysLeft >= 0) candidates.push({ label: l.productNom ?? 'Prêt', date: next.dateDue, type: 'loan', daysLeft });
+      }
+    }
+
+    for (const i of this.activeInvestments) {
+      if (i.dateEcheance) {
+        const daysLeft = Math.ceil((new Date(i.dateEcheance).getTime() - today) / 86400000);
+        if (daysLeft >= 0) candidates.push({ label: i.planNom, date: i.dateEcheance, type: 'placement', daysLeft });
+      }
+    }
+
+    if (!candidates.length) return null;
+    return candidates.sort((a, b) => a.daysLeft - b.daysLeft)[0];
+  }
+
+  get hasFinancialHealth(): boolean {
+    return this.activeComptes.length > 0;
   }
 
 }

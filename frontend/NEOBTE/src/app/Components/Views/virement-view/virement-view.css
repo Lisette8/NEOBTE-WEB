@@ -375,6 +375,36 @@
   margin-bottom: 20px;
 }
 
+.success-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+}
+
+.btn-contrat {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 22px;
+  border-radius: 12px;
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  color: var(--text-1);
+  font: 600 0.88rem/1 inherit;
+  cursor: pointer;
+  transition: border-color var(--t-fast), box-shadow var(--t-fast), background var(--t-fast);
+  width: 100%;
+  justify-content: center;
+}
+
+.btn-contrat:hover {
+  border-color: var(--blue);
+  background: var(--blue-light);
+  color: var(--blue);
+  box-shadow: var(--shadow-sm);
+}
+
 /* History */
 .history-card {
   background: var(--surface);

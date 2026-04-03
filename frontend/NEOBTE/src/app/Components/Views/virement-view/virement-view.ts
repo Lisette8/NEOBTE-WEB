@@ -10,6 +10,9 @@ import { debounceTime, distinctUntilChanged, interval, Subject, Subscription, sw
 import { RecipientPreview } from '../../../Entities/Interfaces/recipient-preview';
 import { TransferConstraints } from '../../../Entities/Interfaces/transfer-constraints';
 import { ActivatedRoute, Router } from '@angular/router';
+import { ClientProfile } from '../../../Entities/Interfaces/client-profile';
+import { AuthService } from '../../../Services/auth-service';
+import { ContratVirementService } from '../../../Services/contrat-virement.service';
 
 export type ErrorKind = 'limit' | 'balance' | 'account' | 'network' | 'generic';
 
@@ -37,6 +40,7 @@ export class VirementView implements OnInit, OnDestroy {
   resolving = false;
   resolveError = '';
   lastCompletedTransfer: Virement | null = null;
+  currentProfile: ClientProfile | null = null;
 
   private identifierChange$ = new Subject<string>();
   private pollSub?: Subscription;
@@ -61,6 +65,8 @@ export class VirementView implements OnInit, OnDestroy {
     private modalService: ConfirmModalService,
     private router: Router,
     private route: ActivatedRoute,
+    private contratService: ContratVirementService,
+    private authService: AuthService,
   ) {
     this.transferForm = this.fb.group({
       recipientIdentifier: ['', Validators.required],
@@ -77,6 +83,7 @@ export class VirementView implements OnInit, OnDestroy {
     this.loadHistory();
     this.loadComptes();
     this.loadConstraints();
+    this.authService.getCurrentUser().subscribe({ next: (p) => this.currentProfile = p, error: () => { } });
     this.pollSub = interval(50000).subscribe(() => { this.loadHistory(); this.loadComptes(); });
 
     this.identifierChange$.pipe(
@@ -383,6 +390,11 @@ export class VirementView implements OnInit, OnDestroy {
   navigateError(route: string) {
     if (route === '/virement-view') { this.setMode('interne'); return; }
     this.router.navigate([route]);
+  }
+
+  downloadContrat() {
+    if (!this.lastCompletedTransfer) return;
+    this.contratService.print(this.lastCompletedTransfer, this.currentProfile, this.mode);
   }
 
   resetForm() {

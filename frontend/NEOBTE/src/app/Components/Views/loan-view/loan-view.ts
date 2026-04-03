@@ -8,6 +8,9 @@ import { LoanProduct, Loan, LoanSimulation, LOAN_TYPE_LABELS, LOAN_STATUT_LABELS
 import { CompteService } from '../../../Services/compte-service';
 import { LoanService } from '../../../Services/loan.service';
 import { ConfirmModalService } from '../../../Services/SharedServices/confirm-modal.service';
+import { ClientProfile } from '../../../Entities/Interfaces/client-profile';
+import { AuthService } from '../../../Services/auth-service';
+import { ContratVirementService } from '../../../Services/contrat-virement.service';
 
 type ViewStep = 'list' | 'new';
 
@@ -46,6 +49,7 @@ export class LoanView implements OnInit, OnDestroy {
   private pollSub?: Subscription;
   private simSub?: Subscription;
 
+  currentProfile: ClientProfile | null = null;
   readonly loanTypeLabels = LOAN_TYPE_LABELS;
   readonly loanStatutLabels = LOAN_STATUT_LABELS;
   readonly accountTypeMeta = ACCOUNT_TYPE_META;
@@ -54,10 +58,13 @@ export class LoanView implements OnInit, OnDestroy {
     private loanService: LoanService,
     private compteService: CompteService,
     private modalService: ConfirmModalService,
+    private contratService: ContratVirementService,
+    private authService: AuthService,
   ) { }
 
   ngOnInit() {
     this.loadAll();
+    this.authService.getCurrentUser().subscribe({ next: (p) => this.currentProfile = p, error: () => { } });
     this.pollSub = interval(60000).subscribe(() => this.loadLoans());
     this.simSub = this.simSubject.pipe(debounceTime(400)).subscribe(() => this.runSimulation());
   }
@@ -170,4 +177,8 @@ export class LoanView implements OnInit, OnDestroy {
 
   goNew() { this.step = 'new'; this.error = ''; this.selectedProduct = null; this.simulation = null; }
   goList() { this.step = 'list'; this.error = ''; }
+
+  downloadContrat(loan: Loan) {
+    this.contratService.printLoan(loan, this.currentProfile);
+  }
 }

@@ -1499,3 +1499,26 @@ select {
 .neo-search-empty i {
   font-size: 1.1rem;
 }
+
+/* ── Contrat download button (shared across views) ──────────────────── */
+.btn-contrat-dl {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-2);
+  font: 600 0.78rem/1 inherit;
+  cursor: pointer;
+  transition: border-color var(--t-fast), background var(--t-fast), color var(--t-fast);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.btn-contrat-dl:hover {
+  border-color: var(--blue);
+  background: var(--blue-light);
+  color: var(--blue);
+}

@@ -775,3 +775,26 @@
 .arb-action:hover {
   background: rgba(245, 158, 11, 0.1);
 }
+
+.hc-dl {
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-3);
+  cursor: pointer;
+  transition: border-color var(--t-fast), background var(--t-fast), color var(--t-fast);
+  margin-left: auto;
+  font-size: 0.8rem;
+}
+
+.hc-dl:hover {
+  border-color: var(--blue);
+  background: var(--blue-light);
+  color: var(--blue);
+}

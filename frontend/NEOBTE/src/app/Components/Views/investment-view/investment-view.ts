@@ -8,6 +8,9 @@ import { InvestmentPlan, Investment } from '../../../Entities/Interfaces/investm
 import { CompteService } from '../../../Services/compte-service';
 import { InvestmentService } from '../../../Services/investment.service';
 import { ConfirmModalService } from '../../../Services/SharedServices/confirm-modal.service';
+import { ClientProfile } from '../../../Entities/Interfaces/client-profile';
+import { AuthService } from '../../../Services/auth-service';
+import { ContratVirementService } from '../../../Services/contrat-virement.service';
 
 type ViewStep = 'list' | 'new';
 
@@ -41,16 +44,20 @@ export class InvestmentView implements OnInit, OnDestroy {
   success = '';
 
   private pollSub?: Subscription;
+  currentProfile: ClientProfile | null = null;
   readonly accountTypeMeta = ACCOUNT_TYPE_META;
 
   constructor(
     private investmentService: InvestmentService,
     private compteService: CompteService,
     private modalService: ConfirmModalService,
+    private contratService: ContratVirementService,
+    private authService: AuthService,
   ) { }
 
   ngOnInit() {
     this.loadAll();
+    this.authService.getCurrentUser().subscribe({ next: (p) => this.currentProfile = p, error: () => { } });
     this.pollSub = interval(60000).subscribe(() => this.loadInvestments());
   }
 
@@ -198,4 +205,8 @@ export class InvestmentView implements OnInit, OnDestroy {
 
   goNew() { this.step = 'new'; this.error = ''; this.selectedPlan = null; this.montant = null; }
   goList() { this.step = 'list'; this.error = ''; }
+
+  downloadContrat(inv: Investment) {
+    this.contratService.printPlacement(inv, this.currentProfile);
+  }
 }

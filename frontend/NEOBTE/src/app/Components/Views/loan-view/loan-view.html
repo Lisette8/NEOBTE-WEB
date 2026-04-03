@@ -120,6 +120,10 @@
                     </div>
 
                     <!-- Repayment schedule toggle -->
+                    <button class="btn-contrat-dl" (click)="downloadContrat(loan)" title="Télécharger le contrat">
+                        <i class="fa-solid fa-file-arrow-down"></i>
+                        Contrat
+                    </button>
                     <button class="btn-schedule-toggle" (click)="toggleRepayments(loan.id)">
                         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -183,8 +187,13 @@
                         <p class="lc-name">{{ loan.productNom }}</p>
                         <p class="lc-meta">{{ typeLabel(loan.type) }} · {{ durationLabel(loan.dureeEnMois) }}</p>
                     </div>
-                    <span class="lc-badge" [style.background]="statutColor(loan.statut) + '22'"
-                        [style.color]="statutColor(loan.statut)">{{ statutLabel(loan.statut) }}</span>
+                    <div style="display:flex;align-items:center;gap:8px">
+                        <span class="lc-badge" [style.background]="statutColor(loan.statut) + '22'"
+                            [style.color]="statutColor(loan.statut)">{{ statutLabel(loan.statut) }}</span>
+                        <button class="btn-contrat-dl" (click)="downloadContrat(loan)" title="Contrat">
+                            <i class="fa-solid fa-file-arrow-down"></i>
+                        </button>
+                    </div>
                 </div>
                 <div class="lc-amounts lc-amounts--compact">
                     <div class="lca-cell">

@@ -394,7 +394,12 @@ export class VirementView implements OnInit, OnDestroy {
 
   downloadContrat() {
     if (!this.lastCompletedTransfer) return;
-    this.contratService.print(this.lastCompletedTransfer, this.currentProfile, this.mode);
+    this.contratService.printVirement(this.lastCompletedTransfer, this.currentProfile, this.mode);
+  }
+
+  downloadContratFromHistory(v: Virement) {
+    const mode = v.senderName === v.recipientName ? 'interne' : 'externe';
+    this.contratService.printVirement(v, this.currentProfile, mode);
   }
 
   resetForm() {

@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { VirementService } from '../../../Services/virement.service';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { VirementService, VirementHistoryFilter, VirementHistoryPage } from '../../../Services/virement.service';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 import { Virement } from '../../../Entities/Interfaces/virement';
 import { ACCOUNT_TYPE_META, Compte } from '../../../Entities/Interfaces/compte';
@@ -10,9 +10,9 @@ import { debounceTime, distinctUntilChanged, interval, Subject, Subscription, sw
 import { RecipientPreview } from '../../../Entities/Interfaces/recipient-preview';
 import { TransferConstraints } from '../../../Entities/Interfaces/transfer-constraints';
 import { ActivatedRoute, Router } from '@angular/router';
-import { ClientProfile } from '../../../Entities/Interfaces/client-profile';
-import { AuthService } from '../../../Services/auth-service';
 import { ContratVirementService } from '../../../Services/contrat-virement.service';
+import { AuthService } from '../../../Services/auth-service';
+import { ClientProfile } from '../../../Entities/Interfaces/client-profile';
 
 export type ErrorKind = 'limit' | 'balance' | 'account' | 'network' | 'generic';
 
@@ -26,7 +26,7 @@ export interface TransferError {
 @Component({
   selector: 'app-virement-view',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule],
   templateUrl: './virement-view.html',
   styleUrl: './virement-view.css',
 })
@@ -50,6 +50,16 @@ export class VirementView implements OnInit, OnDestroy {
   limitWarning = '';
   history: Virement[] = [];
   historyLoading = false;
+
+  // ── History filters (sent to backend) ───────────────────────────────────
+  historySearch = '';
+  historyPeriod: 'today' | '7d' | '30d' | '3m' | 'all' = 'all';
+  historyType: 'all' | 'sent' | 'received' | 'internal' = 'all';
+  historySort: 'date-desc' | 'date-asc' | 'amount-desc' | 'amount-asc' = 'date-desc';
+
+  historyPage: VirementHistoryPage | null = null;
+  historyPageNum = 0;
+  private filterDebounce: any = null;
 
   comptes: Compte[] = [];
   comptesLoading = false;
@@ -392,6 +402,84 @@ export class VirementView implements OnInit, OnDestroy {
     this.router.navigate([route]);
   }
 
+  // ── History helpers (API-driven — no frontend filtering) ───────────────
+
+  /** Items from the current API page */
+  get filteredHistory(): Virement[] { return this.history; }
+
+  /** Summary from API response */
+  get historySummary(): { totalSent: number; totalReceived: number; count: number } {
+    return {
+      totalSent: this.historyPage?.totalSent ?? 0,
+      totalReceived: this.historyPage?.totalReceived ?? 0,
+      count: this.historyPage?.totalElements ?? this.history.length,
+    };
+  }
+
+  get historyTotalPages(): number { return this.historyPage?.totalPages ?? 1; }
+
+  isReceivedVirement(v: Virement): boolean {
+    // Primary: use account IDs if comptes are loaded
+    if (this.comptes.length > 0) {
+      const myIds = new Set(this.comptes.map(c => c.idCompte));
+      return myIds.has(v.compteDestinationId) && !myIds.has(v.compteSourceId);
+    }
+    // Fallback: backend already filters by userId, so if senderName !== recipientName
+    // and we're looking at history, check if the backend 'type' filter can tell us
+    // We can't reliably determine direction without account IDs, so return false (treat as sent)
+    return false;
+  }
+
+  isSentVirement(v: Virement): boolean {
+    if (this.comptes.length > 0) {
+      const myIds = new Set(this.comptes.map(c => c.idCompte));
+      return myIds.has(v.compteSourceId) && !myIds.has(v.compteDestinationId);
+    }
+    return true; // fallback: assume sent
+  }
+
+  isInternalVirement(v: Virement): boolean {
+    if (this.comptes.length > 0) {
+      const myIds = new Set(this.comptes.map(c => c.idCompte));
+      return myIds.has(v.compteSourceId) && myIds.has(v.compteDestinationId);
+    }
+    return v.senderName === v.recipientName;
+  }
+
+  applyFilters() {
+    this.historyPageNum = 0;
+    clearTimeout(this.filterDebounce);
+    this.filterDebounce = setTimeout(() => this.loadHistory(), 300);
+  }
+
+  clearHistoryFilters() {
+    this.historySearch = '';
+    this.historyPeriod = 'all';
+    this.historyType = 'all';
+    this.historySort = 'date-desc';
+    this.historyPageNum = 0;
+    this.loadHistory();
+  }
+
+  get hasActiveFilters(): boolean {
+    return this.historySearch !== '' || this.historyPeriod !== 'all' ||
+      this.historyType !== 'all' || this.historySort !== 'date-desc';
+  }
+
+  historyNextPage() {
+    if (this.historyPageNum < this.historyTotalPages - 1) {
+      this.historyPageNum++;
+      this.loadHistory();
+    }
+  }
+
+  historyPrevPage() {
+    if (this.historyPageNum > 0) {
+      this.historyPageNum--;
+      this.loadHistory();
+    }
+  }
+
   downloadContrat() {
     if (!this.lastCompletedTransfer) return;
     this.contratService.printVirement(this.lastCompletedTransfer, this.currentProfile, this.mode);
@@ -408,10 +496,22 @@ export class VirementView implements OnInit, OnDestroy {
     this.lastCompletedTransfer = null; this.transferForm.reset();
   }
 
-  loadHistory() {
+  private loadHistory() {
     this.historyLoading = true;
-    this.virementService.getHistory().subscribe({
-      next: (data) => { this.history = data; this.historyLoading = false; },
+    const filter = {
+      search: this.historySearch || undefined,
+      period: this.historyPeriod,
+      type: this.historyType,
+      sort: this.historySort,
+      page: this.historyPageNum,
+      size: 20,
+    };
+    this.virementService.getFilteredHistory(filter).subscribe({
+      next: (page) => {
+        this.historyPage = page;
+        this.history = page.content;
+        this.historyLoading = false;
+      },
       error: () => { this.historyLoading = false; }
     });
   }

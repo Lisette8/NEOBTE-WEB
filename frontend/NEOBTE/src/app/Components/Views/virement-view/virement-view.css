@@ -414,21 +414,7 @@
   animation: fadeUp 0.4s var(--ease) 0.1s both;
 }
 
-.hc-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 18px 22px 14px;
-  border-bottom: 1px solid var(--border-soft);
-}
 
-.hc-head h2 {
-  font-size: 0.7rem;
-  font-weight: 700;
-  color: var(--text-3);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-}
 
 .hc-empty {
   text-align: center;
@@ -797,4 +783,266 @@
   border-color: var(--blue);
   background: var(--blue-light);
   color: var(--blue);
+}
+
+/* ── History filters ─────────────────────────────────────────────────── */
+.hc-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 22px 14px;
+  border-bottom: 1px solid var(--border-soft);
+}
+
+.hc-clear {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font: 600 0.76rem/1 inherit;
+  color: var(--text-3);
+  background: none;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px 10px;
+  cursor: pointer;
+  transition: color var(--t-fast), border-color var(--t-fast);
+}
+
+.hc-clear:hover {
+  color: var(--red);
+  border-color: var(--red);
+}
+
+.hc-filters {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 22px;
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--bg);
+}
+
+/* Search input */
+.hc-search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 0 12px;
+  transition: border-color var(--t-fast), box-shadow var(--t-fast);
+}
+
+.hc-search:focus-within {
+  border-color: var(--blue);
+  box-shadow: 0 0 0 3px rgba(0, 0, 160, 0.07);
+}
+
+.hc-search-ic {
+  color: var(--text-3);
+  font-size: 0.8rem;
+  flex-shrink: 0;
+}
+
+.hc-search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  background: transparent;
+  padding: 10px 0;
+  font: 500 0.88rem/1 inherit;
+  color: var(--text-1);
+}
+
+.hc-search-input::placeholder {
+  color: var(--text-3);
+}
+
+/* Period pills */
+.hc-filter-group {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.hc-pill {
+  padding: 5px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  font: 600 0.78rem/1 inherit;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: background var(--t-fast), border-color var(--t-fast), color var(--t-fast);
+  white-space: nowrap;
+}
+
+.hc-pill:hover {
+  border-color: var(--blue);
+  color: var(--blue);
+}
+
+.hc-pill.active {
+  background: var(--blue);
+  border-color: var(--blue);
+  color: #fff;
+}
+
+/* Selects */
+.hc-selects {
+  display: flex;
+  gap: 8px;
+}
+
+.hc-select {
+  flex: 1;
+  padding: 8px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  font: 600 0.82rem/1 inherit;
+  color: var(--text-1);
+  outline: none;
+  cursor: pointer;
+  transition: border-color var(--t-fast);
+}
+
+.hc-select:focus {
+  border-color: var(--blue);
+}
+
+/* Summary bar */
+.hc-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 22px;
+  border-bottom: 1px solid var(--border-soft);
+  background: var(--bg);
+  font-size: 0.8rem;
+}
+
+.hcs-count {
+  font-weight: 700;
+  color: var(--text-2);
+}
+
+.hcs-flows {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.hcs-sent {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 700;
+  color: var(--text-2);
+  font-variant-numeric: tabular-nums;
+}
+
+.hcs-received {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 700;
+  color: var(--green);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Icon color variants */
+.hc-icon--received {
+  background: var(--green-light);
+}
+
+.hc-icon--received i {
+  color: var(--green);
+}
+
+.hc-icon--sent {
+  background: var(--red-light);
+}
+
+.hc-icon--sent i {
+  color: var(--red);
+}
+
+.hc-icon--internal {
+  background: var(--border-soft);
+}
+
+.hc-icon--internal i {
+  color: var(--text-2);
+}
+
+/* Amount color variants */
+.hc-amount--received {
+  color: var(--green) !important;
+}
+
+.hc-amount--sent {
+  color: var(--red) !important;
+}
+
+.hc-amount--internal {
+  color: var(--text-2) !important;
+}
+
+/* Ref tag */
+.hc-ref {
+  color: var(--text-3);
+  font-size: 0.65rem;
+}
+
+@media (max-width: 640px) {
+  .hc-selects {
+    flex-direction: column;
+  }
+
+  .hcs-flows {
+    gap: 8px;
+  }
+}
+
+/* ── History pagination ──────────────────────────────────────────────── */
+.hc-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 14px 22px;
+  border-top: 1px solid var(--border-soft);
+}
+
+.hc-pg-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 9px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-2);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  font-size: 0.78rem;
+  transition: border-color var(--t-fast), background var(--t-fast), color var(--t-fast);
+}
+
+.hc-pg-btn:hover:not(:disabled) {
+  border-color: var(--blue);
+  color: var(--blue);
+  background: var(--blue-light);
+}
+
+.hc-pg-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.hc-pg-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-2);
 }

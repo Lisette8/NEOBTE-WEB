@@ -65,6 +65,31 @@ export class NotificationsView implements OnInit, OnDestroy {
   nextPage() { if (this.page < this.totalPages - 1) { this.page++; this.load(); } }
   previousPage() { if (this.page > 0) { this.page--; this.load(); } }
 
+  /** Returns a CSS class suffix for the icon bg color based on type */
+  iconColor(type: ClientNotification['type']): string {
+    switch (type) {
+      case 'TRANSFER_SENT':
+      case 'TRANSFER_RECEIVED':
+        return 'purple';
+      case 'LOAN_APPROVED':
+      case 'INVESTMENT_MATURED':
+      case 'LOAN_PAID_OFF':
+        return 'green';
+      case 'LOAN_PAYMENT_FAILED':
+      case 'LOAN_PENALTY':
+      case 'LOAN_DEFAULT':
+      case 'LOAN_REJECTED':
+        return 'red';
+      case 'LOAN_REQUESTED':
+      case 'INVESTMENT_CREATED':
+        return 'amber';
+      case 'PASSWORD_CHANGED':
+        return 'navy';
+      default:
+        return 'blue';
+    }
+  }
+
   iconClass(type: ClientNotification['type']): string {
     switch (type) {
       case 'TRANSFER_SENT':
@@ -82,6 +107,20 @@ export class NotificationsView implements OnInit, OnDestroy {
         return 'fa-solid fa-chart-line';
       case 'INVESTMENT_MATURED':
         return 'fa-solid fa-coins';
+      case 'LOAN_REQUESTED':
+        return 'fa-solid fa-file-invoice-dollar';
+      case 'LOAN_APPROVED':
+        return 'fa-solid fa-circle-check';
+      case 'LOAN_REJECTED':
+        return 'fa-solid fa-circle-xmark';
+      case 'LOAN_PAYMENT_FAILED':
+        return 'fa-solid fa-triangle-exclamation';
+      case 'LOAN_PENALTY':
+        return 'fa-solid fa-bolt';
+      case 'LOAN_DEFAULT':
+        return 'fa-solid fa-skull-crossbones';
+      case 'LOAN_PAID_OFF':
+        return 'fa-solid fa-trophy';
       default:
         return 'fa-regular fa-bell';
     }
@@ -101,7 +140,15 @@ export class NotificationsView implements OnInit, OnDestroy {
         return 'Parrainage';
       case 'INVESTMENT_CREATED':
       case 'INVESTMENT_MATURED':
-        return 'Investissement';
+        return 'Placement';
+      case 'LOAN_REQUESTED':
+      case 'LOAN_APPROVED':
+      case 'LOAN_REJECTED':
+      case 'LOAN_PAYMENT_FAILED':
+      case 'LOAN_PENALTY':
+      case 'LOAN_DEFAULT':
+      case 'LOAN_PAID_OFF':
+        return 'Prêt';
       default:
         return 'Notification';
     }

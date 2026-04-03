@@ -35,7 +35,7 @@
         <!-- CTA -->
         <div class="iv-cta-row">
             <div>
-                <h1 class="iv-title">Mes investissements</h1>
+                <h1 class="iv-title">Mes placements</h1>
                 <p class="iv-sub">{{ activeInvestments.length }} actif{{ activeInvestments.length !== 1 ? 's' : '' }}
                 </p>
             </div>
@@ -45,7 +45,7 @@
                     <line x1="12" y1="5" x2="12" y2="19" />
                     <line x1="5" y1="12" x2="19" y2="12" />
                 </svg>
-                Nouvel investissement
+                Nouveau placement
             </button>
         </div>
 
@@ -69,8 +69,8 @@
         <div *ngIf="!loading && tab === 'active'">
             <div class="iv-empty" *ngIf="activeInvestments.length === 0">
                 <div class="iv-empty-icon"><i class="fa-solid fa-chart-line"></i></div>
-                <p class="iv-empty-title">Aucun investissement actif</p>
-                <p class="iv-empty-sub">Faites fructifier votre épargne en souscrivant à un plan d'investissement.</p>
+                <p class="iv-empty-title">Aucun placement actif</p>
+                <p class="iv-empty-sub">Faites fructifier votre épargne en souscrivant à un plan de placement.</p>
                 <button class="btn-new-inv" (click)="goNew()">Commencer →</button>
             </div>
 
@@ -183,7 +183,7 @@
             <div class="iv-empty" *ngIf="historyInvestments.length === 0">
                 <div class="iv-empty-icon"><i class="fa-regular fa-clipboard"></i></div>
                 <p class="iv-empty-title">Aucun historique</p>
-                <p class="iv-empty-sub">Vos investissements terminés apparaîtront ici.</p>
+                <p class="iv-empty-sub">Vos placements terminés apparaîtront ici.</p>
             </div>
 
             <div class="inv-card inv-card--done" *ngFor="let inv of historyInvestments"
@@ -227,8 +227,8 @@
     <ng-container *ngIf="step === 'new'">
         <div class="iv-new-header">
             <button class="iv-back" (click)="goList()">← Retour</button>
-            <h1>Nouvel investissement</h1>
-            <p class="iv-sub">Choisissez un plan, un compte et un montant</p>
+            <h1>Nouveau placement</h1>
+            <p class="iv-sub">Choisissez un plan de placement, un compte et un montant</p>
         </div>
 
         <div class="iv-error" *ngIf="error">{{ error }}</div>
@@ -315,7 +315,7 @@
 
                 <button class="btn-subscribe" (click)="subscribe()" [disabled]="!canSubmit || submitting">
                     <span *ngIf="submitting" class="spinner-sm"></span>
-                    <span *ngIf="!submitting">Confirmer l'investissement</span>
+                    <span *ngIf="!submitting">Confirmer le placement</span>
                 </button>
             </div>
         </div>

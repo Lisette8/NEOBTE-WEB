@@ -5,10 +5,11 @@ import { AuthService } from '../../Services/auth-service';
 import { NotificationService } from '../../Services/notification-service';
 import { WebsocketService } from '../../Services/SharedServices/websocket.service';
 import { ClientNotification } from '../../Entities/Interfaces/notification';
-import { Subscription } from 'rxjs';
+import { debounceTime, distinctUntilChanged, Subject, Subscription, switchMap } from 'rxjs';
 import { ClientChatbotBubble } from '../../Components/client-chatbot-bubble/client-chatbot-bubble';
 import { UiPreferencesService } from '../../Services/ui-preferences.service';
 import { Inject } from '@angular/core';
+import { SearchResult, ClientSearchService } from '../../Services/client-search.service';
 
 @Component({
   selector: 'app-client-shell',
@@ -29,6 +30,13 @@ export class ClientShell implements OnInit, OnDestroy, AfterViewInit {
   unreadCount = 0;
   notifLoading = false;
 
+  // ── Search ──────────────────────────────────────────────────────────────
+  searchQuery = '';
+  searchResults: SearchResult[] = [];
+  searchOpen = false;
+  searchLoading = false;
+  private searchSubject = new Subject<string>();
+
   private userId: number | null = null;
   private subs: Subscription[] = [];
   private rawPhotoPath: string | null = null;
@@ -45,8 +53,9 @@ export class ClientShell implements OnInit, OnDestroy, AfterViewInit {
     private notificationService: NotificationService,
     private websocketService: WebsocketService,
     private uiPrefs: UiPreferencesService,
+    private clientSearch: ClientSearchService,
     @Inject(DOCUMENT) private document: Document
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     // Lock window scroll when the client shell is active to prevent rubber-band overscroll
@@ -75,7 +84,32 @@ export class ClientShell implements OnInit, OnDestroy, AfterViewInit {
       })
     );
 
-    if (this.authService.isLoggedIn()) this.authService.refreshCurrentUser().subscribe({ next: () => {}, error: () => {} });
+    if (this.authService.isLoggedIn()) this.authService.refreshCurrentUser().subscribe({ next: () => { }, error: () => { } });
+
+    // Wire search with debounce
+    this.subs.push(
+      this.searchSubject.pipe(
+        debounceTime(280),
+        distinctUntilChanged(),
+        switchMap(q => {
+          if (q.trim().length < 2) {
+            this.searchResults = [];
+            this.searchOpen = false;
+            this.searchLoading = false;
+            return [];
+          }
+          this.searchLoading = true;
+          return this.clientSearch.search(q);
+        })
+      ).subscribe({
+        next: (results) => {
+          this.searchResults = results;
+          this.searchOpen = results.length > 0 || this.searchQuery.trim().length >= 2;
+          this.searchLoading = false;
+        },
+        error: () => { this.searchLoading = false; }
+      })
+    );
 
     // Notifications (count + dropdown list + websocket realtime).
     this.loadNotifCounts();
@@ -129,6 +163,32 @@ export class ClientShell implements OnInit, OnDestroy, AfterViewInit {
       return;
     }
     this.photoUrl = null;
+  }
+
+  onSearchInput(value: string) {
+    this.searchQuery = value;
+    this.searchSubject.next(value);
+  }
+
+  onSearchFocus() {
+    if (this.searchResults.length > 0) this.searchOpen = true;
+  }
+
+  closeSearch() {
+    setTimeout(() => { this.searchOpen = false; }, 150);
+  }
+
+  navigateResult(result: SearchResult) {
+    this.searchOpen = false;
+    this.searchQuery = '';
+    this.searchResults = [];
+    this.router.navigate(result.route, result.queryParams ? { queryParams: result.queryParams } : {});
+  }
+
+  clearSearch() {
+    this.searchQuery = '';
+    this.searchResults = [];
+    this.searchOpen = false;
   }
 
   logout(): void {
@@ -210,7 +270,7 @@ export class ClientShell implements OnInit, OnDestroy, AfterViewInit {
   private loadNotifCounts() {
     this.notificationService.getUnreadCount().subscribe({
       next: (r) => (this.unreadCount = r.count ?? 0),
-      error: () => {},
+      error: () => { },
     });
   }
 
@@ -232,7 +292,7 @@ export class ClientShell implements OnInit, OnDestroy, AfterViewInit {
     if (n.lu) return;
     n.lu = true;
     this.unreadCount = Math.max(0, this.unreadCount - 1);
-    this.notificationService.markRead(n.id).subscribe({ next: () => {}, error: () => {} });
+    this.notificationService.markRead(n.id).subscribe({ next: () => { }, error: () => { } });
   }
 
   markAllRead() {
@@ -241,7 +301,7 @@ export class ClientShell implements OnInit, OnDestroy, AfterViewInit {
         this.notifications = this.notifications.map((n) => ({ ...n, lu: true }));
         this.unreadCount = 0;
       },
-      error: () => {},
+      error: () => { },
     });
   }
 

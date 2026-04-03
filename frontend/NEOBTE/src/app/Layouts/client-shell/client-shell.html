@@ -1,15 +1,10 @@
 <div class="neo-shell">
   <!-- Sidebar -->
   <aside class="neo-sidebar">
-    <div class="neo-brand" routerLink="/home-view">
+    <div class="neo-brand" routerLink="/landing-view">
       <div class="neo-logo" aria-hidden="true">
-        <img
-          *ngIf="!sidebarLogoErrored"
-          class="neo-logo-img"
-          [src]="sidebarLogoSrc"
-          alt="NEOBTE"
-          (error)="onSidebarLogoError()"
-        />
+        <img *ngIf="!sidebarLogoErrored" class="neo-logo-img" [src]="sidebarLogoSrc" alt="NEOBTE"
+          (error)="onSidebarLogoError()" />
         <span *ngIf="sidebarLogoErrored" class="neo-logo-fallback">N</span>
       </div>
       <div class="neo-brand-text">
@@ -34,7 +29,7 @@
       </a>
       <a class="neo-nav-item" routerLink="/investment-view" routerLinkActive="active">
         <span class="neo-nav-ic"><i class="fa-solid fa-chart-line"></i></span>
-        Investissements
+        Placements
       </a>
       <a class="neo-nav-item" routerLink="/loan-view" routerLinkActive="active">
         <span class="neo-nav-ic"><i class="fa-solid fa-hand-holding-dollar"></i></span>
@@ -62,9 +57,37 @@
   <main class="neo-main">
     <!-- Topbar -->
     <div class="neo-topbar">
-      <div class="neo-search">
+      <div class="neo-search neo-search--wrap" (clickOutside)="closeSearch()">
         <i class="fa-solid fa-magnifying-glass neo-search-ic" aria-hidden="true"></i>
-        <input placeholder="Rechercher (comptes, transactions, investissements)..." aria-label="Recherche" />
+        <input placeholder="Rechercher (comptes, virements, placements, prêts)..." aria-label="Recherche"
+          [value]="searchQuery" (input)="onSearchInput($any($event.target).value)" (focus)="onSearchFocus()"
+          (blur)="closeSearch()" autocomplete="off" />
+        <span class="neo-search-spinner" *ngIf="searchLoading">
+          <i class="fa-solid fa-circle-notch fa-spin"></i>
+        </span>
+        <button class="neo-search-clear" *ngIf="searchQuery" (mousedown)="clearSearch()" type="button">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <!-- Results dropdown -->
+        <div class="neo-search-dd" *ngIf="searchOpen">
+          <div class="neo-search-results" *ngIf="searchResults.length > 0">
+            <button class="neo-sr-item" *ngFor="let r of searchResults" (mousedown)="navigateResult(r)" type="button">
+              <span class="neo-sr-icon neo-sr-icon--{{ r.kind }}">
+                <i [class]="r.icon"></i>
+              </span>
+              <span class="neo-sr-body">
+                <span class="neo-sr-title">{{ r.title }}</span>
+                <span class="neo-sr-sub">{{ r.subtitle }}</span>
+              </span>
+              <span class="neo-sr-badge neo-sr-badge--{{ r.badgeClass }}" *ngIf="r.badge">{{ r.badge }}</span>
+            </button>
+          </div>
+          <div class="neo-search-empty" *ngIf="searchResults.length === 0 && !searchLoading">
+            <i class="fa-regular fa-face-meh"></i>
+            <span>Aucun résultat pour <strong>"{{ searchQuery }}"</strong></span>
+          </div>
+        </div>
       </div>
 
       <div class="neo-actions">

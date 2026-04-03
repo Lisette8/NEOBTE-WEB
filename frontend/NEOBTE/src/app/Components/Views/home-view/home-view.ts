@@ -131,6 +131,16 @@ export class HomeView implements OnInit, OnDestroy {
   get pendingDemandes(): DemandeCompte[] { return this.demandes.filter(d => d.statutDemande === 'EN_ATTENTE'); }
   get isPremium(): boolean { return !!this.premiumStatus?.premium; }
 
+  /** True when the client already owns (or has pending demandes for) all 3 account types */
+  get allAccountTypesTaken(): boolean {
+    const ALL_TYPES = ['COURANT', 'EPARGNE', 'PROFESSIONNEL'];
+    const taken = new Set([
+      ...this.comptes.map(c => c.typeCompte),
+      ...this.pendingDemandes.map(d => d.typeCompte),
+    ]);
+    return ALL_TYPES.every(t => taken.has(t));
+  }
+
   // ── Per-account daily usage (replaces profile-based monthly quota) ────────
 
   /** Usage entries from the status endpoint, one per active account. */
@@ -239,7 +249,7 @@ export class HomeView implements OnInit, OnDestroy {
     // X labels
     const n = values.length;
     const lbls = this.insights?.dailyBalance?.labels ?? [];
-    const src  = lbls.length === n ? lbls : values.map((_, i) => {
+    const src = lbls.length === n ? lbls : values.map((_, i) => {
       const d = new Date();
       d.setDate(d.getDate() - (n - 1 - i));
       return d.toISOString().slice(0, 10);

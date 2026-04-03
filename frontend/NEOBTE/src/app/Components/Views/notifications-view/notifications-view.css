@@ -219,3 +219,40 @@
     flex-direction: column;
   }
 }
+
+/* ── Icon color variants by notification type ───────────── */
+.notif-ic--blue {
+  background: var(--blue-light);
+  color: var(--blue);
+  border-color: rgba(0, 0, 160, 0.15);
+}
+
+.notif-ic--navy {
+  background: rgba(9, 29, 84, 0.08);
+  color: #091d54;
+  border-color: rgba(9, 29, 84, 0.18);
+}
+
+.notif-ic--purple {
+  background: rgba(139, 92, 246, 0.10);
+  color: #6d28d9;
+  border-color: rgba(139, 92, 246, 0.20);
+}
+
+.notif-ic--green {
+  background: var(--green-light);
+  color: var(--green);
+  border-color: rgba(22, 163, 74, 0.20);
+}
+
+.notif-ic--amber {
+  background: var(--amber-light);
+  color: var(--amber);
+  border-color: rgba(217, 119, 6, 0.22);
+}
+
+.notif-ic--red {
+  background: var(--red-light);
+  color: var(--red);
+  border-color: rgba(220, 38, 38, 0.22);
+}

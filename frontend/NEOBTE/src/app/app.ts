@@ -39,8 +39,8 @@ export class App {
         this.headerMode = 'hidden';
         this.showFooter = false;
       } else if (this.publicRoutes.some(r => url.includes(r))) {
-        this.headerMode = 'landing';
-        // Public pages use the website header/footer (except auth).
+        // Auth-view gets no header at all — it has its own full-screen layout.
+        this.headerMode = url.includes('auth-view') ? 'hidden' : 'landing';
         this.showFooter = !url.includes('auth-view');
       } else {
         // Client area uses the premium sidebar/topbar shell.

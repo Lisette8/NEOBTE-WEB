@@ -6,7 +6,14 @@ export type NotificationType =
   | 'PASSWORD_CHANGED'
   | 'REFERRAL_REWARD'
   | 'INVESTMENT_CREATED'
-  | 'INVESTMENT_MATURED';
+  | 'INVESTMENT_MATURED'
+  | 'LOAN_REQUESTED'
+  | 'LOAN_APPROVED'
+  | 'LOAN_REJECTED'
+  | 'LOAN_PAYMENT_FAILED'
+  | 'LOAN_PENALTY'
+  | 'LOAN_DEFAULT'
+  | 'LOAN_PAID_OFF';
 
 export interface ClientNotification {
   id: number;

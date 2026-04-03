@@ -30,9 +30,6 @@
         <button class="ap-tab" [class.active]="tab==='professionnel'" (click)="tab='professionnel'">
             <span class="tab-dot tab-dot--purple"></span> Compte Professionnel
         </button>
-        <button class="ap-tab" [class.active]="tab==='fraud'" (click)="tab='fraud'">
-            <span class="tab-dot tab-dot--red"></span> Détection fraude
-        </button>
     </div>
 
     <ng-container *ngIf="form">
@@ -200,59 +197,6 @@
             </div>
         </div>
 
-        <!-- ══ FRAUD ══ -->
-        <div class="ap-panel" *ngIf="tab==='fraud'">
-            <div class="panel-badge panel-badge--red">🛡️ Règles de détection de fraude</div>
-            <div class="fields-grid">
-                <div class="field-group">
-                    <label>Seuil alerte grand virement (TND)</label>
-                    <div class="input-wrap">
-                        <input type="number" min="100" [(ngModel)]="form.largeTransferThreshold">
-                        <span class="suffix">TND</span>
-                    </div>
-                    <p class="hint">Tout virement dépassant ce seuil est bloqué et déclenche une alerte.</p>
-                </div>
-                <div class="field-group">
-                    <label>Succession rapide — nombre</label>
-                    <div class="input-wrap">
-                        <input type="number" min="2" max="20" [(ngModel)]="form.rapidSuccessionCount">
-                        <span class="suffix">virt.</span>
-                    </div>
-                </div>
-                <div class="field-group">
-                    <label>Succession rapide — fenêtre (min)</label>
-                    <div class="input-wrap">
-                        <input type="number" min="1" max="60" [(ngModel)]="form.rapidSuccessionMinutes">
-                        <span class="suffix">min</span>
-                    </div>
-                    <p class="hint">Alerte si N virements sont effectués dans cette fenêtre.</p>
-                </div>
-                <div class="field-group">
-                    <label>Heure suspecte — début</label>
-                    <div class="input-wrap">
-                        <input type="number" min="0" max="23" [(ngModel)]="form.suspiciousHourStart">
-                        <span class="suffix">h</span>
-                    </div>
-                </div>
-                <div class="field-group">
-                    <label>Heure suspecte — fin</label>
-                    <div class="input-wrap">
-                        <input type="number" min="0" max="23" [(ngModel)]="form.suspiciousHourEnd">
-                        <span class="suffix">h</span>
-                    </div>
-                    <p class="hint">Transactions entre {{ form.suspiciousHourStart }}h et {{ form.suspiciousHourEnd }}h
-                        déclenchent une alerte.</p>
-                </div>
-                <div class="field-group field-group--toggle">
-                    <label>Alertes email admin</label>
-                    <label class="toggle">
-                        <input type="checkbox" [(ngModel)]="form.emailAlertsEnabled">
-                        <span class="toggle-slider"></span>
-                    </label>
-                    <p class="hint">Envoyer un email aux admins pour chaque nouvelle alerte.</p>
-                </div>
-            </div>
-        </div>
 
     </ng-container>
 </div>

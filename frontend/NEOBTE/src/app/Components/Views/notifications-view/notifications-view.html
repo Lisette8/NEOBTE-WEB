@@ -9,7 +9,8 @@
         <i class="fa-regular fa-circle-check"></i>
         {{ unreadOnly ? 'Afficher tout' : 'Non lues' }}
       </button>
-      <button class="neo-btn neo-btn--primary" type="button" (click)="markAllRead()" [disabled]="notifications.length===0">
+      <button class="neo-btn neo-btn--primary" type="button" (click)="markAllRead()"
+        [disabled]="notifications.length===0">
         <i class="fa-solid fa-check-double"></i>
         Tout lire
       </button>
@@ -29,14 +30,9 @@
       </div>
 
       <div class="notif-items" *ngIf="notifications.length > 0; else emptyState">
-        <a
-          class="notif-item"
-          *ngFor="let n of notifications"
-          [class.unread]="!n.lu"
-          [routerLink]="n.lien || '/notifications-view'"
-          (click)="markRead(n)"
-        >
-          <div class="notif-ic" [class.unread]="!n.lu">
+        <a class="notif-item" *ngFor="let n of notifications" [class.unread]="!n.lu"
+          [routerLink]="n.lien || '/notifications-view'" (click)="markRead(n)">
+          <div class="notif-ic" [class.unread]="!n.lu" [ngClass]="'notif-ic--' + iconColor(n.type)">
             <i [class]="iconClass(n.type)"></i>
           </div>
           <div class="notif-txt">

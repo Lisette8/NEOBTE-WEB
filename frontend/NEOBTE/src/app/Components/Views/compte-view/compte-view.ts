@@ -181,6 +181,30 @@ export class CompteView implements OnInit, OnDestroy {
 
   get pendingDemandes() { return this.demandes.filter(d => d.statutDemande === 'EN_ATTENTE'); }
 
+  get totalSolde(): number {
+    return (this.comptes || []).reduce((sum, c) => sum + (Number(c.solde) || 0), 0);
+  }
+
+  private get selectedTypeMeta() {
+    return this.accountTypes.find(t => t.type === this.selectedType) || null;
+  }
+
+  get selectedTypeLabel(): string {
+    return this.selectedTypeMeta?.label || (this.selectedType || '');
+  }
+
+  get selectedTypeDesc(): string {
+    return this.selectedTypeMeta?.desc || '';
+  }
+
+  get selectedTypeNeeds(): string {
+    return this.selectedTypeMeta?.needs || '';
+  }
+
+  typeLabel(type: any): string {
+    return this.accountTypes.find(t => t.type === type)?.label || String(type || '');
+  }
+
   get availableAccountTypes() {
     const ownedTypes = this.comptes.map(c => c.typeCompte);
     const pendingTypes = this.demandes.filter(d => d.statutDemande === 'EN_ATTENTE').map(d => d.typeCompte);

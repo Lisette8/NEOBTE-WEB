@@ -4,11 +4,11 @@ import { AbstractControl, FormBuilder, FormGroup, ReactiveFormsModule, Validatio
 import { AuthService } from '../../../Services/auth-service';
 import { LoginRequest } from '../../../Entities/Interfaces/login-request';
 import { RegisterRequest } from '../../../Entities/Interfaces/register-request';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-auth-view',
-  imports: [ReactiveFormsModule, CommonModule],
+  imports: [ReactiveFormsModule, CommonModule, RouterLink],
   templateUrl: './auth-view.html',
   styleUrl: './auth-view.css',
 })

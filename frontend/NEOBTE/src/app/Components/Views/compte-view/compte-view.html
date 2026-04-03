@@ -1,206 +1,374 @@
-<div class="page">
-
-  <!-- ── LISTE DES COMPTES ── -->
+<div class="page compte">
+  <!-- ── LISTE DES COMPTES ─────────────────────────── -->
   <ng-container *ngIf="step === 'list'">
-
     <div class="page-top">
       <div>
-        <h1>Mes comptes</h1>
-        <p class="page-sub">{{ comptes.length }} compte{{ comptes.length !== 1 ? 's' : '' }} sur votre profil</p>
+        <h1>Comptes & Cartes</h1>
+        <p class="page-sub">
+          Gérez vos comptes BTE, suivez vos demandes et ouvrez de nouveaux produits en quelques clics.
+        </p>
       </div>
-      <button class="btn-back" (click)="step = 'select-type'" *ngIf="availableAccountTypes.length > 0">
-        + Nouveau compte
-      </button>
+      <div class="top-actions">
+        <button class="neo-btn" (click)="loadData()" [disabled]="loading">
+          <i class="fa-solid fa-rotate-right"></i>
+          <span>{{ loading ? 'Actualisation…' : 'Actualiser' }}</span>
+        </button>
+        <button class="neo-btn neo-btn--primary" (click)="step = 'select-type'"
+          *ngIf="availableAccountTypes.length > 0">
+          <i class="fa-solid fa-plus"></i>
+          <span>Ouvrir un compte</span>
+        </button>
+      </div>
     </div>
 
     <div class="success-bar" *ngIf="submitSuccess">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-        stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="20 6 9 17 4 12" />
-      </svg>
-      {{ submitSuccess }}
+      <i class="fa-solid fa-circle-check"></i>
+      <span>{{ submitSuccess }}</span>
     </div>
 
-    <p style="font-size:0.83rem;color:var(--text-3)" *ngIf="loading">Chargement...</p>
-    <p style="font-size:0.83rem;color:var(--red)" *ngIf="error">{{ error }}</p>
-
-    <div class="accounts-list">
-      <app-account-physical-card class="account-phys" *ngFor="let compte of comptes" [compte]="compte" />
+    <div class="error-bar" *ngIf="error">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      <span>{{ error }}</span>
     </div>
 
-    <p class="accounts-empty" *ngIf="comptes.length === 0 && !loading">
-      Aucun compte pour l'instant. Ouvrez votre premier compte pour commencer.
-    </p>
+    <div class="compte-layout">
+      <!-- MAIN -->
+      <section class="main">
+        <div class="kpis">
+          <div class="neo-card neo-card--pad kpi">
+            <div class="kpi-ic kpi-ic--blue"><i class="fa-solid fa-coins"></i></div>
+            <div class="kpi-txt">
+              <div class="kpi-label">Solde total</div>
+              <div class="kpi-val">{{ totalSolde | number:'1.2-2' }} <span class="kpi-cur">TND</span></div>
+              <div class="kpi-sub">Somme de tous vos comptes actifs.</div>
+            </div>
+          </div>
+          <div class="neo-card neo-card--pad kpi">
+            <div class="kpi-ic kpi-ic--green"><i class="fa-solid fa-layer-group"></i></div>
+            <div class="kpi-txt">
+              <div class="kpi-label">Comptes sur le profil</div>
+              <div class="kpi-val">{{ comptes.length }}</div>
+              <div class="kpi-sub">Chèque, épargne ou professionnel.</div>
+            </div>
+          </div>
+          <div class="neo-card neo-card--pad kpi">
+            <div class="kpi-ic kpi-ic--amber"><i class="fa-solid fa-hourglass-half"></i></div>
+            <div class="kpi-txt">
+              <div class="kpi-label">Demandes en cours</div>
+              <div class="kpi-val">{{ pendingDemandes.length }}</div>
+              <div class="kpi-sub">Traitement par nos équipes BTE.</div>
+            </div>
+          </div>
+        </div>
 
-    <div class="all-taken" *ngIf="availableAccountTypes.length === 0 && comptes.length > 0">
-      <p>Vous disposez déjà de tous les types de comptes disponibles.</p>
+        <div class="neo-card neo-card--pad section">
+          <div class="neo-card-hd">
+            <h2>Mes cartes</h2>
+            <span class="neo-badge">{{ comptes.length }} compte{{ comptes.length !== 1 ? 's' : '' }}</span>
+          </div>
+          <p class="muted cards-desc">
+            Vos cartes virtuelles représentent vos comptes. Sélectionnez-en une pour accéder aux détails et services.
+          </p>
+
+          <p class="loading" *ngIf="loading">Chargement des comptes…</p>
+
+          <div class="accounts-grid" *ngIf="comptes.length > 0 && !loading">
+            <app-account-physical-card class="account-phys" *ngFor="let compte of comptes" [compte]="compte" />
+          </div>
+
+          <div class="empty" *ngIf="comptes.length === 0 && !loading">
+            <div class="empty-ic"><i class="fa-solid fa-credit-card"></i></div>
+            <div class="empty-t">
+              <h3>Commencez avec votre premier compte</h3>
+              <p>Ouvrez un compte et profitez de la banque digitale BTE : virements, épargne, investissement et plus.
+              </p>
+              <button class="neo-btn neo-btn--primary" (click)="step = 'select-type'"
+                *ngIf="availableAccountTypes.length > 0">
+                <i class="fa-solid fa-plus"></i>
+                <span>Ouvrir un compte</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="neo-card neo-card--pad section all-taken"
+          *ngIf="availableAccountTypes.length === 0 && comptes.length > 0">
+          <div class="all-taken-row">
+            <div class="all-ic"><i class="fa-solid fa-shield-check"></i></div>
+            <div>
+              <h3>Tous les types sont déjà disponibles</h3>
+              <p>Vous possédez déjà les catégories de comptes proposées. Besoin d’une option sur mesure ? Contactez
+                l’agence.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ASIDE -->
+      <aside class="aside">
+        <div class="neo-card neo-card--pad section">
+          <div class="neo-card-hd">
+            <h2>Demandes</h2>
+            <a class="neo-link" (click)="step='select-type'" *ngIf="availableAccountTypes.length>0">Nouvelle</a>
+          </div>
+
+          <div class="demande-list" *ngIf="pendingDemandes.length > 0">
+            <div class="demande-item" *ngFor="let d of pendingDemandes | slice:0:3">
+              <div class="di-left">
+                <div class="di-type">{{ typeLabel(d.typeCompte) }}</div>
+                <div class="di-sub">Dossier en cours d’examen</div>
+              </div>
+              <span class="di-status">EN ATTENTE</span>
+            </div>
+            <div class="di-note" *ngIf="pendingDemandes.length > 3">
+              +{{ pendingDemandes.length - 3 }} autre{{ (pendingDemandes.length - 3) > 1 ? 's' : '' }} demande{{
+              (pendingDemandes.length - 3) > 1 ? 's' : '' }}
+            </div>
+          </div>
+
+          <div class="demande-empty" *ngIf="pendingDemandes.length === 0">
+            <div class="demande-empty-ic"><i class="fa-solid fa-circle-info"></i></div>
+            <p>Aucune demande en cours. Si vous souhaitez ouvrir un nouveau compte, choisissez un type puis soumettez
+              vos informations.</p>
+          </div>
+        </div>
+
+        <div class="neo-card neo-card--pad section">
+          <div class="neo-card-hd">
+            <h2>Conseils BTE</h2>
+            <span class="neo-badge">Sécurité</span>
+          </div>
+          <ul class="tips">
+            <li>Vérifiez toujours votre <strong>CIN</strong> et votre <strong>adresse</strong> avant envoi.</li>
+            <li>Votre solde et vos données sont protégés : chiffrement et contrôles d’accès.</li>
+            <li>Pour les comptes épargne, privilégiez des versements réguliers pour optimiser votre objectif.</li>
+          </ul>
+        </div>
+      </aside>
     </div>
-
-    <div class="pending-section" *ngIf="pendingDemandes.length > 0" style="margin-top:24px">
-      <h2>Demandes en cours</h2>
-      <div class="demande-item" *ngFor="let d of pendingDemandes">
-        <span class="di-type">{{ d.typeCompte }}</span>
-        <span class="di-status">En cours d'examen</span>
-      </div>
-    </div>
-
   </ng-container>
 
-
-  <!-- ── CHOIX DU TYPE ── -->
+  <!-- ── CHOIX DU TYPE ──────────────────────────────── -->
   <ng-container *ngIf="step === 'select-type'">
-
     <div class="page-top">
       <div>
         <h1>Ouvrir un compte</h1>
-        <p class="page-sub">Choisissez le type qui vous convient</p>
+        <p class="page-sub">Choisissez un type de compte, puis finalisez la vérification d’identité en moins d’une
+          minute.</p>
       </div>
-      <button class="btn-back" (click)="step = 'list'">← Retour</button>
+      <button class="neo-btn" (click)="step = 'list'">
+        <i class="fa-solid fa-arrow-left"></i>
+        <span>Retour</span>
+      </button>
     </div>
 
-    <div class="type-grid">
-      <div class="type-card delay-{{ i+1 }}" *ngFor="let t of availableAccountTypes; let i = index"
-        (click)="selectType(t.type)">
-        <div class="tc-header">
-          <div class="tc-icon" [class.tc-icon--epargne]="t.type==='EPARGNE'"
-            [class.tc-icon--pro]="t.type==='PROFESSIONNEL'">
-            <svg *ngIf="t.type === 'COURANT'" width="20" height="20" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="2" y="5" width="20" height="14" rx="2" />
-              <line x1="2" y1="10" x2="22" y2="10" />
-            </svg>
-            <svg *ngIf="t.type === 'EPARGNE'" width="20" height="20" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="12" y1="1" x2="12" y2="23" />
-              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-            </svg>
-            <svg *ngIf="t.type === 'PROFESSIONNEL'" width="20" height="20" viewBox="0 0 24 24" fill="none"
-              stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="2" y="7" width="20" height="14" rx="2" ry="2" />
-              <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16" />
-            </svg>
-          </div>
-          <h3>{{ t.label }}</h3>
+    <div class="type-layout">
+      <section class="type-main">
+        <div class="type-grid" *ngIf="availableAccountTypes.length > 0">
+          <button class="type-card" *ngFor="let t of availableAccountTypes" (click)="selectType(t.type)">
+            <div class="tc-top">
+              <div class="tc-ic" [class.tc-ic--green]="t.type==='EPARGNE'"
+                [class.tc-ic--violet]="t.type==='PROFESSIONNEL'">
+                <i class="fa-solid" [class.fa-credit-card]="t.type==='COURANT'"
+                  [class.fa-building-columns]="t.type==='EPARGNE'" [class.fa-briefcase]="t.type==='PROFESSIONNEL'"></i>
+              </div>
+              <span class="tc-badge">{{ t.type }}</span>
+            </div>
+            <h3>{{ t.label }}</h3>
+            <p class="tc-desc">{{ t.desc }}</p>
+            <div class="tc-need">
+              <div class="tc-need-label">Pièces requises</div>
+              <div class="tc-need-val">{{ t.needs }}</div>
+            </div>
+            <div class="tc-cta">
+              <span>Choisir</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </div>
+          </button>
         </div>
-        <p>{{ t.desc }}</p>
-      </div>
-    </div>
 
+        <div class="neo-card neo-card--pad section all-taken" *ngIf="availableAccountTypes.length === 0">
+          <div class="all-taken-row">
+            <div class="all-ic"><i class="fa-solid fa-check-double"></i></div>
+            <div>
+              <h3>Aucun type disponible</h3>
+              <p>Vous possédez déjà tous les types de comptes ou une demande est déjà en cours. Revenez plus tard ou
+                contactez votre agence.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="type-aside">
+        <div class="neo-card neo-card--pad section">
+          <div class="neo-card-hd">
+            <h2>À quoi sert chaque type ?</h2>
+          </div>
+          <div class="type-help">
+            <div class="help-row">
+              <div class="help-ic"><i class="fa-solid fa-credit-card"></i></div>
+              <div>
+                <div class="help-t">Compte Chèque</div>
+                <div class="help-d">Idéal pour les opérations du quotidien (virements, retraits, paiements).</div>
+              </div>
+            </div>
+            <div class="help-row">
+              <div class="help-ic help-ic--green"><i class="fa-solid fa-piggy-bank"></i></div>
+              <div>
+                <div class="help-t">Compte Épargne</div>
+                <div class="help-d">Pour mettre de côté et atteindre vos objectifs, avec une logique d’épargne.</div>
+              </div>
+            </div>
+            <div class="help-row">
+              <div class="help-ic help-ic--violet"><i class="fa-solid fa-briefcase"></i></div>
+              <div>
+                <div class="help-t">Compte Professionnel</div>
+                <div class="help-d">Conçu pour les indépendants et entreprises : limites élevées, suivi d’activité.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
   </ng-container>
 
-
-  <!-- ── FORMULAIRE KYC ── -->
+  <!-- ── FORMULAIRE KYC ─────────────────────────────── -->
   <ng-container *ngIf="step === 'fill-kyc' && kycForm">
-
     <div class="page-top">
       <div>
-        <h1>Vérification d'identité</h1>
-        <p class="page-sub">Requis pour ouvrir un compte {{ selectedType }}</p>
+        <h1>Vérification d’identité</h1>
+        <p class="page-sub">Dernière étape pour ouvrir : <strong>{{ selectedTypeLabel }}</strong>.</p>
       </div>
-      <button class="btn-back" (click)="cancelRequest()">← Retour</button>
+      <button class="neo-btn" (click)="cancelRequest()">
+        <i class="fa-solid fa-arrow-left"></i>
+        <span>Retour</span>
+      </button>
     </div>
 
-    <div class="kyc-card" [formGroup]="kycForm">
+    <div class="kyc-layout" [formGroup]="kycForm">
+      <section class="kyc-main neo-card neo-card--pad">
+        <div class="neo-card-hd">
+          <h2>Informations requises</h2>
+          <span class="neo-badge">KYC</span>
+        </div>
+        <p class="muted">Ces informations permettent à la banque de valider votre identité et de sécuriser l’ouverture
+          du compte.</p>
 
-      <!-- CIN -->
-      <div class="form-group">
-        <label>
-          CIN (Carte d'identité) <span class="req">*</span>
-          <span class="locked-badge" *ngIf="lockedCin">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-              stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="11" width="18" height="11" rx="2" />
-              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-            </svg>
-            Déjà enregistré
-          </span>
-        </label>
-        <input class="input" [class.input-locked]="lockedCin" type="text" formControlName="cin" placeholder="12345678"
-          maxlength="8">
-        <div class="field-error" *ngIf="fieldInvalid('cin')">Doit comporter exactement 8 chiffres.</div>
-      </div>
+        <div class="form-grid">
+          <!-- CIN -->
+          <div class="form-group">
+            <label>
+              CIN <span class="req">*</span>
+              <span class="locked-badge" *ngIf="lockedCin">
+                <i class="fa-solid fa-lock"></i>
+                Déjà enregistré
+              </span>
+            </label>
+            <input class="input" [class.input-locked]="lockedCin" type="text" formControlName="cin"
+              placeholder="12345678" maxlength="8">
+            <div class="field-error" *ngIf="fieldInvalid('cin')">Doit comporter exactement 8 chiffres.</div>
+          </div>
 
-      <!-- Date de naissance -->
-      <div class="form-group">
-        <label>
-          Date de naissance <span class="req">*</span>
-          <span class="locked-badge" *ngIf="lockedDob">
-            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-              stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="11" width="18" height="11" rx="2" />
-              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-            </svg>
-            Déjà enregistrée
-          </span>
-        </label>
-        <input class="input" [class.input-locked]="lockedDob" type="date" formControlName="dateNaissance">
-        <div class="field-error" *ngIf="fieldInvalid('dateNaissance')">Requis.</div>
-      </div>
+          <!-- Date de naissance -->
+          <div class="form-group">
+            <label>
+              Date de naissance <span class="req">*</span>
+              <span class="locked-badge" *ngIf="lockedDob">
+                <i class="fa-solid fa-lock"></i>
+                Déjà enregistrée
+              </span>
+            </label>
+            <input class="input" [class.input-locked]="lockedDob" type="date" formControlName="dateNaissance">
+            <div class="field-error" *ngIf="fieldInvalid('dateNaissance')">Requis.</div>
+          </div>
 
-      <ng-container *ngIf="selectedType === 'COURANT' || selectedType === 'PROFESSIONNEL'">
-        <!-- Adresse -->
-        <div class="form-group">
-          <label>
-            Adresse <span class="req">*</span>
-            <span class="locked-badge" *ngIf="lockedAdresse">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="11" width="18" height="11" rx="2" />
-                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-              </svg>
-              Déjà enregistrée
-            </span>
-          </label>
-          <input class="input" [class.input-locked]="lockedAdresse" type="text" formControlName="adresse"
-            placeholder="12 Rue de la République, Tunis">
-          <div class="field-error" *ngIf="fieldInvalid('adresse')">Requis.</div>
+          <ng-container *ngIf="selectedType === 'COURANT' || selectedType === 'PROFESSIONNEL'">
+            <!-- Adresse -->
+            <div class="form-group">
+              <label>
+                Adresse <span class="req">*</span>
+                <span class="locked-badge" *ngIf="lockedAdresse">
+                  <i class="fa-solid fa-lock"></i>
+                  Déjà enregistrée
+                </span>
+              </label>
+              <input class="input" [class.input-locked]="lockedAdresse" type="text" formControlName="adresse"
+                placeholder="12 Rue de la République, Tunis">
+              <div class="field-error" *ngIf="fieldInvalid('adresse')">Requis.</div>
+            </div>
+
+            <!-- Profession -->
+            <div class="form-group">
+              <label>
+                Profession <span class="req">*</span>
+                <span class="locked-badge" *ngIf="lockedJob">
+                  <i class="fa-solid fa-lock"></i>
+                  Déjà enregistrée
+                </span>
+              </label>
+              <input class="input" [class.input-locked]="lockedJob" type="text" formControlName="job"
+                placeholder="Ingénieur, Médecin, Freelance...">
+              <div class="field-error" *ngIf="fieldInvalid('job')">Requis.</div>
+            </div>
+          </ng-container>
+
+          <ng-container *ngIf="selectedType === 'PROFESSIONNEL'">
+            <div class="form-group">
+              <label>Nom de l’entreprise <span class="req">*</span></label>
+              <input class="input" type="text" formControlName="nomEntreprise" placeholder="Ma Société SARL">
+              <div class="field-error" *ngIf="fieldInvalid('nomEntreprise')">Requis.</div>
+            </div>
+          </ng-container>
+
+          <div class="form-group form-wide">
+            <label>Informations complémentaires <span class="optional">(facultatif)</span></label>
+            <textarea class="input" formControlName="motif" rows="3"
+              placeholder="Tout renseignement supplémentaire pour la banque..."></textarea>
+          </div>
         </div>
 
-        <!-- Profession -->
-        <div class="form-group">
-          <label>
-            Profession <span class="req">*</span>
-            <span class="locked-badge" *ngIf="lockedJob">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"
-                stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="11" width="18" height="11" rx="2" />
-                <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-              </svg>
-              Déjà enregistrée
-            </span>
-          </label>
-          <input class="input" [class.input-locked]="lockedJob" type="text" formControlName="job"
-            placeholder="Ingénieur, Médecin, Freelance...">
-          <div class="field-error" *ngIf="fieldInvalid('job')">Requis.</div>
+        <div class="error-box" *ngIf="submitError">{{ submitError }}</div>
+
+        <div class="kyc-actions">
+          <button class="neo-btn" (click)="cancelRequest()">Annuler</button>
+          <button class="neo-btn neo-btn--primary" (click)="submitDemande()" [disabled]="submitting">
+            <span *ngIf="submitting" class="spinner"></span>
+            <span>{{ submitting ? 'Envoi…' : 'Soumettre la demande' }}</span>
+          </button>
         </div>
-      </ng-container>
+      </section>
 
-      <ng-container *ngIf="selectedType === 'PROFESSIONNEL'">
-        <div class="form-group">
-          <label>Nom de l'entreprise <span class="req">*</span></label>
-          <input class="input" type="text" formControlName="nomEntreprise" placeholder="Ma Société SARL">
-          <div class="field-error" *ngIf="fieldInvalid('nomEntreprise')">Requis.</div>
+      <aside class="kyc-aside">
+        <div class="neo-card neo-card--pad section">
+          <div class="neo-card-hd">
+            <h2>Résumé</h2>
+            <span class="neo-badge">{{ selectedType }}</span>
+          </div>
+          <p class="muted">{{ selectedTypeDesc }}</p>
+          <div class="mini-kpis">
+            <div class="mini">
+              <div class="mini-l">Pièces</div>
+              <div class="mini-v">{{ selectedTypeNeeds }}</div>
+            </div>
+            <div class="mini">
+              <div class="mini-l">Traitement</div>
+              <div class="mini-v">Sous 24–72h (ouvrables)</div>
+            </div>
+          </div>
         </div>
-      </ng-container>
 
-      <div class="form-group">
-        <label>Informations complémentaires <span class="optional">(facultatif)</span></label>
-        <textarea class="input" formControlName="motif" rows="3"
-          placeholder="Tout renseignement supplémentaire pour la banque..."></textarea>
-      </div>
-
-      <div class="error-box" style="margin-bottom:14px" *ngIf="submitError">{{ submitError }}</div>
-
-      <div class="kyc-actions">
-        <button class="btn-cancel" (click)="cancelRequest()">Annuler</button>
-        <button class="btn-kyc-submit" (click)="submitDemande()" [disabled]="submitting">
-          <span *ngIf="submitting" class="spinner"></span>
-          <span>{{ submitting ? 'Envoi...' : 'Soumettre la demande' }}</span>
-        </button>
-      </div>
-
+        <div class="neo-card neo-card--pad section">
+          <div class="neo-card-hd">
+            <h2>Pourquoi ces infos ?</h2>
+          </div>
+          <ul class="tips">
+            <li>Conformité KYC/AML et sécurisation de votre profil.</li>
+            <li>Réduction des fraudes et meilleure protection de vos transactions.</li>
+            <li>Accès simplifié aux services (virement, investissement, carte).</li>
+          </ul>
+        </div>
+      </aside>
     </div>
-
   </ng-container>
-
 </div>

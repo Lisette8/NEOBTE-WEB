@@ -18,6 +18,7 @@ import { FormsModule } from '@angular/forms';
 import { AccountPolicy } from '../account-policy/account-policy';
 import { InvestmentManagement } from '../investment-management/investment-management';
 import { LoanManagement } from '../loan-management/loan-management';
+import { AuthService } from '../../../Services/auth-service';
 
 
 const VALID_TABS = ['home', 'demandes', 'users', 'comptes', 'virements', 'support', 'news', 'treasury', 'security', 'ai', 'policy', 'investments', 'loans'];
@@ -53,7 +54,8 @@ export class AdminDashboard implements OnInit, OnDestroy {
     private fraudeService: FraudeService,
     private adminService: AdminService,
     private router: Router,
-    private route: ActivatedRoute
+    private route: ActivatedRoute,
+    private authService: AuthService
   ) { }
 
   ngOnInit() {
@@ -159,5 +161,14 @@ export class AdminDashboard implements OnInit, OnDestroy {
   fmt(n: number | undefined): string {
     if (n === undefined || n === null) return '—';
     return n.toLocaleString('fr-TN', { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+  }
+  logout(): void {
+    this.authService.logout().subscribe({
+      next: () => this.router.navigate(['/landing-view']),
+      error: () => {
+        localStorage.removeItem('token');
+        this.router.navigate(['/landing-view']);
+      },
+    });
   }
 }

@@ -3,8 +3,10 @@ package com.sesame.neobte.Services;
 import com.sesame.neobte.Config.AccountTypePolicy;
 import com.sesame.neobte.DTO.Requests.Virement.InternalTransferCreateDTO;
 import com.sesame.neobte.DTO.Requests.Virement.VirementCreateDTO;
+import com.sesame.neobte.DTO.Requests.Virement.VirementHistoryFilterDTO;
 import com.sesame.neobte.DTO.Responses.Virement.RecipientPreviewDTO;
 import com.sesame.neobte.DTO.Responses.Virement.TransferConstraintsDTO;
+import com.sesame.neobte.DTO.Responses.Virement.VirementHistoryPageDTO;
 import com.sesame.neobte.DTO.Responses.Virement.VirementResponseDTO;
 import com.sesame.neobte.Entities.Class.*;
 
@@ -269,6 +271,101 @@ public class VirementServiceImpl implements VirementService {
                         || compteIds.contains(v.getCompteA().getIdCompte()))
                 .sorted(Comparator.comparing(Virement::getDateDeVirement).reversed())
                 .map(this::mapToResponseDTO).toList();
+    }
+
+    @Override
+    public VirementHistoryPageDTO getFilteredHistory(Long userId, VirementHistoryFilterDTO filter) {
+        List<Long> myCompteIds = compteRepository.findByUtilisateur_IdUtilisateur(userId)
+                .stream().map(Compte::getIdCompte).toList();
+
+        // ── Date cutoff ───────────────────────────────────────────────────
+        java.util.Date cutoff = null;
+        if (filter.getPeriod() != null) {
+            long nowMs = System.currentTimeMillis();
+            cutoff = switch (filter.getPeriod()) {
+                case "today" -> new java.util.Date(nowMs - 86_400_000L);
+                case "7d"    -> new java.util.Date(nowMs - 7L  * 86_400_000L);
+                case "30d"   -> new java.util.Date(nowMs - 30L * 86_400_000L);
+                case "3m"    -> new java.util.Date(nowMs - 90L * 86_400_000L);
+                default      -> null; // "all"
+            };
+        }
+        final java.util.Date finalCutoff = cutoff;
+
+        // ── Search normalise ──────────────────────────────────────────────
+        final String q = (filter.getSearch() != null && !filter.getSearch().isBlank())
+                ? filter.getSearch().trim().toLowerCase()
+                : null;
+
+        // ── Stream + filter ───────────────────────────────────────────────
+        List<Virement> all = virementRepository.findAll().stream()
+                .filter(v -> myCompteIds.contains(v.getCompteDe().getIdCompte())
+                        || myCompteIds.contains(v.getCompteA().getIdCompte()))
+                .filter(v -> finalCutoff == null || !v.getDateDeVirement().before(finalCutoff))
+                .filter(v -> {
+                    if (q == null) return true;
+                    VirementResponseDTO dto = mapToResponseDTO(v);
+                    return (dto.getRecipientName() != null && dto.getRecipientName().toLowerCase().contains(q))
+                            || (dto.getSenderName()    != null && dto.getSenderName().toLowerCase().contains(q))
+                            || String.valueOf(v.getIdVirement()).contains(q)
+                            || (v.getMontant() != null && String.format("%.3f", v.getMontant()).contains(q));
+                })
+                .filter(v -> {
+                    if (filter.getType() == null || filter.getType().equals("all")) return true;
+                    boolean isMineSource = myCompteIds.contains(v.getCompteDe().getIdCompte());
+                    boolean isMineDestination = myCompteIds.contains(v.getCompteA().getIdCompte());
+                    boolean isInternal = isMineSource && isMineDestination;
+                    return switch (filter.getType()) {
+                        case "internal" -> isInternal;
+                        case "sent"     -> isMineSource && !isInternal;
+                        case "received" -> isMineDestination && !isInternal;
+                        default -> true;
+                    };
+                })
+                .toList();
+
+        // ── Sort ─────────────────────────────────────────────────────────
+        String sort = filter.getSort() != null ? filter.getSort() : "date-desc";
+        List<Virement> sorted = new java.util.ArrayList<>(all);
+        sorted.sort(switch (sort) {
+            case "date-asc"    -> Comparator.comparing(Virement::getDateDeVirement);
+            case "amount-desc" -> Comparator.comparing(Virement::getMontant).reversed();
+            case "amount-asc"  -> Comparator.comparing(Virement::getMontant);
+            default            -> Comparator.comparing(Virement::getDateDeVirement).reversed();
+        });
+
+        // ── Summary totals (on full result before pagination) ─────────────
+        double totalSent = 0, totalReceived = 0;
+        for (Virement v : sorted) {
+            boolean isMineSource = myCompteIds.contains(v.getCompteDe().getIdCompte());
+            boolean isMineDestination = myCompteIds.contains(v.getCompteA().getIdCompte());
+            boolean isInternal = isMineSource && isMineDestination;
+            if (isInternal) continue;
+            double frais = v.getFrais() != null ? v.getFrais() : 0.0;
+            if (isMineSource) totalSent += v.getMontant() + frais;
+            else if (isMineDestination) totalReceived += v.getMontant();
+        }
+
+        // ── Pagination ────────────────────────────────────────────────────
+        int pageNum  = Math.max(0, filter.getPage());
+        int pageSize = Math.min(100, Math.max(1, filter.getSize()));
+        int total    = sorted.size();
+        int totalPgs = (int) Math.ceil((double) total / pageSize);
+        int from     = Math.min(pageNum * pageSize, total);
+        int to       = Math.min(from + pageSize, total);
+
+        List<VirementResponseDTO> page = sorted.subList(from, to).stream()
+                .map(this::mapToResponseDTO).toList();
+
+        return VirementHistoryPageDTO.builder()
+                .content(page)
+                .page(pageNum)
+                .size(pageSize)
+                .totalElements(total)
+                .totalPages(totalPgs)
+                .totalSent(totalSent)
+                .totalReceived(totalReceived)
+                .build();
     }
 
     @Override

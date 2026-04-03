@@ -2,8 +2,10 @@ package com.sesame.neobte.Controllers.Virement;
 
 import com.sesame.neobte.DTO.Requests.Virement.InternalTransferCreateDTO;
 import com.sesame.neobte.DTO.Requests.Virement.VirementCreateDTO;
+import com.sesame.neobte.DTO.Requests.Virement.VirementHistoryFilterDTO;
 import com.sesame.neobte.DTO.Responses.Virement.RecipientPreviewDTO;
 import com.sesame.neobte.DTO.Responses.Virement.TransferConstraintsDTO;
+import com.sesame.neobte.DTO.Responses.Virement.VirementHistoryPageDTO;
 import com.sesame.neobte.DTO.Responses.Virement.VirementResponseDTO;
 import com.sesame.neobte.Security.Services.JwtService;
 import com.sesame.neobte.Services.VirementService;
@@ -59,6 +61,22 @@ public class ClientVirementController {
     public List<VirementResponseDTO> history(HttpServletRequest request) {
         Long userId = jwtService.extractUserId(request.getHeader("Authorization").substring(7));
         return virementService.getVirementsUtilisateur(userId);
+    }
+
+    /**
+     * Filtered, paginated, sortable history endpoint.
+     * Replaces the raw /history for new clients; /history kept for backward compat.
+     *
+     * GET /api/v1/client/virements/history/filter
+     *   ?search=Mohamed&period=30d&type=sent&sort=date-desc&page=0&size=20
+     */
+    @GetMapping("/history/filter")
+    public VirementHistoryPageDTO filteredHistory(
+            HttpServletRequest request,
+            @ModelAttribute VirementHistoryFilterDTO filter
+    ) {
+        Long userId = jwtService.extractUserId(request.getHeader("Authorization").substring(7));
+        return virementService.getFilteredHistory(userId, filter);
     }
 
 

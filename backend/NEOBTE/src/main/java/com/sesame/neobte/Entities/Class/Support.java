@@ -1,5 +1,7 @@
 package com.sesame.neobte.Entities.Class;
 
+import com.sesame.neobte.Entities.Enumeration.SupportCategorie;
+import com.sesame.neobte.Entities.Enumeration.SupportPriorite;
 import com.sesame.neobte.Entities.Enumeration.SupportStatus;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -28,6 +30,16 @@ public class Support implements Serializable {
 
     @Enumerated(EnumType.STRING)
     private SupportStatus status;
+
+    /** Category of the issue — defaults to AUTRE if not provided */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private SupportCategorie categorie = SupportCategorie.AUTRE;
+
+    /** Priority — defaults to NORMALE */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private SupportPriorite priorite = SupportPriorite.NORMALE;
 
     private LocalDateTime dateCreation;
 

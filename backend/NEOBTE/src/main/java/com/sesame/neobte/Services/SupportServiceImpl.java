@@ -4,6 +4,8 @@ import com.sesame.neobte.DTO.Requests.Contact.ContactCreateDTO;
 import com.sesame.neobte.DTO.Requests.Support.SupportCreateDTO;
 import com.sesame.neobte.DTO.Responses.Support.SupportResponseDTO;
 import com.sesame.neobte.Entities.Class.Support;
+import com.sesame.neobte.Entities.Enumeration.SupportCategorie;
+import com.sesame.neobte.Entities.Enumeration.SupportPriorite;
 import com.sesame.neobte.Entities.Enumeration.SupportStatus;
 import com.sesame.neobte.Entities.Class.Utilisateur;
 import com.sesame.neobte.Exceptions.customExceptions.ResourceNotFoundException;
@@ -49,6 +51,24 @@ public class SupportServiceImpl implements SupportService {
         support.setStatus(SupportStatus.OPEN);
         support.setUtilisateur(user);
         support.setDateCreation(LocalDateTime.now());
+
+        // Parse categorie — default AUTRE
+        try {
+            support.setCategorie(dto.getCategorie() != null
+                    ? SupportCategorie.valueOf(dto.getCategorie().toUpperCase())
+                    : SupportCategorie.AUTRE);
+        } catch (IllegalArgumentException e) {
+            support.setCategorie(SupportCategorie.AUTRE);
+        }
+
+        // Parse priorite — default NORMALE
+        try {
+            support.setPriorite(dto.getPriorite() != null
+                    ? SupportPriorite.valueOf(dto.getPriorite().toUpperCase())
+                    : SupportPriorite.NORMALE);
+        } catch (IllegalArgumentException e) {
+            support.setPriorite(SupportPriorite.NORMALE);
+        }
 
         Support saved = supportRepository.save(support);
         messagingTemplate.convertAndSend("/topic/support", mapToResponseDTO(saved));
@@ -105,6 +125,8 @@ public class SupportServiceImpl implements SupportService {
                 .message(support.getMessage())
                 .reponseAdmin(support.getReponseAdmin())
                 .status(support.getStatus().name())
+                .categorie(support.getCategorie() != null ? support.getCategorie().name() : SupportCategorie.AUTRE.name())
+                .priorite(support.getPriorite() != null ? support.getPriorite().name() : SupportPriorite.NORMALE.name())
                 .dateCreation(support.getDateCreation())
                 .clientEmail(support.getUtilisateur() != null ? support.getUtilisateur().getEmail() : null)
                 .guestEmail(support.getGuestEmail())

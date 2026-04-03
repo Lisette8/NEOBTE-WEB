@@ -66,7 +66,7 @@ public class ClientVirementController {
     /**
      * Filtered, paginated, sortable history endpoint.
      * Replaces the raw /history for new clients; /history kept for backward compat.
-     *  
+     *
      * GET /api/v1/client/virements/history/filter
      *   ?search=Mohamed&period=30d&type=sent&sort=date-desc&page=0&size=20
      */

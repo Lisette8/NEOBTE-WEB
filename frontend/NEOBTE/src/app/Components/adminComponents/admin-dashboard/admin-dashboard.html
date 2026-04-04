@@ -19,7 +19,7 @@
             <polyline points="9 22 9 12 15 12 15 22" />
           </svg>
         </span>
-        <span class="nav-label">Home</span>
+        <span class="nav-label">Accueil</span>
       </button>
 
       <p class="nav-section-label">Management</p>
@@ -31,7 +31,7 @@
             <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
           </svg>
         </span>
-        <span class="nav-label">Account Requests</span>
+        <span class="nav-label">Demandes</span>
       </button>
 
       <button class="nav-item" [class.active]="selectedTab === 'users'" (click)="goTo('users')">
@@ -43,7 +43,7 @@
             <path d="M16 3.13a4 4 0 0 1 0 7.75" />
           </svg>
         </span>
-        <span class="nav-label">Users</span>
+        <span class="nav-label">Utilisateurs</span>
       </button>
 
       <button class="nav-item" [class.active]="selectedTab === 'comptes'" (click)="goTo('comptes')">
@@ -53,7 +53,7 @@
             <line x1="2" y1="10" x2="22" y2="10" />
           </svg>
         </span>
-        <span class="nav-label">Accounts</span>
+        <span class="nav-label">Comptes</span>
       </button>
 
       <button class="nav-item" [class.active]="selectedTab === 'virements'" (click)="goTo('virements')">
@@ -65,7 +65,7 @@
             <path d="M21 13v2a4 4 0 0 1-4 4H3" />
           </svg>
         </span>
-        <span class="nav-label">Transfers</span>
+        <span class="nav-label">Virements</span>
       </button>
 
       <button class="nav-item" [class.active]="selectedTab === 'support'" (click)="goTo('support')">
@@ -98,7 +98,7 @@
             <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
           </svg>
         </span>
-        <span class="nav-label">Treasury</span>
+        <span class="nav-label">Trésorerie</span>
       </button>
 
       <p class="nav-section-label" style="margin-top:16px">Intelligence</p>
@@ -109,7 +109,7 @@
             <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
           </svg>
         </span>
-        <span class="nav-label">AI Analytics</span>
+        <span class="nav-label">IA Analytics</span>
       </button>
 
       <p class="nav-section-label" style="margin-top:16px">Security</p>
@@ -120,7 +120,7 @@
             <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
           </svg>
         </span>
-        <span class="nav-label">Security</span>
+        <span class="nav-label">Sécurité</span>
         <span class="nav-alert-badge" *ngIf="openAlertCount > 0">{{ openAlertCount }}</span>
       </button>
       <button class="nav-item nav-item-invest" [class.active]="selectedTab === 'investments'"
@@ -153,7 +153,7 @@
             <path d="M9 9h6M9 12h6M9 15h4" />
           </svg>
         </span>
-        <span class="nav-label">Account Policy</span>
+        <span class="nav-label">Politique Comptes</span>
       </button>
 
     </nav>

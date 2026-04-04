@@ -29,9 +29,10 @@ public class AdminSupportController {
     @PutMapping("/update/{id}")
     public SupportResponseDTO update(
             @PathVariable Long id,
-            @RequestParam String response,
-            @RequestParam String status
+            @RequestBody Map<String, String> body
     ) {
+        String response = body.getOrDefault("response", "");
+        String status   = body.getOrDefault("status", "OPEN");
         return supportService.updateStatus(id, response, status);
     }
 
@@ -67,4 +68,3 @@ public class AdminSupportController {
         return ResponseEntity.ok(Map.of("suggestion", suggestion));
     }
 }
-

@@ -1,84 +1,193 @@
-<div class="page">
+<div class="sv-page">
 
-  <div class="page-top">
+  <!-- ── Header ──────────────────────────────────────────────────────── -->
+  <div class="sv-top">
     <div>
       <h1>Support</h1>
-      <p class="page-sub">Notre équipe est disponible pour vous aider</p>
+      <p class="sv-sub">Notre équipe répond sous 24–72h. Décrivez votre problème avec précision.</p>
     </div>
   </div>
 
-  <!-- New ticket form -->
-  <div class="support-card">
-    <h2>Nouveau ticket</h2>
+  <div class="sv-layout">
 
-    <div class="form-group">
-      <label class="label">Sujet</label>
-      <input class="input" type="text" placeholder="Décrivez brièvement votre problème" [(ngModel)]="newTicket.sujet">
-    </div>
-
-    <div class="form-group">
-      <label class="label">Message</label>
-      <textarea class="input" rows="4" placeholder="Décrivez votre problème en détail..." [(ngModel)]="newTicket.message"></textarea>
-    </div>
-
-    <div class="success-bar" *ngIf="successMessage">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-      {{ successMessage }}
-    </div>
-    <div class="error-box" style="margin-bottom:14px" *ngIf="error">{{ error }}</div>
-
-    <button class="btn-submit" (click)="createTicket()"
-      [disabled]="!newTicket.sujet || !newTicket.message || submitting">
-      <span *ngIf="submitting" class="spinner"></span>
-      <span>{{ submitting ? 'Envoi en cours...' : 'Envoyer le ticket' }}</span>
-    </button>
-  </div>
-
-  <!-- Tickets list -->
-  <div class="tickets-section">
-    <p class="section-title">Mes tickets</p>
-
-    <p class="tickets-loading" *ngIf="loading">Chargement...</p>
-
-    <p class="tickets-empty" *ngIf="!loading && tickets.length === 0">
-      Aucun ticket pour l'instant.
-    </p>
-
-    <div class="ticket-list" *ngIf="tickets.length > 0">
-      <div class="ticket-item" *ngFor="let ticket of tickets">
-        <div class="ti-header">
-          <div class="ti-left">
-            <div class="ti-icon">
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-              </svg>
-            </div>
-            <div>
-              <p class="ti-subject">{{ ticket.sujet }}</p>
-              <p class="ti-date">{{ ticket.dateCreation | date:'d MMM y · HH:mm' }}</p>
-            </div>
-          </div>
-          <span class="badge" [ngClass]="{
-            'badge-amber': ticket.status === 'OPEN',
-            'badge-blue':  ticket.status === 'IN_PROGRESS',
-            'badge-green': ticket.status === 'RESOLVED' || ticket.status === 'CLOSED',
-            'badge-gray':  ticket.status === 'CLOSED'
-          }">{{ getStatusLabel(ticket.status) }}</span>
+    <!-- ── LEFT: new ticket form ──────────────────────────────────────── -->
+    <div class="sv-form-col">
+      <div class="sv-card">
+        <div class="sv-card-hd">
+          <i class="fa-solid fa-circle-plus sv-card-ic"></i>
+          <h2>Nouveau ticket</h2>
         </div>
 
-        <p class="ti-message">{{ ticket.message }}</p>
-
-        <div class="ti-response" *ngIf="ticket.reponseAdmin">
-          <div class="ti-response-label">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/>
-            </svg>
-            Réponse de l'administrateur
+        <!-- Category chips -->
+        <div class="sv-field">
+          <label class="sv-label">Catégorie <span class="sv-req">*</span></label>
+          <div class="sv-chips">
+            <button *ngFor="let cat of categories" type="button" class="sv-chip"
+              [class.active]="newTicket.categorie === cat.value" (click)="newTicket.categorie = cat.value">
+              <i [class]="cat.icon"></i>
+              {{ cat.label }}
+            </button>
           </div>
-          <p class="ti-response-text">{{ ticket.reponseAdmin }}</p>
+        </div>
+
+        <!-- Priority -->
+        <div class="sv-field">
+          <label class="sv-label">Priorité <span class="sv-req">*</span></label>
+          <div class="sv-priority-row">
+            <button type="button" class="sv-prio-btn" [class.active]="newTicket.priorite === 'NORMALE'"
+              (click)="newTicket.priorite = 'NORMALE'">
+              <i class="fa-regular fa-circle"></i> Normale
+            </button>
+            <button type="button" class="sv-prio-btn sv-prio-btn--urgent"
+              [class.active]="newTicket.priorite === 'URGENTE'" (click)="newTicket.priorite = 'URGENTE'">
+              <i class="fa-solid fa-bolt"></i> Urgente
+            </button>
+          </div>
+        </div>
+
+        <!-- Subject -->
+        <div class="sv-field">
+          <label class="sv-label">Sujet <span class="sv-req">*</span></label>
+          <input class="sv-input" type="text" placeholder="Résumez votre problème en une phrase"
+            [(ngModel)]="newTicket.sujet" maxlength="150">
+          <p class="sv-char-count">{{ newTicket.sujet.length }} / 150</p>
+        </div>
+
+        <!-- Message -->
+        <div class="sv-field">
+          <label class="sv-label">Message <span class="sv-req">*</span></label>
+          <textarea class="sv-input sv-textarea"
+            placeholder="Décrivez votre problème en détail : date, montant concerné, message d'erreur exact…"
+            [(ngModel)]="newTicket.message" rows="5" maxlength="2000"></textarea>
+          <p class="sv-char-count">{{ newTicket.message.length }} / 2000</p>
+        </div>
+
+        <!-- Alerts -->
+        <div class="sv-success" *ngIf="successMessage">
+          <i class="fa-solid fa-circle-check"></i> {{ successMessage }}
+        </div>
+        <div class="sv-error" *ngIf="error">
+          <i class="fa-solid fa-triangle-exclamation"></i> {{ error }}
+        </div>
+
+        <button class="sv-btn-submit" (click)="createTicket()" [disabled]="!canSubmit() || submitting">
+          <span *ngIf="submitting"><i class="fa-solid fa-circle-notch fa-spin"></i></span>
+          <span>{{ submitting ? 'Envoi en cours…' : 'Envoyer le ticket' }}</span>
+          <i class="fa-solid fa-paper-plane" *ngIf="!submitting"></i>
+        </button>
+      </div>
+
+      <!-- Quick help -->
+      <div class="sv-help-card">
+        <div class="sv-help-hd">
+          <i class="fa-solid fa-circle-info"></i>
+          <p>Conseils pour un traitement rapide</p>
+        </div>
+        <ul class="sv-help-list">
+          <li>Précisez la <strong>date et le montant</strong> exact de l'opération concernée</li>
+          <li>Incluez le <strong>numéro de référence</strong> du virement si applicable</li>
+          <li>Marquez <strong>Urgente</strong> uniquement pour les blocages empêchant toute transaction</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ── RIGHT: tickets list ─────────────────────────────────────────── -->
+    <div class="sv-list-col">
+      <div class="sv-list-hd">
+        <h2>Mes tickets <span class="sv-count" *ngIf="tickets.length > 0">{{ tickets.length }}</span></h2>
+        <div class="sv-list-filters">
+          <button class="sv-filter-pill" *ngFor="let f of statusFilters" [class.active]="activeFilter === f.value"
+            (click)="activeFilter = f.value">
+            {{ f.label }}
+          </button>
+        </div>
+      </div>
+
+      <p class="sv-loading" *ngIf="loading">
+        <i class="fa-solid fa-circle-notch fa-spin"></i> Chargement…
+      </p>
+
+      <div class="sv-empty" *ngIf="!loading && filteredTickets.length === 0">
+        <div class="sv-empty-ic"><i class="fa-regular fa-message"></i></div>
+        <p class="sv-empty-t">{{ tickets.length === 0 ? 'Aucun ticket pour l\'instant' : 'Aucun ticket dans cette
+          catégorie' }}</p>
+        <p class="sv-empty-s">Créez un ticket si vous avez besoin d'aide.</p>
+      </div>
+
+      <div class="sv-ticket-list" *ngIf="filteredTickets.length > 0">
+        <div class="sv-ticket" *ngFor="let t of filteredTickets" [class.sv-ticket--urgent]="t.priorite === 'URGENTE'"
+          [class.sv-ticket--resolved]="t.status === 'RESOLVED' || t.status === 'CLOSED'">
+
+          <!-- Ticket header -->
+          <div class="sv-ticket-hd">
+            <div class="sv-ticket-left">
+              <div class="sv-ticket-ic" [ngClass]="'sv-ticket-ic--' + getCatClass(t.categorie)">
+                <i [class]="getCatIcon(t.categorie)"></i>
+              </div>
+              <div class="sv-ticket-meta">
+                <p class="sv-ticket-subject">{{ t.sujet }}</p>
+                <div class="sv-ticket-tags">
+                  <span class="sv-tag sv-tag--cat">{{ getCatLabel(t.categorie) }}</span>
+                  <span class="sv-tag sv-tag--urgent" *ngIf="t.priorite === 'URGENTE'">
+                    <i class="fa-solid fa-bolt"></i> Urgente
+                  </span>
+                  <span class="sv-ticket-date">{{ t.dateCreation | date:'d MMM y · HH:mm' }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="sv-ticket-right">
+              <span class="sv-status" [ngClass]="'sv-status--' + getStatusClass(t.status)">
+                <i [class]="getStatusIcon(t.status)"></i>
+                {{ getStatusLabel(t.status) }}
+              </span>
+            </div>
+          </div>
+
+          <!-- Message -->
+          <p class="sv-ticket-msg" [class.sv-ticket-msg--collapsed]="!expandedIds.has(t.idSupport)">
+            {{ t.message }}
+          </p>
+          <button class="sv-expand-btn" (click)="toggleExpand(t.idSupport)" *ngIf="t.message.length > 160">
+            {{ expandedIds.has(t.idSupport) ? 'Réduire' : 'Lire la suite' }}
+            <i class="fa-solid" [class.fa-chevron-up]="expandedIds.has(t.idSupport)"
+              [class.fa-chevron-down]="!expandedIds.has(t.idSupport)"></i>
+          </button>
+
+          <!-- Admin response -->
+          <div class="sv-response" *ngIf="t.reponseAdmin">
+            <div class="sv-response-hd">
+              <i class="fa-solid fa-headset"></i>
+              <span>Réponse de l'équipe BTE</span>
+            </div>
+            <p class="sv-response-txt">{{ t.reponseAdmin }}</p>
+          </div>
+
+          <!-- Status timeline -->
+          <div class="sv-timeline">
+            <div class="sv-tl-step" [class.done]="isStatusReached(t.status, 'OPEN')">
+              <div class="sv-tl-dot"></div>
+              <span>Ouvert</span>
+            </div>
+            <div class="sv-tl-line"></div>
+            <div class="sv-tl-step" [class.done]="isStatusReached(t.status, 'IN_PROGRESS')">
+              <div class="sv-tl-dot"></div>
+              <span>En cours</span>
+            </div>
+            <div class="sv-tl-line"></div>
+            <div class="sv-tl-step" [class.done]="isStatusReached(t.status, 'RESOLVED')">
+              <div class="sv-tl-dot"></div>
+              <span>Résolu</span>
+            </div>
+            <div class="sv-tl-line"></div>
+            <div class="sv-tl-step" [class.done]="t.status === 'CLOSED'">
+              <div class="sv-tl-dot"></div>
+              <span>Clôturé</span>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
-  </div>
 
+  </div>
 </div>

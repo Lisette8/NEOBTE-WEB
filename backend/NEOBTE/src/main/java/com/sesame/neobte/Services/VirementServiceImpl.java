@@ -369,6 +369,70 @@ public class VirementServiceImpl implements VirementService {
     }
 
     @Override
+    public byte[] exportHistoryCsv(Long userId, VirementHistoryFilterDTO filter) {
+        // Reuse the same filter logic — no pagination (size = max)
+        VirementHistoryFilterDTO allFilter = new VirementHistoryFilterDTO();
+        allFilter.setSearch(filter.getSearch());
+        allFilter.setPeriod(filter.getPeriod());
+        allFilter.setType(filter.getType());
+        allFilter.setSort(filter.getSort() != null ? filter.getSort() : "date-desc");
+        allFilter.setPage(0);
+        allFilter.setSize(Integer.MAX_VALUE / 2); // effectively "all"
+
+        List<Long> myCompteIds = compteRepository.findByUtilisateur_IdUtilisateur(userId)
+                .stream().map(Compte::getIdCompte).toList();
+
+        // Apply the same filter pipeline as getFilteredHistory
+        VirementHistoryPageDTO result = getFilteredHistory(userId, allFilter);
+
+        // Build CSV
+        StringBuilder sb = new StringBuilder();
+        // BOM for Excel UTF-8 compatibility
+        sb.append('\uFEFF');
+        // Header row
+        sb.append("Référence;Date;Heure;Type;Expéditeur;Bénéficiaire;Compte source;Compte destination;Montant (TND);Frais (TND);Total débité (TND);Taux frais\n");
+
+        java.text.SimpleDateFormat dateFmt = new java.text.SimpleDateFormat("dd/MM/yyyy");
+        java.text.SimpleDateFormat timeFmt = new java.text.SimpleDateFormat("HH:mm:ss");
+
+        for (VirementResponseDTO v : result.getContent()) {
+            boolean isMineSource = myCompteIds.contains(v.getCompteSourceId());
+            boolean isMineDestination = myCompteIds.contains(v.getCompteDestinationId());
+            boolean isInternal = isMineSource && isMineDestination;
+
+            String type = isInternal ? "Interne" : (isMineSource ? "Envoyé" : "Reçu");
+            String dateStr = v.getDateDeVirement() != null ? dateFmt.format(v.getDateDeVirement()) : "";
+            String timeStr = v.getDateDeVirement() != null ? timeFmt.format(v.getDateDeVirement()) : "";
+            double frais = v.getFrais() != null ? v.getFrais() : 0.0;
+            double totalDebite = v.getTotalDebite() != null ? v.getTotalDebite() : v.getMontant();
+            double tauxFrais = v.getTauxFrais() != null ? v.getTauxFrais() * 100 : 0.0;
+
+            sb.append(String.format("VIR-%08d;%s;%s;%s;%s;%s;%d;%d;%.3f;%.3f;%.3f;%.2f%%\n",
+                    v.getIdVirement(),
+                    dateStr,
+                    timeStr,
+                    type,
+                    clean(v.getSenderName()),
+                    clean(v.getRecipientName()),
+                    v.getCompteSourceId(),
+                    v.getCompteDestinationId(),
+                    v.getMontant(),
+                    frais,
+                    totalDebite,
+                    tauxFrais
+            ));
+        }
+
+        return sb.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+    }
+
+    /** Sanitize CSV cell — escape semicolons and newlines */
+    private String clean(String s) {
+        if (s == null) return "";
+        return s.replace(";", ",").replace("\n", " ").replace("\r", "");
+    }
+
+    @Override
     public List<VirementResponseDTO> getAllVirements() {
         return virementRepository.findAll().stream().map(this::mapToResponseDTO).toList();
     }

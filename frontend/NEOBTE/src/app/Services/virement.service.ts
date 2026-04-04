@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { HttpParams } from '@angular/common/http';
 import { Virement } from '../Entities/Interfaces/virement';
@@ -71,6 +71,37 @@ export class VirementService {
     if (filter.page !== undefined) params = params.set('page', String(filter.page));
     if (filter.size !== undefined) params = params.set('size', String(filter.size));
     return this.http.get<VirementHistoryPage>(`${this.apiClient}/history/filter`, { params });
+  }
+
+  /**
+   * Downloads the filtered history as a CSV file.
+   * Accepts the same filter params as getFilteredHistory() — no pagination.
+   * Mobile: request this URL with the JWT header, save the response bytes as a file.
+   */
+  exportHistoryCsv(filter: VirementHistoryFilter): void {
+    let params = new HttpParams();
+    if (filter.search) params = params.set('search', filter.search);
+    if (filter.period) params = params.set('period', filter.period);
+    if (filter.type) params = params.set('type', filter.type);
+    if (filter.sort) params = params.set('sort', filter.sort);
+
+    this.http.get(`${this.apiClient}/history/export`, {
+      params,
+      responseType: 'blob',
+      observe: 'response',
+    }).subscribe((res: HttpResponse<Blob>) => {
+      const blob = res.body!;
+      const cd = res.headers.get('Content-Disposition') ?? '';
+      const match = cd.match(/filename="?([^"]+)"?/);
+      const filename = match ? match[1] : `virements-${new Date().toISOString().slice(0, 10)}.csv`;
+
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
   }
 
   // Admin

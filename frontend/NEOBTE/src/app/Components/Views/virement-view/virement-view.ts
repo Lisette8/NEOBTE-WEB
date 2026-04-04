@@ -452,6 +452,16 @@ export class VirementView implements OnInit, OnDestroy {
     this.filterDebounce = setTimeout(() => this.loadHistory(), 300);
   }
 
+  exportCsv() {
+    const filter = {
+      search: this.historySearch || undefined,
+      period: this.historyPeriod,
+      type: this.historyType,
+      sort: this.historySort,
+    };
+    this.virementService.exportHistoryCsv(filter);
+  }
+
   clearHistoryFilters() {
     this.historySearch = '';
     this.historyPeriod = 'all';

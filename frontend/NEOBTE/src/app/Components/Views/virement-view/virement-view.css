@@ -794,6 +794,12 @@
   border-bottom: 1px solid var(--border-soft);
 }
 
+.hc-head-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .hc-clear {
   display: inline-flex;
   align-items: center;
@@ -811,6 +817,30 @@
 .hc-clear:hover {
   color: var(--red);
   border-color: var(--red);
+}
+
+.hc-export {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: 600 0.76rem/1 inherit;
+  color: var(--blue);
+  background: var(--blue-light);
+  border: 1px solid rgba(0, 0, 160, 0.15);
+  border-radius: 8px;
+  padding: 4px 11px;
+  cursor: pointer;
+  transition: background var(--t-fast), border-color var(--t-fast), opacity var(--t-fast);
+}
+
+.hc-export:hover:not(:disabled) {
+  background: rgba(0, 0, 160, 0.12);
+  border-color: rgba(0, 0, 160, 0.25);
+}
+
+.hc-export:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .hc-filters {

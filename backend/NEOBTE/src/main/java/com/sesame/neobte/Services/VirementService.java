@@ -18,6 +18,7 @@ public interface VirementService {
     VirementResponseDTO effectuerVirementInterne(InternalTransferCreateDTO dto, Long senderUserId);
     List<VirementResponseDTO> getVirementsUtilisateur(Long userId);
     VirementHistoryPageDTO getFilteredHistory(Long userId, VirementHistoryFilterDTO filter);
+    byte[] exportHistoryCsv(Long userId, VirementHistoryFilterDTO filter);
     List<VirementResponseDTO> getAllVirements();
     VirementResponseDTO getVirementById(Long virementId);
 }

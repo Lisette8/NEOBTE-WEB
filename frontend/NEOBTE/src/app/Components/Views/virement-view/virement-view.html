@@ -366,9 +366,16 @@
     <!-- Header + filters -->
     <div class="hc-head">
       <h2>Historique</h2>
-      <button class="hc-clear" *ngIf="hasActiveFilters" (click)="clearHistoryFilters()">
-        <i class="fa-solid fa-xmark"></i> Réinitialiser
-      </button>
+      <div class="hc-head-actions">
+        <button class="hc-clear" *ngIf="hasActiveFilters" (click)="clearHistoryFilters()">
+          <i class="fa-solid fa-xmark"></i> Réinitialiser
+        </button>
+        <button class="hc-export" (click)="exportCsv()" title="Exporter l'historique filtré en CSV"
+          [disabled]="historyLoading || filteredHistory.length === 0">
+          <i class="fa-solid fa-file-arrow-down"></i>
+          Exporter CSV
+        </button>
+      </div>
     </div>
 
     <!-- Filter bar -->

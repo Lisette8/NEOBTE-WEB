@@ -118,6 +118,37 @@ export class AuthView implements OnInit {
     ['prenom', 'nom', 'telephone', 'motDePasse'].forEach(f => this.authForm.get(f)?.updateValueAndValidity());
   }
 
+  // ── Password strength ───────────────────────────────────────────────────
+
+  /** 0=empty, 1=weak, 2=fair, 3=strong, 4=very-strong */
+  passwordStrength(value: string): number {
+    if (!value) return 0;
+    let score = 0;
+    if (value.length >= 8) score++;
+    if (value.length >= 12) score++;
+    if (/[A-Z]/.test(value) && /[a-z]/.test(value)) score++;
+    if (/[0-9]/.test(value)) score++;
+    if (/[^A-Za-z0-9]/.test(value)) score++;
+    // cap to 4
+    return Math.min(4, score);
+  }
+
+  get registerPasswordStrength(): number {
+    return this.passwordStrength(this.authForm.get('motDePasse')?.value ?? '');
+  }
+
+  get newPasswordStrength(): number {
+    return this.passwordStrength(this.newPasswordForm?.get('newPassword')?.value ?? '');
+  }
+
+  passwordStrengthLabel(score: number): string {
+    return ['', 'Trop court', 'Faible', 'Moyen', 'Fort'][score] ?? '';
+  }
+
+  passwordStrengthClass(score: number): string {
+    return ['', 'pw-weak', 'pw-fair', 'pw-good', 'pw-strong'][score] ?? '';
+  }
+
   fieldInvalid(form: FormGroup, field: string): boolean {
     const ctrl = form.get(field);
     return !!(ctrl?.invalid && ctrl?.touched);
